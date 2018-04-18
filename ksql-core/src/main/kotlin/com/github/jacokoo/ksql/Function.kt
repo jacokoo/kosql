@@ -19,6 +19,8 @@ class Count<T: Any> (override val alias: String = ""): Column<Int> {
     override val name: String = "*"
     override val table: Table = Table("nothing")
     override val type: DataType<Int> = IntType()
+    override val allowNull: Boolean = false
+    override val defaultValue: Int = 0
     private lateinit var column: Column<T>
 
     constructor(column: Column<T>, alias: String = ""): this(alias) {

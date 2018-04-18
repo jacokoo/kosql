@@ -21,7 +21,7 @@ internal fun append(data: InsertData, vararg cs: Any): InsertData {
 }
 
 data class InsertEnd(override val data: InsertData): InsertPart
-data class Entities(val entities: List<out Entity<*>>)
+data class Entities(val entities: List<Entity<*>>)
 interface ExtraValues {
     val data: InsertData
     infix fun VALUES(e: Entities): InsertEnd {

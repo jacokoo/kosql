@@ -34,6 +34,8 @@ interface Nameable<out T>: SQLPart {
 interface Column<T: Any>: Nameable<Column<T>> {
     val table: Table
     val type: DataType<T>
+    val allowNull: Boolean
+    val defaultValue: T
 
     fun ASC(): Pair<Column<T>, Order> = this to Order.ASC
     fun DESC(): Pair<Column<T>, Order> = this to Order.DESC

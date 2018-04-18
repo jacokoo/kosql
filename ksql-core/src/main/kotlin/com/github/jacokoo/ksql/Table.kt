@@ -9,8 +9,8 @@ data class DefaultColumn<T: Any>(
         override val type: DataType<T>,
         override val alias: String = "",
         override val aliasRequired: Boolean = false,
-        val allowNull: Boolean = false,
-        val defaultValue: T = type.nullValue
+        override val allowNull: Boolean = false,
+        override val defaultValue: T = type.nullValue
 ): Column<T> {
     override fun AS(alias: String): Column<T> = this.copy(alias = alias)
     override fun sqlName(ctx: SQLBuilderContext): String = "${ctx.alias(table)}.$name"
