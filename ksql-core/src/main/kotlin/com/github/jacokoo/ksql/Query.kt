@@ -14,7 +14,7 @@ interface SQLPart {
 
 interface Statement
 
-object Query: Operators, Select, Update, Insert, Inserts, Delete {
+open class Query: Operators, Select, Update, Insert, Inserts, Delete {
     val TRUE = com.github.jacokoo.ksql.TRUE
     val SELECT = Select.SELECT
     val UPDATE = Update.UPDATE

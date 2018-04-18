@@ -72,10 +72,14 @@ data class SelectPart(private val data: QueryData) {
     infix fun FROM(t: Table<*>): FromPart = FromPart(data.copy(table = t))
 }
 
+data class SelectResult<T1: Any>(val c1: Column<T1>, override val data: QueryData): QueryPart
+
 interface Select {
     object SELECT {
         operator fun invoke(vararg columns: Column<out Any>): SelectPart = SelectPart(QueryData(columns = columns.toList()))
         operator fun invoke(table: Table<*>): FromPart = FromPart(QueryData(columns = table().toList(), table = table))
-        operator fun invoke(): FromPart = FromPart(QueryData(columns = listOf(Query.count())))
+
+        operator fun <T1: Any> invoke(c1: Column<T1>, block: SelectPart.() -> Unit): SelectResult<T1> =
+            SelectResult(c1, QueryData(listOf(c1), c1.table)).also { SelectPart(it.data).block() }
     }
 }
