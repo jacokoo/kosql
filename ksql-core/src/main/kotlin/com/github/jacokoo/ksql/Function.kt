@@ -17,7 +17,7 @@ class Distinct<T: Any>(col: Column<T>): Function<T>("", col) {
 class Count<T: Any> (override val alias: String = ""): Column<Int> {
     override val aliasRequired: Boolean = false
     override val name: String = "*"
-    override val table: Table = Table("nothing")
+    override val table: Table<out Any> = EmptyTable()
     override val type: DataType<Int> = IntType()
     override val allowNull: Boolean = false
     override val defaultValue: Int = 0

@@ -1,12 +1,12 @@
 package com.github.jacokoo.ksql.statements
 
 import com.github.jacokoo.ksql.Column
-import com.github.jacokoo.ksql.Entity
 import com.github.jacokoo.ksql.Statement
 import com.github.jacokoo.ksql.Table
+import com.github.jacokoo.ksql.mapping.Entity
 
 data class InsertData(
-        val table: Table,
+        val table: Table<*>,
         val columns: List<Column<*>>,
         val values: List<List<Any>> = listOf(),
         val query: QueryPart? = null
@@ -34,7 +34,7 @@ interface ExtraValues {
     infix fun FROM(q: QueryPart): InsertEnd = InsertEnd(data.copy(query = q))
 }
 
-data class Fields(val table: Table, val columns: List<Column<*>>)
+data class Fields(val table: Table<*>, val columns: List<Column<*>>)
 data class Values(val values: List<Any>)
 data class ValuesRepeatPart(override val data: InsertData): InsertPart {
     infix fun AND(v: Values): ValuesRepeatPart = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
@@ -57,7 +57,7 @@ interface Insert {
     }
 
     fun V(vararg v: Any): Values = Values(v.toList())
-    fun <T: Table> E(vararg e: Entity<T>): Entities = Entities(e.toList())
-    operator fun Table.invoke(vararg columns: Column<*>): Fields = Fields(this, columns.toList())
+    fun <T: Table<*>> E(vararg e: Entity<*>): Entities = Entities(e.toList())
+    operator fun Table<*>.invoke(vararg columns: Column<*>): Fields = Fields(this, columns.toList())
 
 }

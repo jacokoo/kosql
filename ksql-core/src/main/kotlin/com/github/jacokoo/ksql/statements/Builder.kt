@@ -3,8 +3,15 @@ package com.github.jacokoo.ksql.statements
 import com.github.jacokoo.ksql.*
 
 class SQLBuilder {
-    fun build(part: QueryPart): BuildResult = build(part.data)
-    fun build(data: QueryData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(st: Statement): BuildResult = when(st) {
+        is QueryPart -> build(st)
+        is UpdatePart -> build(st)
+        is DeletePart -> build(st)
+        is InsertPart -> build(st)
+        else -> throw RuntimeException("unsupported statement")
+    }
+
+    fun build(part: QueryPart): BuildResult = build(part.data, SQLBuilderContext(this, part))
     fun build(data: QueryData, ctx: SQLBuilderContext): BuildResult {
         if (data.table == null) throw RuntimeException("no table specified")
         return BuildResult.build(ctx) {
@@ -34,8 +41,7 @@ class SQLBuilder {
         }
     }
 
-    fun build(update: UpdatePart): BuildResult = build(update.data)
-    fun build(data: UpdateData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(update: UpdatePart): BuildResult = build(update.data, SQLBuilderContext(this, update))
     fun build(data: UpdateData, ctx: SQLBuilderContext): BuildResult = BuildResult.build(ctx) {
         if (data.pairs.none()) throw RuntimeException("no column to update")
 
@@ -58,8 +64,7 @@ class SQLBuilder {
         appendExpression("WHERE", this, data.expression, ctx)
     }
 
-    fun build(delete: DeletePart): BuildResult = build(delete.data)
-    fun build(data: DeleteData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(delete: DeletePart): BuildResult = build(delete.data, SQLBuilderContext(this, delete))
     fun build(data: DeleteData, ctx: SQLBuilderContext): BuildResult {
         if (data.deletes.none()) throw RuntimeException("no table specified for delete")
         return BuildResult.build(ctx) {
@@ -77,8 +82,7 @@ class SQLBuilder {
         }
     }
 
-    fun build(insert: InsertPart): BuildResult = build(insert.data)
-    fun build(data: InsertData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(insert: InsertPart): BuildResult = build(insert.data, SQLBuilderContext(this, insert))
     fun build(data: InsertData, ctx: SQLBuilderContext): BuildResult {
         if (data.query == null && data.values.none()) throw RuntimeException("no data to insert")
         return BuildResult.build(ctx) {
@@ -120,12 +124,12 @@ data class BuildResult(val sql: String, val context: SQLBuilderContext) {
     }
 }
 
-class SQLBuilderContext(val builder: SQLBuilder) {
+class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
     private val prefix = "a_"
     private var aliasIndex = 0
     private var aliasMap: MutableMap<Nameable<*>, String> = mutableMapOf()
 
-    private var arguments: MutableList<Any> = mutableListOf()
+    internal var arguments: MutableList<Any> = mutableListOf()
 
     fun alias(target: Nameable<*>): String? {
         if (aliasMap.contains(target)) return aliasMap[target]

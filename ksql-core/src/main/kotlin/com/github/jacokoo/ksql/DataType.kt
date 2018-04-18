@@ -2,6 +2,13 @@ package com.github.jacokoo.ksql
 
 import java.math.BigDecimal
 
+interface DataType<out T: Any> {
+    val nullValue: T
+    val needQuote: Boolean
+    fun fromDb(o: Any?): T
+    fun toDb(t: Any?): Any = t!!
+}
+
 class IntType: DataType<Int> {
     override val nullValue: Int = 0
     override val needQuote: Boolean = false

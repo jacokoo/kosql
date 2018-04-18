@@ -2,6 +2,18 @@ package com.github.jacokoo.ksql
 
 import com.github.jacokoo.ksql.statements.*
 
+enum class Order { ASC, DESC }
+
+enum class JoinType {
+    INNER, LEFT, RIGHT, FULL
+}
+
+interface SQLPart {
+    fun toSQL(ctx: SQLBuilderContext): String
+}
+
+interface Statement
+
 object Query: Operators, Select, Update, Insert, Inserts, Delete {
     val TRUE = com.github.jacokoo.ksql.TRUE
     val SELECT = Select.SELECT
