@@ -5,7 +5,7 @@ import com.github.jacokoo.ksql.*
 data class UpdateData(
         val table: Table,
         val joins: List<Join> = listOf(),
-        val pairs: Map<Column<*>, Any> = mapOf(),
+        val pairs: Map<Column<*>, Any?> = mapOf(),
         val expression: Expression<*>? = null
 )
 
@@ -14,9 +14,9 @@ interface UpdatePart: Statement {
 }
 
 class SetBlock {
-    var data: MutableMap<Column<*>, Any> = mutableMapOf()
+    var data: MutableMap<Column<*>, Any?> = mutableMapOf()
 
-    operator fun <T: Any> set(col: Column<T>, v: T) {
+    operator fun <T: Any> set(col: Column<T>, v: T?) {
         data[col] = v
     }
 

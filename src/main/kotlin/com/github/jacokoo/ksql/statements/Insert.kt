@@ -27,7 +27,7 @@ interface ExtraValues {
     infix fun VALUES(e: Entities): InsertEnd {
         val es = e.entities.filter { it.TABLE != data.table }
         if (!es.none()) throw RuntimeException("There have entities not match table")
-        val values = e.entities.map { e -> data.table.columns.map { it.type.toDb(e[it.name]) } }
+        val values = e.entities.map { ee -> data.columns.map { it.type.toDb(ee[it.name]) } }
         return InsertEnd(data.copy(values = values))
     }
 
@@ -35,7 +35,7 @@ interface ExtraValues {
 }
 
 data class Fields(val table: Table, val columns: List<Column<*>>)
-data class Values(val values: List<out Any>)
+data class Values(val values: List<Any>)
 data class ValuesRepeatPart(override val data: InsertData): InsertPart {
     infix fun AND(v: Values): ValuesRepeatPart = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
 }

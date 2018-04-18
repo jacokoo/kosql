@@ -2,8 +2,9 @@ package com.github.jacokoo
 
 import com.github.jacokoo.demo.GROUP
 import com.github.jacokoo.demo.USER
-import com.github.jacokoo.demo.User
+import com.github.jacokoo.demo.entity.User
 import com.github.jacokoo.ksql.Query
+import com.github.jacokoo.ksql.statements.SQLBuilder
 
 fun main(args: Array<String>) {
     with(Query) {
@@ -32,7 +33,7 @@ fun main(args: Array<String>) {
             it[USER.NAME] = "abc"
         } WHERE (USER.ID EQ 1)
 
-        // update t_user u left join t_group g on u.f_group_id = g.f_id where g.f_id = 1
+        // update t_user u left join t_group g on u.f_group_id = g.f_id set u.f_name = 'abc' where g.f_id = 1
         UPDATE (USER) LEFT_JOIN GROUP ON (USER.GROUP_ID EQ GROUP.ID) SET {
             it[USER.NAME] = "abc"
         } WHERE (GROUP.ID EQ 1)
@@ -69,10 +70,13 @@ fun main(args: Array<String>) {
                 )
 
         // delete u, g from t_user u left join t_group g on u.f_group_id = g.f_id where u.f_id = 1
-        DELETE(USER, GROUP) FROM USER LEFT_JOIN GROUP ON (USER.GROUP_ID EQ GROUP.ID) WHERE (USER.ID EQ 1)
+        val a = DELETE(USER, GROUP) FROM USER LEFT_JOIN GROUP ON (USER.GROUP_ID EQ GROUP.ID) WHERE (USER.ID EQ 1)
 
         // delete from f_user where f_id = 1
         DELETE FROM USER WHERE (USER.ID EQ 1)
+
+        val builder = SQLBuilder()
+        println(builder.build(a).sql)
     }
 
 }

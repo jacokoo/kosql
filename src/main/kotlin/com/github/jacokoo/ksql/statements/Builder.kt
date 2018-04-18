@@ -1,33 +1,21 @@
 package com.github.jacokoo.ksql.statements
 
-import com.github.jacokoo.ksql.Nameable
-import com.github.jacokoo.ksql.TRUE
+import com.github.jacokoo.ksql.*
 
 class SQLBuilder {
     fun build(part: QueryPart): BuildResult = build(part.data)
-
     fun build(data: QueryData): BuildResult = build(data, SQLBuilderContext(this))
-
     fun build(data: QueryData, ctx: SQLBuilderContext): BuildResult {
         if (data.table == null) throw RuntimeException("no table specified")
-        return BuildResult(buildString {
+        return BuildResult.build(ctx) {
             append(" FROM ").append(data.table.toSQL(ctx))
-
-            if (!data.joins.none()) append(" ")
-            data.joins.map {
-                "${it.type} JOIN ${it.table.toSQL(ctx)} ON ${it.expression.toSQL(ctx)}"
-            }.joinTo(this, " ")
-
-            data.expression?.let { if (it == TRUE) null else it }?.let {
-                append(" WHERE ").append(it.toSQL(ctx))
-            }
+            appendJoins(this, data.joins, ctx)
+            appendExpression("WHERE", this, data.expression, ctx)
 
             if (data.groupBy.isNotEmpty()) append(" GROUP BY ")
             data.groupBy.map { it.toSQL(ctx) }.joinTo(this)
 
-            data.having?.let { if (it == TRUE) null else it }?.let {
-                append(" HAVING ").append(it.toSQL(ctx))
-            }
+            appendExpression("HAVING", this, data.having, ctx)
 
             if (data.orderBy.isNotEmpty()) {
                 append(" ORDER BY ")
@@ -43,13 +31,94 @@ class SQLBuilder {
             val s = data.columns.map { it.toSQL(ctx) }.joinToString()
             insert(0, s)
             insert(0, "SELECT ")
-
-        }, ctx)
+        }
     }
 
+    fun build(update: UpdatePart): BuildResult = build(update.data)
+    fun build(data: UpdateData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(data: UpdateData, ctx: SQLBuilderContext): BuildResult = BuildResult.build(ctx) {
+        if (data.pairs.none()) throw RuntimeException("no column to update")
+
+        append("UPDATE ").append(data.table.toSQL(ctx))
+        appendJoins(this, data.joins, ctx)
+        append(" SET ")
+        data.pairs.map { (column, value) ->
+            "${column.toSQL(ctx)} = " + when(value) {
+                null -> "NULL"
+                is Column<*> -> value.toSQL(ctx)
+                is ColumnToColumnExpression<*> -> value.toSQL(ctx)
+                is ColumnToValueExpression<*> -> value.toSQL(ctx)
+                else -> {
+                    ctx.argument(value)
+                    "?"
+                }
+            }
+        }.joinTo(this)
+
+        appendExpression("WHERE", this, data.expression, ctx)
+    }
+
+    fun build(delete: DeletePart): BuildResult = build(delete.data)
+    fun build(data: DeleteData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(data: DeleteData, ctx: SQLBuilderContext): BuildResult {
+        if (data.deletes.none()) throw RuntimeException("no table specified for delete")
+        return BuildResult.build(ctx) {
+            append("DELETE ")
+            if (data.table == null) {
+                append("FROM ")
+                data.deletes.map { it.toSQL(ctx) }.joinTo(this)
+            } else {
+                data.deletes.map { ctx.alias(it) }.joinTo(this)
+                append(" FROM ").append(data.table.toSQL(ctx))
+            }
+            appendJoins(this, data.joins, ctx)
+
+            appendExpression("WHERE", this, data.expression, ctx)
+        }
+    }
+
+    fun build(insert: InsertPart): BuildResult = build(insert.data)
+    fun build(data: InsertData): BuildResult = build(data, SQLBuilderContext(this))
+    fun build(data: InsertData, ctx: SQLBuilderContext): BuildResult {
+        if (data.query == null && data.values.none()) throw RuntimeException("no data to insert")
+        return BuildResult.build(ctx) {
+            append("INSERT INTO ").append(data.table.name)
+            data.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
+            if (data.query == null) {
+                append(" VALUES ")
+                data.values.map { it.map {
+                    ctx.argument(it)
+                    "?"
+                }.joinToString(prefix = "(", postfix = ")") }.joinTo(this)
+            } else {
+                append(" ").append(build(data.query.data, ctx).sql)
+            }
+        }
+    }
+
+    private fun appendJoins(str: StringBuilder, joins: List<Join>, ctx: SQLBuilderContext) {
+        if (!joins.none()) str.append(" ")
+        joins.map {
+            "${it.type} JOIN ${it.table.toSQL(ctx)} ON ${it.expression.toSQL(ctx)}"
+        }.joinTo(str, " ")
+    }
+
+    private fun appendExpression(keyword: String, str: StringBuilder, exp: Expression<*>?, ctx: SQLBuilderContext) {
+        exp?.let { if (it == TRUE) null else it }?.let {
+            str.append(" $keyword ").append(it.toSQL(ctx))
+        }
+    }
 }
 
-data class BuildResult(val sql: String, val context: SQLBuilderContext)
+data class BuildResult(val sql: String, val context: SQLBuilderContext) {
+    companion object {
+        internal fun build(ctx: SQLBuilderContext, block: StringBuilder.() -> Unit): BuildResult {
+            var str = StringBuilder()
+            str.block()
+            return BuildResult(str.toString(), ctx)
+        }
+    }
+}
 
 class SQLBuilderContext(val builder: SQLBuilder) {
     private val prefix = "a_"
