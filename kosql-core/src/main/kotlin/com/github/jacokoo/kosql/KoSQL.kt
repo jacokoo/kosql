@@ -1,65 +1,53 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.mapping.Entity
-import com.github.jacokoo.kosql.statements.SQLBuilder
-import com.github.jacokoo.kosql.statements.SelectResult
-import com.github.jacokoo.kosql.statements.UpdatePart
+import com.github.jacokoo.kosql.mapping.QueryResults
+import com.github.jacokoo.kosql.mapping.ResultRows
+import com.github.jacokoo.kosql.statements.*
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
-import kotlin.reflect.KClass
 
-class ResultRow<out T1: Any>(private val c1: Column<T1>, private val v: T1) {
-    fun component1() = v
 
-    fun <T: Entity<*>>into(clazz: KClass<T>): T {
-        val entity = c1.table.create()
-        if (!clazz.isInstance(entity)) throw RuntimeException("xxx")
-        entity[c1.name] = v
-        return entity as T
-    }
-}
-
-class QueryResult1<T1: Any>(private val c1: Column<T1>, val data: List<ResultRow<T1>>) {
-    fun <T: Entity<*>> into(clazz: KClass<T>): List<T> = data.map { it.into(clazz) }
-}
-
-class KoSQL(private val dataSource: DataSource, private val jdbc: JdbcTemplate): Query() {
+open class KoSQL(private val dataSource: DataSource, private val jdbc: JdbcTemplate): Select {
     private val builder = SQLBuilder()
 
-    fun <T1: Any> SelectResult<T1>.execute(): QueryResult1<T1> {
-        val result = builder.build(this)
-        println(result.sql)
-        return jdbc.execute {conn: Connection ->
-            val st = conn.prepareStatement(result.sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-            result.context.arguments.forEachIndexed {idx, value -> st.setObject(idx + 1, value)}
-            val resultSet = st.executeQuery()
-            val list = mutableListOf<ResultRow<T1>>()
-            while (resultSet.next()) {
-                list.add(ResultRow(this.c1, this.c1.type.fromDb(resultSet.getObject(1))))
+    protected fun execute(qp: QueryPart): QueryResults {
+        val (sql, context) = builder.build(qp)
+        println(sql)
+        return jdbc.execute { conn: Connection ->
+            conn.prepareStatement(sql,
+                    ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY,
+                    ResultSet.CLOSE_CURSORS_AT_COMMIT
+            ).also {
+                context.arguments.forEachIndexed {idx, value -> it.setObject(idx + 1, value)}
+            }.executeQuery().let {
+                val cs = (context.statement as QueryPart).data.columns
+                var list = mutableListOf<ResultRows>()
+                while (it.next()) list.add(ResultRows(cs.mapIndexed { i, c -> c.type.fromDb(it.getObject(i + 1)) }))
+                QueryResults(cs, list)
             }
-             QueryResult1(this.c1, list)
-        }
+        }!!
     }
 
     fun UpdatePart.execute(): Int {
-        val result = builder.build(this)
-        println(result.sql)
+        val (sql, context) = builder.build(this)
+        println(sql)
         return jdbc.update {
-            val st = it.prepareStatement(result.sql)
-            result.context.arguments.forEachIndexed {idx, value -> st.setObject(idx + 1, value)}
-            st
+            it.prepareStatement(sql).also {
+                context.arguments.forEachIndexed {idx, value -> it.setObject(idx + 1, value)}
+            }
         }
     }
 
-    fun <S: Any, T: SelectResult<S>> query(block: KoSQL.() -> T): QueryResult1<S> {
-        val a = block() as SelectResult<S>
-        return a.execute()
+    override fun SELECT(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): QueryResults {
+        return execute(SelectFromPart(QueryData(columns)).block())
     }
 
     fun <T: UpdatePart> update(block: KoSQL.() -> T): Int {
         return block().execute()
     }
 
+    fun hello() = "abc"
 }

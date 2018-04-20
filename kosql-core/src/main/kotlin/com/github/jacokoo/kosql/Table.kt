@@ -1,8 +1,10 @@
 package com.github.jacokoo.kosql
 
+import com.github.jacokoo.kosql.mapping.EmptyEntity
 import com.github.jacokoo.kosql.mapping.Entity
 import com.github.jacokoo.kosql.statements.QueryData
 import com.github.jacokoo.kosql.statements.SQLBuilderContext
+import kotlin.reflect.KClass
 
 interface Nameable<out T>: SQLPart {
     val name: String
@@ -52,6 +54,8 @@ abstract class Table<T: Any>(override val name: String, override val alias: Stri
     fun string(name: String) = DefaultColumn(this, name, StringType()).also { columns += it }
 
     operator fun invoke() = columns.toTypedArray()
+    fun entityClass(): KClass<*> = EmptyEntity::class
+
     abstract fun create(): Entity<T>
     abstract fun primaryKey(): Column<T>
 }

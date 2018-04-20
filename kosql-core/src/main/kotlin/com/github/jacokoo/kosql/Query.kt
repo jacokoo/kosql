@@ -16,7 +16,7 @@ interface Statement
 
 open class Query: Operators, Select, Update, Insert, Inserts, Delete {
     val TRUE = com.github.jacokoo.kosql.TRUE
-    val SELECT = Select.SELECT
+    // val SELECT = Select.SELECT
     val UPDATE = Update.UPDATE
     val INSERT = Insert.INSERT
     val DELETE = Delete.DELETE

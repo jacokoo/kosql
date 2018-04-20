@@ -17,22 +17,9 @@ class Demo(private val ko: KoSQL) {
 
     @PostConstruct
     fun demo() {
-        val a = ko.query {
-            SELECT(ORDER.ORDER_NUMBER) {
-                FROM(ORDER)
-            }
-        }
-
+        val a = ko.SELECT(ORDER.ORDER_NUMBER) { FROM(ORDER) WHERE (ORDER.ID EQ 1) }
         val b: List<Order> = a.into(Order::class)
         println(b)
-
-        val c: Int = ko.update {
-            UPDATE(ORDER) SET {
-                it[ORDER.ORDER_NUMBER] = "abc"
-                it[ORDER.CUSTOMER_ID] = 886888
-            } WHERE (ORDER.ID EQ 1)
-        }
-        println(c)
     }
 
 }

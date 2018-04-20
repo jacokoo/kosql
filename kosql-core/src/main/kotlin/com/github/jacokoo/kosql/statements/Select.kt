@@ -1,6 +1,9 @@
 package com.github.jacokoo.kosql.statements
 
 import com.github.jacokoo.kosql.*
+import com.github.jacokoo.kosql.mapping.QueryResult1
+import com.github.jacokoo.kosql.mapping.QueryResults
+import com.github.jacokoo.kosql.mapping.to1
 
 data class Join(val table: Table<*>, val type: JoinType, val expression: Expression<*>)
 
@@ -28,58 +31,51 @@ interface LimitOperate {
 
 interface OrderByOperate {
     val data: QueryData
-    infix fun ORDER_BY(p: Pair<Column<*>, Order>): OrderByPart = OrderByPart(data.copy(orderBy = data.orderBy + p))
+    infix fun ORDER_BY(p: Pair<Column<*>, Order>): OrderByMorePart = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
 }
 
 interface GroupByOperate {
     val data: QueryData
-    infix fun GROUP_BY(column: Column<*>): GroupByPart = GroupByPart(data.copy(groupBy = data.groupBy + column))
+    infix fun GROUP_BY(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
 }
 
-data class End(override val data: QueryData): QueryPart
+data class SelectEnd(override val data: QueryData): QueryPart
 
 data class LimitPart(override val data: QueryData): QueryPart {
-    infix fun OFFSET(os: Int): End = End(data.copy(offset = os))
+    infix fun OFFSET(os: Int): SelectEnd = SelectEnd(data.copy(offset = os))
 }
 
-data class HavingPart(override val data: QueryData): OrderByOperate, LimitOperate, QueryPart
+data class AfterGroupByPart(override val data: QueryData): OrderByOperate, LimitOperate, QueryPart
 
-data class GroupByPart(override val data: QueryData): LimitOperate, OrderByOperate, QueryPart {
-    infix fun AND(column: Column<*>): GroupByPart = GroupByPart(data.copy(groupBy = data.groupBy + column))
-    infix fun HAVING(e: Expression<*>): HavingPart = HavingPart(data.copy(having = e))
+data class GroupByMorePart(override val data: QueryData): LimitOperate, OrderByOperate, QueryPart {
+    infix fun AND(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
+    infix fun HAVING(e: Expression<*>): AfterGroupByPart = AfterGroupByPart(data.copy(having = e))
 }
 
-data class OrderByPart(override val data: QueryData): LimitOperate, QueryPart {
-    infix fun AND(p: Pair<Column<*>, Order>): OrderByPart = OrderByPart(data.copy(orderBy = data.orderBy + p))
+data class OrderByMorePart(override val data: QueryData): LimitOperate, QueryPart {
+    infix fun AND(p: Pair<Column<*>, Order>): OrderByMorePart = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
 }
 
-data class WherePart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart
+data class AfterWherePart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart
 
-data class JoinPart(private val data: QueryData, private val type: JoinType, private val t: Table<*>) {
-    infix fun ON(e: Expression<*>): FromPart = FromPart(data.copy(joins = data.joins + Join(t, type, e)))
+data class JoinOnPart(private val data: QueryData, private val type: JoinType, private val t: Table<*>) {
+    infix fun ON(e: Expression<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(joins = data.joins + Join(t, type, e)))
 }
 
-data class FromPart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart {
-    infix fun WHERE(e: Expression<*>): WherePart = WherePart(data.copy(expression = e))
-    infix fun JOIN(t: Table<*>): JoinPart = JoinPart(data, JoinType.INNER, t)
-    infix fun LEFT_JOIN(t: Table<*>): JoinPart = JoinPart(data, JoinType.LEFT, t)
-    infix fun RIGHT_JOIN(t: Table<*>): JoinPart = JoinPart(data, JoinType.RIGHT, t)
-    infix fun FULL_JOIN(t: Table<*>): JoinPart = JoinPart(data, JoinType.FULL, t)
-    infix fun INNER_JOIN(t: Table<*>): JoinPart = JoinPart(data, JoinType.INNER, t)
+data class WhereAndJoinPart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart {
+    infix fun WHERE(e: Expression<*>): AfterWherePart = AfterWherePart(data.copy(expression = e))
+    infix fun JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.INNER, t)
+    infix fun LEFT_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.LEFT, t)
+    infix fun RIGHT_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.RIGHT, t)
+    infix fun FULL_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.FULL, t)
+    infix fun INNER_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.INNER, t)
 }
 
-data class SelectPart(private val data: QueryData) {
-    infix fun FROM(t: Table<*>): FromPart = FromPart(data.copy(table = t))
+data class SelectFromPart(private val data: QueryData): Operators {
+    fun FROM(t: Table<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(table = t))
 }
-
-data class SelectResult<T1: Any>(val c1: Column<T1>, override val data: QueryData): QueryPart
 
 interface Select {
-    object SELECT {
-        operator fun invoke(vararg columns: Column<out Any>): SelectPart = SelectPart(QueryData(columns = columns.toList()))
-        operator fun invoke(table: Table<*>): FromPart = FromPart(QueryData(columns = table().toList(), table = table))
-
-        operator fun <T1: Any> invoke(c1: Column<T1>, block: SelectPart.() -> Unit): SelectResult<T1> =
-            SelectResult(c1, QueryData(listOf(c1), c1.table)).also { SelectPart(it.data).block() }
-    }
+    fun SELECT(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): QueryResults
+    fun <T1: Any> SELECT(c1: Column<T1>, block: SelectFromPart.() -> QueryPart): QueryResult1<T1> = SELECT(listOf(c1), block).to1()
 }
