@@ -73,7 +73,6 @@ data class SelectFromPart(private val data: QueryData): Operators {
 }
 
 data class SelectStatement(override val data: QueryData): QueryPart
-data class SelectStatement1<T1: Any>(val c1: Column<T1>, override val data: QueryData): QueryPart
 
 interface Select {
     object SELECT {
@@ -82,8 +81,6 @@ interface Select {
 
         operator fun invoke(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): SelectStatement =
                 SelectStatement(SelectFromPart(QueryData(columns)).block().data)
-        operator fun <T1: Any> invoke(c1: Column<T1>, block: SelectFromPart.() -> QueryPart): SelectStatement1<T1> =
-                SelectStatement1(c1, SelectFromPart(QueryData(listOf(c1))).block().data)
     }
 }
 

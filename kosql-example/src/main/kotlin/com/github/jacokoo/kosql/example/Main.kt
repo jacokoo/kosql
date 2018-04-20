@@ -22,6 +22,8 @@ class Demo(private val ko: KoSQL) {
                 FROM(ORDER) WHERE (ORDER.ID EQ 1)
             }.fetch()
 
+            a.forEach { (order: String) -> println(order) }
+
             val b: List<Order> = a.into(Order::class)
             println(b)
 
