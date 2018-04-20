@@ -17,11 +17,20 @@ class Demo(private val ko: KoSQL) {
 
     @PostConstruct
     fun demo() {
-        val a = ko.SELECT(ORDER.ORDER_NUMBER) { FROM(ORDER) WHERE (ORDER.ID EQ 1) }
-        val b: List<Order> = a.into(Order::class)
-        println(b)
-    }
+        ko.run {
+            val a = SELECT(ORDER.ORDER_NUMBER) {
+                FROM(ORDER) WHERE (ORDER.ID EQ 1)
+            }.fetch()
 
+            val b: List<Order> = a.into(Order::class)
+            println(b)
+
+            val c = UPDATE(ORDER) SET {
+                it[ORDER.ORDER_NUMBER] = "aaa"
+            } WHERE (ORDER.ID EQ 1)
+            c.execute()
+        }
+    }
 }
 
 fun main(args: Array<String>) {

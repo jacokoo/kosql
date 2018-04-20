@@ -1,12 +1,12 @@
 package com.github.jacokoo.kosql.example.entity
 
-import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.example.table.ORDER
+import com.github.jacokoo.kosql.example.table.OrderTable
 import com.github.jacokoo.kosql.mapping.Entity
 import java.math.BigDecimal
 
-open class Order: Entity<Int> {
-    override val TABLE: Table<Int> = ORDER
+open class Order: Entity<Int, OrderTable> {
+    override val TABLE = ORDER
 
     var id: Int = 0
     var orderNumber: String = ""

@@ -54,9 +54,9 @@ abstract class Table<T: Any>(override val name: String, override val alias: Stri
     fun string(name: String) = DefaultColumn(this, name, StringType()).also { columns += it }
 
     operator fun invoke() = columns.toTypedArray()
-    fun entityClass(): KClass<*> = EmptyEntity::class
+    open fun entityClass(): KClass<*> = EmptyEntity::class
 
-    abstract fun create(): Entity<T>
+    abstract fun create(): Entity<T, Table<T>>
     abstract fun primaryKey(): Column<T>
 }
 
@@ -64,7 +64,7 @@ open class EmptyTable: Table<Any>("") {
     override fun AS(alias: String): EmptyTable {
         throw RuntimeException("never call this method")
     }
-    override fun create(): Entity<Any> {
+    override fun create(): Entity<Any, EmptyTable> {
         throw RuntimeException("never call this method")
     }
 
@@ -81,12 +81,14 @@ class TableLike(private val data: QueryData, alias: String, private val original
 
     override fun sqlName(ctx: SQLBuilderContext): String = "(${ctx.builder.build(data, ctx).sql})"
 
+    @Suppress("UNCHECKED_CAST")
     operator fun <T: Any> get(col: Column<T>): Column<T> {
         val c = original.find { it.table == col.table && it.name == col.name }
                 ?: throw RuntimeException("Can not find column $col.name in table-like $alias")
         return map[c] as Column<T>
     }
 
+    @Suppress("UNCHECKED_CAST")
     inline operator fun <reified T: Any> get(name: String): Column<T> {
         return columns.find { it.name == name }!! as Column<T>
     }

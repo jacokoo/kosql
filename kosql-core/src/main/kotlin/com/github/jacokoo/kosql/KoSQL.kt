@@ -1,7 +1,9 @@
 package com.github.jacokoo.kosql
 
+import com.github.jacokoo.kosql.mapping.QueryResult1
 import com.github.jacokoo.kosql.mapping.QueryResults
 import com.github.jacokoo.kosql.mapping.ResultRows
+import com.github.jacokoo.kosql.mapping.to1
 import com.github.jacokoo.kosql.statements.*
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Connection
@@ -9,8 +11,14 @@ import java.sql.ResultSet
 import javax.sql.DataSource
 
 
-open class KoSQL(private val dataSource: DataSource, private val jdbc: JdbcTemplate): Select {
-    private val builder = SQLBuilder()
+open class KoSQL(
+        private val dataSource: DataSource,
+        private val jdbc: JdbcTemplate,
+        private val builder: SQLBuilder = SQLBuilder()
+): Query() {
+
+    fun SelectStatement.fetch(): QueryResults = execute(this)
+    fun <T1: Any> SelectStatement1<T1>.fetch(): QueryResult1<T1> = execute(this).to1()
 
     protected fun execute(qp: QueryPart): QueryResults {
         val (sql, context) = builder.build(qp)
@@ -41,13 +49,4 @@ open class KoSQL(private val dataSource: DataSource, private val jdbc: JdbcTempl
         }
     }
 
-    override fun SELECT(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): QueryResults {
-        return execute(SelectFromPart(QueryData(columns)).block())
-    }
-
-    fun <T: UpdatePart> update(block: KoSQL.() -> T): Int {
-        return block().execute()
-    }
-
-    fun hello() = "abc"
 }

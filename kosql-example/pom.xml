@@ -11,6 +11,10 @@
 
     <artifactId>ksql-example</artifactId>
 
+	<properties>
+		<kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
+	</properties>
+
     <dependencies>
         <dependency>
             <groupId>com.github.jacokoo</groupId>

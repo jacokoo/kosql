@@ -1,9 +1,6 @@
 package com.github.jacokoo.kosql.statements
 
 import com.github.jacokoo.kosql.*
-import com.github.jacokoo.kosql.mapping.QueryResult1
-import com.github.jacokoo.kosql.mapping.QueryResults
-import com.github.jacokoo.kosql.mapping.to1
 
 data class Join(val table: Table<*>, val type: JoinType, val expression: Expression<*>)
 
@@ -75,7 +72,18 @@ data class SelectFromPart(private val data: QueryData): Operators {
     fun FROM(t: Table<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(table = t))
 }
 
+data class SelectStatement(override val data: QueryData): QueryPart
+data class SelectStatement1<T1: Any>(val c1: Column<T1>, override val data: QueryData): QueryPart
+
 interface Select {
-    fun SELECT(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): QueryResults
-    fun <T1: Any> SELECT(c1: Column<T1>, block: SelectFromPart.() -> QueryPart): QueryResult1<T1> = SELECT(listOf(c1), block).to1()
+    object SELECT {
+        // operator fun invoke(vararg columns: Column<out Any>): SelectFromPart = SelectFromPart(QueryData(columns.toList()))
+        // operator fun invoke(table: Table<*>): WhereAndJoinPart = WhereAndJoinPart(QueryData(table().toList(), table))
+
+        operator fun invoke(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): SelectStatement =
+                SelectStatement(SelectFromPart(QueryData(columns)).block().data)
+        operator fun <T1: Any> invoke(c1: Column<T1>, block: SelectFromPart.() -> QueryPart): SelectStatement1<T1> =
+                SelectStatement1(c1, SelectFromPart(QueryData(listOf(c1))).block().data)
+    }
 }
+

@@ -21,7 +21,7 @@ internal fun append(data: InsertData, vararg cs: Any): InsertData {
 }
 
 data class InsertEnd(override val data: InsertData): InsertPart
-data class Entities(val entities: List<Entity<*>>)
+data class Entities(val entities: List<Entity<*, *>>)
 interface ExtraValues {
     val data: InsertData
     infix fun VALUES(e: Entities): InsertEnd {
@@ -34,30 +34,30 @@ interface ExtraValues {
     infix fun FROM(q: QueryPart): InsertEnd = InsertEnd(data.copy(query = q))
 }
 
-data class Fields(val table: Table<*>, val columns: List<Column<*>>)
+data class Fields(val table: Table<*>, val columns: List<Column<*>>): ExtraValues {
+    override val data: InsertData = InsertData(table, columns, listOf())
+    infix fun VALUES(v: Values): ValuesRepeatPart = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
+}
+
 data class Values(val values: List<Any>)
 data class ValuesRepeatPart(override val data: InsertData): InsertPart {
     infix fun AND(v: Values): ValuesRepeatPart = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
 }
 
-data class ValuesPart(override val data: InsertData): InsertPart, ExtraValues {
-    infix fun VALUES(v: Values): ValuesRepeatPart = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
-}
-
 interface Insert {
     object INSERT {
-        infix fun INTO(fields: Fields): ValuesPart = ValuesPart(InsertData(fields.table, fields.columns))
-        operator fun invoke(vararg entities: Entity<*>): ValuesPart {
+        infix fun <T> INTO(t: T): T = t
+        operator fun <T: Any, R: Table<T>> invoke(vararg entities: Entity<T, R>): InsertEnd {
             if (entities.isEmpty()) throw RuntimeException("You have to supply at least one entity")
             val table = entities[0].TABLE
             val columns = table.columns
             val values = entities.map { e -> columns.map { it.type.toDb(e[it.name]) } }
-            return ValuesPart(InsertData(table, columns, values))
+            return InsertEnd(InsertData(table, columns, values))
         }
     }
 
     fun V(vararg v: Any): Values = Values(v.toList())
-    fun <T: Table<*>> E(vararg e: Entity<*>): Entities = Entities(e.toList())
+    fun <T: Any, R: Table<T>> E(vararg e: Entity<T, R>): Entities = Entities(e.toList())
     operator fun Table<*>.invoke(vararg columns: Column<*>): Fields = Fields(this, columns.toList())
 
 }

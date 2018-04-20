@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.example.table
 import com.github.jacokoo.kosql.Column
 import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.example.entity.Order
+import kotlin.reflect.KClass
 
 open class OrderTable protected constructor(alias: String = ""): Table<Int>("t_order", alias) {
     val ID = int("f_id")
@@ -13,6 +14,7 @@ open class OrderTable protected constructor(alias: String = ""): Table<Int>("t_o
     override fun AS(alias: String): OrderTable = OrderTable(alias)
     override fun create(): Order = Order()
     override fun primaryKey(): Column<Int> = ID
+    override fun entityClass(): KClass<*> = Order::class
 }
 
 object ORDER: OrderTable()
