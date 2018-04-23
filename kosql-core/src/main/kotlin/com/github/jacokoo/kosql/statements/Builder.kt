@@ -87,7 +87,7 @@ class SQLBuilder {
         if (data.query == null && data.values.none()) throw RuntimeException("no data to insert")
         return BuildResult.build(ctx) {
             append("INSERT INTO ").append(data.table.name)
-            data.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
+            data.columns.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
             if (data.query == null) {
                 append(" VALUES ")
                 data.values.map { it.map {

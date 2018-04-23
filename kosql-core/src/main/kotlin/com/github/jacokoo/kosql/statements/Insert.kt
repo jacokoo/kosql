@@ -7,7 +7,7 @@ import com.github.jacokoo.kosql.mapping.Entity
 
 data class InsertData(
         val table: Table<*>,
-        val columns: List<Column<*>>,
+        val columns: ColumnList,
         val values: List<List<Any?>> = listOf(),
         val query: QueryPart? = null
 )
@@ -27,14 +27,14 @@ interface ExtraValues {
     infix fun VALUES(e: Entities): InsertEnd {
         val es = e.entities.filter { it.TABLE != data.table }
         if (!es.none()) throw RuntimeException("There have entities not match table")
-        val values = e.entities.map { ee -> data.columns.map { it.type.toDb(ee[it.name]) } }
+        val values = e.entities.map { ee -> data.columns.columns.map { it.type.toDb(ee[it.name]) } }
         return InsertEnd(data.copy(values = values))
     }
 
     infix fun FROM(q: QueryPart): InsertEnd = InsertEnd(data.copy(query = q))
 }
 
-data class Fields(val table: Table<*>, val columns: List<Column<*>>): ExtraValues {
+data class Fields(val table: Table<*>, val columns: ColumnList): ExtraValues {
     override val data: InsertData = InsertData(table, columns, listOf())
     infix fun VALUES(v: Values): ValuesRepeatPart = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
 }
@@ -52,12 +52,12 @@ interface Insert {
             val table = entities[0].TABLE
             val columns = table.columns
             val values = entities.map { e -> columns.map { it.type.toDb(e[it.name]) } }
-            return InsertEnd(InsertData(table, columns, values))
+            return InsertEnd(InsertData(table, Columns(columns), values))
         }
     }
 
     fun V(vararg v: Any): Values = Values(v.toList())
     fun <T: Any, R: Table<T>> E(vararg e: Entity<T, R>): Entities = Entities(e.toList())
-    operator fun Table<*>.invoke(vararg columns: Column<*>): Fields = Fields(this, columns.toList())
+    operator fun Table<*>.invoke(vararg columns: Column<*>): Fields = Fields(this, Columns(columns.toList()))
 
 }

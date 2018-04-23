@@ -59,7 +59,7 @@ abstract class Table<T>(override val name: String, override val alias: String = 
     abstract fun primaryKey(): Column<T>
 }
 
-open class EmptyTable: Table<Any>("") {
+open class EmptyTable(alias: String = ""): Table<Any>(alias) {
     override fun AS(alias: String): EmptyTable {
         throw RuntimeException("never call this method")
     }
@@ -72,7 +72,7 @@ open class EmptyTable: Table<Any>("") {
     }
 }
 
-class TableLike(private val data: QueryData, alias: String, private val original: List<Column<*>>): EmptyTable() {
+class TableLike(private val data: QueryData, alias: String, private val original: List<Column<*>>): EmptyTable(alias) {
     private val map = original.associate { it to DefaultColumn(this, if (it.alias == "") it.name else it.alias, it.type) }
     init {
         this.columns = map.values.toList()
