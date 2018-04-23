@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql.mapping
 
 import com.github.jacokoo.kosql.Column
+import com.github.jacokoo.kosql.statements.ColumnList
 import com.github.jacokoo.kosql.statements.QueryPart
 import com.github.jacokoo.kosql.statements.SelectStatement
 import java.sql.ResultSet
@@ -32,28 +33,28 @@ interface ResultSetMapper<out R> {
     fun map(rs: ResultSetRow): R
 }
 
-class ColumnsToEntityMapper<R: Entity<*, *>>(val columns: List<Column<*>>, val entityClass: KClass<R>): ResultSetMapper<R> {
+class ColumnsToEntityMapper<R: Entity<*, *>>(val columns: ColumnList, val entityClass: KClass<R>): ResultSetMapper<R> {
     @Suppress("UNCHECKED_CAST")
     override fun map(rs: ResultSetRow): R {
-        val cs = columns.filter { it.table.entityClass() == entityClass }
+        val cs = columns.columns.filter { it.table.entityClass() == entityClass }
         if (cs.none()) throw RuntimeException("no columns for entity")
         return cs[0].table.create().also {
-            columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
+            columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
         } as R
     }
 }
 
 interface QueryResult<out T: ResultRow>: Iterable<T> {
-    val columns: List<Column<*>>
+    val columns: ColumnList
     val values: List<T>
 
     @Suppress("UNCHECKED_CAST")
     fun <T: Entity<*, *>> into(entityClass: KClass<T>): List<T> {
-        val cs = columns.filter { it.table.entityClass() == entityClass }
+        val cs = columns.columns.filter { it.table.entityClass() == entityClass }
         if (cs.none()) return listOf()
 
         return values.map { v -> cs[0].table.create().also { e ->
-            columns.forEachIndexed {i, c -> if (cs.contains(c)) e[c.name] = v[i]}
+            columns.columns.forEachIndexed {i, c -> if (cs.contains(c)) e[c.name] = v[i]}
         } as T }
     }
 
@@ -65,13 +66,12 @@ interface QueryResult<out T: ResultRow>: Iterable<T> {
 }
 
 data class ResultRows(override val values: List<Any?>): ResultRow
-data class QueryResults(override val columns: List<Column<*>>, override val values: List<ResultRows>): QueryResult<ResultRows> {
-    constructor(cs: List<Column<*>>, qp: QueryPart, ko: QueryResultExtension): this(cs, ko.execute(qp, Mapper(cs)))
-    private class Mapper(private val cs: List<Column<*>>): ResultSetMapper<ResultRows> {
-        override fun map(rs: ResultSetRow) = ResultRows(cs.mapIndexed {idx, col -> rs[idx, col]})
+data class QueryResults(override val columns: ColumnList, override val values: List<ResultRows>): QueryResult<ResultRows> {
+    constructor(cs: ColumnList, qp: QueryPart, ko: QueryResultExtension): this(cs, ko.execute(qp, Mapper(cs)))
+    private class Mapper(private val cs: ColumnList): ResultSetMapper<ResultRows> {
+        override fun map(rs: ResultSetRow) = ResultRows(cs.columns.mapIndexed {idx, col -> rs[idx, col]})
     }
 }
-
 
 interface QueryResultExtension {
     fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T>

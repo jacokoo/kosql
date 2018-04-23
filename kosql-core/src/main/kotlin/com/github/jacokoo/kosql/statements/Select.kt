@@ -5,7 +5,7 @@ import com.github.jacokoo.kosql.*
 data class Join(val table: Table<*>, val type: JoinType, val expression: Expression<*>)
 
 data class QueryData(
-        val columns: List<Column<*>>,               // select columns
+        val columns: ColumnList,               // select columns
         val table: Table<*>? = null,                   // select from table
         val joins: List<Join> = listOf(),           // joins
         val expression: Expression<*>? = null,      // where expression
@@ -18,7 +18,7 @@ data class QueryData(
 
 interface QueryPart: Statement {
     val data: QueryData
-    fun AS(alias: String): TableLike = TableLike(data, alias, data.columns)
+    fun AS(alias: String): TableLike = TableLike(data, alias, data.columns.columns)
 }
 
 interface LimitOperate {
@@ -69,8 +69,8 @@ data class WhereAndJoinPart(override val data: QueryData): LimitOperate, OrderBy
 }
 
 data class SelectFromPart(private val data: QueryData): Operators {
-    constructor(cs: List<Column<*>>): this(QueryData(cs))
-    constructor(vararg cs: Column<*>): this(QueryData(cs.toList()))
+    constructor(cs: ColumnList): this(QueryData(cs))
+    constructor(vararg cs: Column<*>): this(QueryData(Columns(cs.toList())))
 
     fun FROM(t: Table<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(table = t))
 }
@@ -84,7 +84,9 @@ interface Select {
         // operator fun invoke(vararg columns: Column<out Any>): SelectFromPart = SelectFromPart(QueryData(columns.toList()))
         // operator fun invoke(table: Table<*>): WhereAndJoinPart = WhereAndJoinPart(QueryData(table().toList(), table))
 
-        operator fun invoke(columns: List<Column<*>>, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
+        operator fun invoke(columns: Columns, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
+        operator fun invoke(vararg tables: Table<*>, block: SelectCreator) = invoke(Columns(tables.fold(listOf()) {acc, i -> acc + i.columns}), block)
+
     }
 }
 

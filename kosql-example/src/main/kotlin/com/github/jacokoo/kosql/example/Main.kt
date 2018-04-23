@@ -22,6 +22,10 @@ class Demo(private val ko: KoSQL) {
                 FROM(ORDER) WHERE (ORDER.ID EQ (ORDER.ID + ORDER.CUSTOMER_ID))
             }
 
+            SELECT (ORDER() + ORDER()) {
+                FROM(ORDER)
+            }
+
             val orders: List<Order> = sql.fetch(Order::class)
             val strs: List<String> = sql.fetch().map { (v: String, i: Int) -> v }
             val strs2: List<String> = sql.fetch({ it[ORDER.ORDER_NUMBER] })

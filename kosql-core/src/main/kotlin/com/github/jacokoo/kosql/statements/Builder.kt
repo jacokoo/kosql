@@ -35,7 +35,7 @@ class SQLBuilder {
                 append(" LIMIT ${data.rowCount}")
             }
 
-            val s = data.columns.map { it.toSQL(ctx) }.joinToString()
+            val s = data.columns.columns.map { it.toSQL(ctx) }.joinToString()
             insert(0, s)
             insert(0, "SELECT ")
         }
