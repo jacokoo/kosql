@@ -1,10 +1,10 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.mapping.QueryResultExtension
-import com.github.jacokoo.kosql.mapping.QueryResults
-import com.github.jacokoo.kosql.mapping.ResultRows
+import com.github.jacokoo.kosql.mapping.ResultSetMapper
+import com.github.jacokoo.kosql.mapping.ResultSetRow
 import com.github.jacokoo.kosql.statements.QueryPart
 import com.github.jacokoo.kosql.statements.SQLBuilder
+import com.github.jacokoo.kosql.statements.Selects
 import com.github.jacokoo.kosql.statements.UpdatePart
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.Connection
@@ -16,9 +16,13 @@ open class KoSQL(
         private val dataSource: DataSource,
         private val jdbc: JdbcTemplate,
         private val builder: SQLBuilder = SQLBuilder()
-): Query(), QueryResultExtension {
+): Query(), Selects {
 
-    override fun execute(qp: QueryPart): QueryResults {
+    operator fun <T: Table<*>, R> T.invoke(block: T.() -> R): R {
+        return block()
+    }
+
+    override fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T> {
         val (sql, context) = builder.build(qp)
         println(sql)
         return jdbc.execute { conn: Connection ->
@@ -29,10 +33,10 @@ open class KoSQL(
             ).also {
                 context.arguments.forEachIndexed {idx, value -> it.setObject(idx + 1, value)}
             }.executeQuery().let {
-                val cs = (context.statement as QueryPart).data.columns
-                var list = mutableListOf<ResultRows>()
-                while (it.next()) list.add(ResultRows(cs.mapIndexed { i, c -> c.type.fromDb(it.getObject(i + 1)) }))
-                QueryResults(cs, list)
+                mutableListOf<T>().apply {
+                    val row = ResultSetRow(it)
+                    while (it.next()) this.add(mapper.map(row))
+                }
             }
         }!!
     }

@@ -69,18 +69,22 @@ data class WhereAndJoinPart(override val data: QueryData): LimitOperate, OrderBy
 }
 
 data class SelectFromPart(private val data: QueryData): Operators {
+    constructor(cs: List<Column<*>>): this(QueryData(cs))
+    constructor(vararg cs: Column<*>): this(QueryData(cs.toList()))
+
     fun FROM(t: Table<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(table = t))
 }
 
 data class SelectStatement(override val data: QueryData): QueryPart
+
+internal typealias SelectCreator = SelectFromPart.() -> QueryPart
 
 interface Select {
     object SELECT {
         // operator fun invoke(vararg columns: Column<out Any>): SelectFromPart = SelectFromPart(QueryData(columns.toList()))
         // operator fun invoke(table: Table<*>): WhereAndJoinPart = WhereAndJoinPart(QueryData(table().toList(), table))
 
-        operator fun invoke(columns: List<Column<*>>, block: SelectFromPart.() -> QueryPart): SelectStatement =
-                SelectStatement(SelectFromPart(QueryData(columns)).block().data)
+        operator fun invoke(columns: List<Column<*>>, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
     }
 }
 

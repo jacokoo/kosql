@@ -18,19 +18,24 @@ class Demo(private val ko: KoSQL) {
     @PostConstruct
     fun demo() {
         ko.run {
-            val a = SELECT(ORDER.ORDER_NUMBER) {
-                FROM(ORDER) WHERE (ORDER.ID EQ 1)
-            }.fetch()
+            val sql = SELECT(ORDER.ORDER_NUMBER, ORDER.ID) {
+                FROM(ORDER) WHERE (ORDER.ID EQ (ORDER.ID + ORDER.CUSTOMER_ID))
+            }
 
-            a.forEach { (order: String) -> println(order) }
+            val orders: List<Order> = sql.fetch(Order::class)
+            val strs: List<String> = sql.fetch().map { (v: String, i: Int) -> v }
+            val strs2: List<String> = sql.fetch({ it[ORDER.ORDER_NUMBER] })
 
-            val b: List<Order> = a.into(Order::class)
-            println(b)
+            val s = SELECT(ORDER.ID, ORDER.ORDER_NUMBER, ORDER.TOTAL_AMOUNT) {
+                FROM(ORDER)
+            }
 
             val c = UPDATE(ORDER) SET {
                 it[ORDER.ORDER_NUMBER] = "aaa"
             } WHERE (ORDER.ID EQ 1)
             c.execute()
+
+            val a = ORDER.run { this(ID, CUSTOMER_ID, ORDER_NUMBER) }
         }
     }
 }

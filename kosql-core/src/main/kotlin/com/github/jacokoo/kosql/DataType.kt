@@ -2,7 +2,7 @@ package com.github.jacokoo.kosql
 
 import java.math.BigDecimal
 
-interface DataType<out T: Any> {
+interface DataType<out T> {
     val nullValue: T
     val needQuote: Boolean
     fun fromDb(o: Any?): T

@@ -21,7 +21,7 @@ open class Order: Entity<Int, OrderTable> {
         else -> null
     }
 
-    override fun set(name: String, value: Any) {
+    override fun set(name: String, value: Any?) {
         when (name) {
             ORDER.ID.name -> this.id = value as Int
             ORDER.ORDER_NUMBER.name -> this.orderNumber = value as String

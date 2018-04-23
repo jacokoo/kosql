@@ -18,7 +18,7 @@ interface Nameable<out T>: SQLPart {
 
 }
 
-interface Column<T: Any>: Nameable<Column<T>> {
+interface Column<T>: Nameable<Column<T>> {
     val table: Table<*>
     val type: DataType<T>
     val allowNull: Boolean
@@ -28,7 +28,7 @@ interface Column<T: Any>: Nameable<Column<T>> {
     fun DESC(): Pair<Column<T>, Order> = this to Order.DESC
 }
 
-data class DefaultColumn<T: Any>(
+data class DefaultColumn<T>(
         override val table: Table<*>,
         override val name: String,
         override val type: DataType<T>,
@@ -44,7 +44,7 @@ data class DefaultColumn<T: Any>(
     fun default(t: T): DefaultColumn<T> = this.copy(defaultValue = t)
 }
 
-abstract class Table<T: Any>(override val name: String, override val alias: String = ""): Nameable<Table<T>> {
+abstract class Table<T>(override val name: String, override val alias: String = ""): Nameable<Table<T>> {
     override val aliasRequired = true
     var columns: List<Column<*>> = listOf()
 
@@ -53,7 +53,6 @@ abstract class Table<T: Any>(override val name: String, override val alias: Stri
     fun decimal(name: String) = DefaultColumn(this, name, DecimalType()).also { columns += it }
     fun string(name: String) = DefaultColumn(this, name, StringType()).also { columns += it }
 
-    operator fun invoke() = columns.toTypedArray()
     open fun entityClass(): KClass<*> = EmptyEntity::class
 
     abstract fun create(): Entity<T, Table<T>>
@@ -82,14 +81,14 @@ class TableLike(private val data: QueryData, alias: String, private val original
     override fun sqlName(ctx: SQLBuilderContext): String = "(${ctx.builder.build(data, ctx).sql})"
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <T: Any> get(col: Column<T>): Column<T> {
+    operator fun <T> get(col: Column<T>): Column<T> {
         val c = original.find { it.table == col.table && it.name == col.name }
                 ?: throw RuntimeException("Can not find column $col.name in table-like $alias")
         return map[c] as Column<T>
     }
 
     @Suppress("UNCHECKED_CAST")
-    inline operator fun <reified T: Any> get(name: String): Column<T> {
+    inline operator fun <reified T> get(name: String): Column<T> {
         return columns.find { it.name == name }!! as Column<T>
     }
 }

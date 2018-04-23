@@ -129,7 +129,7 @@ class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
     private var aliasIndex = 0
     private var aliasMap: MutableMap<Nameable<*>, String> = mutableMapOf()
 
-    internal var arguments: MutableList<Any> = mutableListOf()
+    internal var arguments: MutableList<Any?> = mutableListOf()
 
     fun alias(target: Nameable<*>): String? {
         if (aliasMap.contains(target)) return aliasMap[target]
@@ -140,7 +140,7 @@ class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
         return checkAlias(target)
     }
 
-    fun argument(v: Any) {
+    fun argument(v: Any?) {
         arguments.add(v)
     }
 

@@ -20,11 +20,11 @@ data class ComposeExpression<T> (
     }
 }
 
-data class SingleColumnExpression<T: Any> (private val op: String, private val column: Column<T>): Expression<T> {
+data class SingleColumnExpression<T> (private val op: String, private val column: Column<T>): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${column.toSQL(ctx)} $op"
 }
 
-data class ColumnToColumnExpression<T: Any> (
+data class ColumnToColumnExpression<T> (
         private val op: String,
         private val left: Column<T>,
         private val right: Column<T>
@@ -32,7 +32,7 @@ data class ColumnToColumnExpression<T: Any> (
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
 }
 
-data class ColumnToValueExpression<T: Any> (
+data class ColumnToValueExpression<T> (
         private val op: String,
         private val left: Column<T>,
         private val right: T
@@ -43,7 +43,7 @@ data class ColumnToValueExpression<T: Any> (
     }
 }
 
-data class ColumnToExpressionExpression<T: Any> (
+data class ColumnToExpressionExpression<T> (
         private val op: String,
         private val left: Column<T>,
         private val right: Expression<T>
@@ -51,7 +51,7 @@ data class ColumnToExpressionExpression<T: Any> (
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
 }
 
-data class BetweenExpression<T: Any> (
+data class BetweenExpression<T> (
         private val left: Column<T>,
         private val small: T,
         private val big: T
@@ -59,7 +59,7 @@ data class BetweenExpression<T: Any> (
     override fun toSQL(ctx: SQLBuilderContext): String = "BETWEEN ? AND ?"
 }
 
-data class MultipleValueExpression<T: Any> (
+data class MultipleValueExpression<T> (
         private val op: String,
         private val left: Column<T>,
         private val values: List<T>

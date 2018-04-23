@@ -25,7 +25,7 @@ open class Query: Operators, Select, Update, Insert, Inserts, Delete {
     fun <T: Number> avg(c: Column<T>): Column<out T> = Avg(c)
     fun <T: Number> min(c: Column<T>): Column<out T> = Min(c)
     fun <T: Number> max(c: Column<T>): Column<out T> = Max(c)
-    fun <T: Any> distinct(c: Column<T>): Column<out T> = Distinct(c)
+    fun <T> distinct(c: Column<T>): Column<out T> = Distinct(c)
     fun count(): Column<Int> = Count<Any>()
-    fun <T: Any> count(column: Column<T>) = Count(column)
+    fun <T> count(column: Column<T>) = Count(column)
 }

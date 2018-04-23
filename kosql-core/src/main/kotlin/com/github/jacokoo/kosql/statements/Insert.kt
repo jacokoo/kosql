@@ -8,7 +8,7 @@ import com.github.jacokoo.kosql.mapping.Entity
 data class InsertData(
         val table: Table<*>,
         val columns: List<Column<*>>,
-        val values: List<List<Any>> = listOf(),
+        val values: List<List<Any?>> = listOf(),
         val query: QueryPart? = null
 )
 
@@ -16,7 +16,7 @@ interface InsertPart: Statement {
     val data: InsertData
 }
 
-internal fun append(data: InsertData, vararg cs: Any): InsertData {
+internal fun append(data: InsertData, vararg cs: Any?): InsertData {
     return data.copy(values = data.values + listOf(cs.toList()))
 }
 
