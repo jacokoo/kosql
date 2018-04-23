@@ -1,10 +1,8 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.mapping.EmptyEntity
 import com.github.jacokoo.kosql.mapping.Entity
 import com.github.jacokoo.kosql.statements.QueryData
 import com.github.jacokoo.kosql.statements.SQLBuilderContext
-import kotlin.reflect.KClass
 
 interface Nameable<out T>: SQLPart {
     val name: String
@@ -44,16 +42,22 @@ data class DefaultColumn<T>(
     fun default(t: T): DefaultColumn<T> = this.copy(defaultValue = t)
 }
 
-abstract class Table<T>(override val name: String, override val alias: String = ""): Nameable<Table<T>> {
+abstract class Table<T>(override val name: String, override val alias: String = "", comment: String = ""): Nameable<Table<T>> {
     override val aliasRequired = true
     var columns: List<Column<*>> = listOf()
+         protected set
 
-    fun int(name: String) = DefaultColumn(this, name, IntType()).also { columns += it }
-    fun float(name: String) = DefaultColumn(this, name, FloatType()).also { columns += it }
-    fun decimal(name: String) = DefaultColumn(this, name, DecimalType()).also { columns += it }
-    fun string(name: String) = DefaultColumn(this, name, StringType()).also { columns += it }
-
-    open fun entityClass(): KClass<*> = EmptyEntity::class
+    protected fun register(col: Column<*>) { columns += col }
+    protected fun <T> createColumn(name: String, type: DataType<T>, allowNull: Boolean = false, defaultValue: T? = null) {
+        register(DefaultColumn(this, name, type,
+                allowNull = allowNull,
+                defaultValue = if (defaultValue == null) type.nullValue else defaultValue)
+        )
+    }
+    fun int(name: String) = createColumn(name, IntType())
+    fun float(name: String) = createColumn(name, FloatType())
+    fun decimal(name: String) = createColumn(name, DecimalType())
+    fun string(name: String) = createColumn(name, StringType())
 
     abstract fun create(): Entity<T, Table<T>>
     abstract fun primaryKey(): Column<T>

@@ -1,6 +1,5 @@
-package com.github.jacokoo.kosql.example
+package com.github.jacokoo.kosql.generator
 
-import com.github.jacokoo.kosql.KoSQL
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration
@@ -13,8 +12,7 @@ open class Main
 fun main(args: Array<String>) {
     runApplication<Main>(*args) {
         addInitializers(beans {
-            bean<KoSQL>()
-            bean<Demo2>()
+            bean<Demo>()
         })
     }
 }

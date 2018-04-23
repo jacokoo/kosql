@@ -12,6 +12,7 @@
     <modules>
         <module>kosql-core</module>
         <module>kosql-example</module>
+        <module>kosql-generator</module>
     </modules>
 
     <properties>

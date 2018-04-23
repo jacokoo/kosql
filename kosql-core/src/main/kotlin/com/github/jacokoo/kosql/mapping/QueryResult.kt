@@ -36,7 +36,7 @@ interface ResultSetMapper<out R> {
 class ColumnsToEntityMapper<R: Entity<*, *>>(val columns: ColumnList, val entityClass: KClass<R>): ResultSetMapper<R> {
     @Suppress("UNCHECKED_CAST")
     override fun map(rs: ResultSetRow): R {
-        val cs = columns.columns.filter { it.table.entityClass() == entityClass }
+        val cs = columns.columns.filter { Database[it.table] == entityClass }
         if (cs.none()) throw RuntimeException("no columns for entity")
         return cs[0].table.create().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
@@ -50,7 +50,7 @@ interface QueryResult<out T: ResultRow>: Iterable<T> {
 
     @Suppress("UNCHECKED_CAST")
     fun <T: Entity<*, *>> into(entityClass: KClass<T>): List<T> {
-        val cs = columns.columns.filter { it.table.entityClass() == entityClass }
+        val cs = columns.columns.filter { Database[it.table] == entityClass }
         if (cs.none()) return listOf()
 
         return values.map { v -> cs[0].table.create().also { e ->

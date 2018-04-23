@@ -6,12 +6,11 @@ import com.github.jacokoo.kosql.mapping.Entity
 import java.math.BigDecimal
 
 open class Order: Entity<Int, OrderTable> {
-    override val TABLE = ORDER
 
-    var id: Int = 0
-    var orderNumber: String = ""
-    var totalAmount: BigDecimal = BigDecimal.ZERO
-    var coustomerId: Int = 0
+    var id = 0
+    var orderNumber = ""
+    var totalAmount = BigDecimal.ZERO
+    var coustomerId = 0
 
     override fun get(name: String): Any? = when(name) {
         ORDER.ID.name -> this.id

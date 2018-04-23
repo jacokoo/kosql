@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.statements
 import com.github.jacokoo.kosql.Column
 import com.github.jacokoo.kosql.Statement
 import com.github.jacokoo.kosql.Table
+import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.mapping.Entity
 
 data class InsertData(
@@ -25,7 +26,7 @@ data class Entities(val entities: List<Entity<*, *>>)
 interface ExtraValues {
     val data: InsertData
     infix fun VALUES(e: Entities): InsertEnd {
-        val es = e.entities.filter { it.TABLE != data.table }
+        val es = e.entities.filter { Database[it::class] != data.table }
         if (!es.none()) throw RuntimeException("There have entities not match table")
         val values = e.entities.map { ee -> data.columns.columns.map { it.type.toDb(ee[it.name]) } }
         return InsertEnd(data.copy(values = values))
@@ -49,7 +50,7 @@ interface Insert {
         infix fun <T> INTO(t: T): T = t
         operator fun <T: Any, R: Table<T>> invoke(vararg entities: Entity<T, R>): InsertEnd {
             if (entities.isEmpty()) throw RuntimeException("You have to supply at least one entity")
-            val table = entities[0].TABLE
+            val table = Database[entities[0]::class] ?: throw RuntimeException("")
             val columns = table.columns
             val values = entities.map { e -> columns.map { it.type.toDb(e[it.name]) } }
             return InsertEnd(InsertData(table, Columns(columns), values))
