@@ -40,7 +40,14 @@ data class ColumnDefinition(
     }
 }
 
-data class ColumnInfo(val type: KClass<out DataType<*>>, val typeName: String, val define: String)
+data class ColumnInfo(
+        val name: String,
+        val type: DataType<*>,
+        val typeClass: KClass<*>,
+        val defaultValue: String,
+        val define: String,
+        val def: ColumnDefinition
+)
 
 interface ColumnGenerator {
 
@@ -52,21 +59,26 @@ interface ColumnGenerator {
     /**
      * generate column value
      */
-    fun generete(tableName: String, def: ColumnDefinition): ColumnInfo
+    fun generete(tableName: String, def: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo
 
 }
 
 abstract class AbstractColumnGenerator<T>: ColumnGenerator {
     abstract val type: DataType<T>
-    override fun generete(tableName: String, def: ColumnDefinition): ColumnInfo = ColumnInfo(
-            type::class, type::class.typeParameters[0].name, createColumn(def)
-    )
-
-    protected fun createColumn(def: ColumnDefinition): String {
-        val typeName = type::class.simpleName
-        val defaultValue = if (def.defaultValue == null) type.nullValue.toString() else def.defaultValue
-        return "createColumn(${def.name}, $typeName(), ${def.nullable}, ${parseDefaultValue(defaultValue)})"
+    abstract fun kotlinType(): KClass<*>
+    override fun generete(tableName: String, def: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {
+        val (define, dv) = createColumn(def)
+        return ColumnInfo(config.namingStrategy.tableFieldName(def.name), type, kotlinType(), dv, define, def)
     }
 
-    protected fun parseDefaultValue(v: String): String = v
+    protected fun createColumn(def: ColumnDefinition): Pair<String, String> {
+        val typeName = type::class.simpleName
+        val defaultValue: Any? = if (def.defaultValue == null) {
+            if (def.nullable) null else type.nullValue
+        } else def.defaultValue
+        val dv = parseDefaultValue(defaultValue)
+        return "createColumn(\"${def.name}\", $typeName(), ${def.nullable}, $dv)" to dv
+    }
+
+    protected open fun parseDefaultValue(v: Any?): String = v?.toString() ?: "null"
 }

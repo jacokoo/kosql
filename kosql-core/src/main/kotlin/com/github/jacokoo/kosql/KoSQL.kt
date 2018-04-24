@@ -1,5 +1,6 @@
 package com.github.jacokoo.kosql
 
+import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.mapping.ResultSetMapper
 import com.github.jacokoo.kosql.mapping.ResultSetRow
 import com.github.jacokoo.kosql.statements.QueryPart
@@ -11,8 +12,8 @@ import java.sql.Connection
 import java.sql.ResultSet
 import javax.sql.DataSource
 
-
 open class KoSQL(
+        private val database: Database,
         private val dataSource: DataSource,
         private val jdbc: JdbcTemplate,
         private val builder: SQLBuilder = SQLBuilder()

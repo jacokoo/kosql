@@ -12,7 +12,15 @@ open class Main
 fun main(args: Array<String>) {
     runApplication<Main>(*args) {
         addInitializers(beans {
-            bean<Demo>()
+            bean {
+                KoSQLGeneratorConfig(
+                        outputDirectory = "/tmp/ko",
+                        outputPackage = "com.github.jacokoo.kosql.example"
+                )
+            }
+            bean<KoSQLGenerator>()
         })
+    } .getBean(KoSQLGenerator::class.java).also {
+        it.doGenerate()
     }
 }

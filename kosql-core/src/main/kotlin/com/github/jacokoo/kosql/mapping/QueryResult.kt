@@ -6,6 +6,7 @@ import com.github.jacokoo.kosql.statements.QueryPart
 import com.github.jacokoo.kosql.statements.SelectStatement
 import java.sql.ResultSet
 import kotlin.reflect.KClass
+import kotlin.reflect.full.createInstance
 
 interface ResultRow {
     val values: List<Any?>
@@ -38,7 +39,8 @@ class ColumnsToEntityMapper<R: Entity<*, *>>(val columns: ColumnList, val entity
     override fun map(rs: ResultSetRow): R {
         val cs = columns.columns.filter { Database[it.table] == entityClass }
         if (cs.none()) throw RuntimeException("no columns for entity")
-        return cs[0].table.create().also {
+        val clazz = Database[cs[0].table] ?: throw RuntimeException("no entity class found")
+        return clazz.createInstance().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
         } as R
     }
@@ -53,9 +55,9 @@ interface QueryResult<out T: ResultRow>: Iterable<T> {
         val cs = columns.columns.filter { Database[it.table] == entityClass }
         if (cs.none()) return listOf()
 
-        return values.map { v -> cs[0].table.create().also { e ->
+        return values.map { v -> entityClass.createInstance().also { e ->
             columns.columns.forEachIndexed {i, c -> if (cs.contains(c)) e[c.name] = v[i]}
-        } as T }
+        } }
     }
 
     fun size() = values.size

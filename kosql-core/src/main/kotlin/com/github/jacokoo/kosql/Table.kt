@@ -1,6 +1,5 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.mapping.Entity
 import com.github.jacokoo.kosql.statements.QueryData
 import com.github.jacokoo.kosql.statements.SQLBuilderContext
 
@@ -48,18 +47,17 @@ abstract class Table<T>(override val name: String, override val alias: String = 
          protected set
 
     protected fun register(col: Column<*>) { columns += col }
-    protected fun <T> createColumn(name: String, type: DataType<T>, allowNull: Boolean = false, defaultValue: T? = null) {
-        register(DefaultColumn(this, name, type,
+    protected fun <T> createColumn(name: String, type: DataType<T>, allowNull: Boolean = false, defaultValue: T? = null) =
+        DefaultColumn(this, name, type,
                 allowNull = allowNull,
-                defaultValue = if (defaultValue == null) type.nullValue else defaultValue)
-        )
-    }
+                defaultValue = if (defaultValue == null) type.nullValue else defaultValue
+        ).also { register(it) }
+
     fun int(name: String) = createColumn(name, IntType())
     fun float(name: String) = createColumn(name, FloatType())
     fun decimal(name: String) = createColumn(name, DecimalType())
     fun string(name: String) = createColumn(name, StringType())
 
-    abstract fun create(): Entity<T, Table<T>>
     abstract fun primaryKey(): Column<T>
 }
 
@@ -67,10 +65,6 @@ open class EmptyTable(alias: String = ""): Table<Any>(alias) {
     override fun AS(alias: String): EmptyTable {
         throw RuntimeException("never call this method")
     }
-    override fun create(): Entity<Any, EmptyTable> {
-        throw RuntimeException("never call this method")
-    }
-
     override fun primaryKey(): Column<Any> {
         throw RuntimeException("never call this method")
     }

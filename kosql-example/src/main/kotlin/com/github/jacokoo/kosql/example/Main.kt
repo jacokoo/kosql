@@ -13,8 +13,9 @@ open class Main
 fun main(args: Array<String>) {
     runApplication<Main>(*args) {
         addInitializers(beans {
+            bean {OrderDatabase}
             bean<KoSQL>()
-            bean<Demo2>()
+            bean<Demo>()
         })
     }
 }

@@ -1,0 +1,5 @@
+spring.datasource:
+  driver-class-name: com.mysql.jdbc.Driver
+  username: root
+  password: root
+  url: jdbc:mysql://192.168.164.135:32778/order
