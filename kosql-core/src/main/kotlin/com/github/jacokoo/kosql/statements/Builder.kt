@@ -3,14 +3,6 @@ package com.github.jacokoo.kosql.statements
 import com.github.jacokoo.kosql.*
 
 class SQLBuilder {
-    fun build(st: Statement): BuildResult = when(st) {
-        is QueryPart -> build(st)
-        is UpdatePart -> build(st)
-        is DeletePart -> build(st)
-        is InsertPart -> build(st)
-        else -> throw RuntimeException("unsupported statement")
-    }
-
     fun build(part: QueryPart): BuildResult = build(part.data, SQLBuilderContext(this, part))
     fun build(data: QueryData, ctx: SQLBuilderContext): BuildResult {
         if (data.table == null) throw RuntimeException("no table specified")
@@ -82,8 +74,8 @@ class SQLBuilder {
         }
     }
 
-    fun build(insert: InsertPart): BuildResult = build(insert.data, SQLBuilderContext(this, insert))
-    fun build(data: InsertData, ctx: SQLBuilderContext): BuildResult {
+    fun <T> build(insert: InsertPart<T>) = build(insert.data, SQLBuilderContext(this, insert))
+    fun <T> build(data: InsertData<T>, ctx: SQLBuilderContext): BuildResult {
         if (data.query == null && data.values.none()) throw RuntimeException("no data to insert")
         return BuildResult.build(ctx) {
             append("INSERT INTO ").append(data.table.name)

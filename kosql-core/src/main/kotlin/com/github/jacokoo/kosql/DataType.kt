@@ -109,6 +109,6 @@ abstract class IntEnumType<T: Enum<*>>: DataType<T> {
 abstract class StringEnumType<T: Enum<*>>: DataType<T> {
     override val needQuote: Boolean = false
     abstract val clazz: Class<T>
-    override fun fromDb(o: Any?): T = o?.let { clazz.enumConstants.find { it.name == (it as String) } } ?: nullValue
+    override fun fromDb(o: Any?): T = o?.let { oo -> clazz.enumConstants.find { it.name == oo } } ?: nullValue
     override fun toDb(t: Any?): Any? = t?.let { it.toString() }
 }

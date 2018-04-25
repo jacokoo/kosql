@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
         addInitializers(beans {
             bean {OrderDatabase}
             bean<KoSQL>()
-            bean<Demo>()
+            bean<Demo2>()
         })
     }
 }

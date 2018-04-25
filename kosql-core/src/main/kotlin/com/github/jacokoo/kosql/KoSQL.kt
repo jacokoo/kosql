@@ -3,13 +3,12 @@ package com.github.jacokoo.kosql
 import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.mapping.ResultSetMapper
 import com.github.jacokoo.kosql.mapping.ResultSetRow
-import com.github.jacokoo.kosql.statements.QueryPart
-import com.github.jacokoo.kosql.statements.SQLBuilder
-import com.github.jacokoo.kosql.statements.Selects
-import com.github.jacokoo.kosql.statements.UpdatePart
+import com.github.jacokoo.kosql.statements.*
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.support.GeneratedKeyHolder
 import java.sql.Connection
 import java.sql.ResultSet
+import java.sql.Statement
 import javax.sql.DataSource
 
 open class KoSQL(
@@ -50,6 +49,23 @@ open class KoSQL(
                 context.arguments.forEachIndexed {idx, value -> it.setObject(idx + 1, value)}
             }
         }
+    }
+
+    fun <T> InsertPart<T>.execute(): Pair<List<T>, Int> {
+        val (sql, context) = builder.build(this)
+        println(sql)
+        val keyHolder = GeneratedKeyHolder()
+        val rows = jdbc.update({
+            it.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).also {
+                context.arguments.forEachIndexed {idx, value -> it.setObject(idx + 1, value)}
+            }
+        }, keyHolder)
+
+        jdbc.batchUpdate()
+
+        @Suppress("UNCHECKED_CAST")
+        val keys = keyHolder.keyList.map { it.values.first() as T }
+        return keys to rows
     }
 
 }

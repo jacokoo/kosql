@@ -1,44 +1,35 @@
 package com.github.jacokoo.kosql.example
 
-import org.springframework.jdbc.core.JdbcTemplate
-import java.sql.Connection
-import java.sql.DatabaseMetaData
+import com.github.jacokoo.kosql.KoSQL
+import com.github.jacokoo.kosql.example.kosql.entity.Abc
+import com.github.jacokoo.kosql.example.kosql.table.ABC
 import javax.annotation.PostConstruct
 
-class Demo2(private val jdbc: JdbcTemplate) {
+class Demo2(private val ko: KoSQL) {
 
     @PostConstruct fun demo() {
-        jdbc.execute {conn: Connection ->
-            val rs = conn.createStatement().executeQuery("select * from t_order where f_id = 1")
-            while (rs.next()) {
-                val d = rs.getObject(2)
-                println(d)
+        ko.run {
+            val a1 = Abc().also {
+                it.a = 100
+                it.color = Color.GREEN
+                it.state = State.STARTED
+            }
+
+            val a2 = Abc().also {
+                it.a = 88
+            }
+
+            val (id, rows) = INSERT(a1, a2).execute()
+            println(id)
+            println(rows)
+
+            val abcs = SELECT(ABC()) {
+                FROM(ABC)
+            }.fetch(Abc::class)
+
+            abcs.forEach {
+                println("${it.id}, ${it.color}, ${it.a}, ${it.state}")
             }
         }
-
-        jdbc.execute { conn: Connection ->
-            val meta = conn.metaData
-            val ts = meta.getTables(null, null, null, arrayOf("TABLE"))
-            while (ts.next()) {
-                tableInfo(meta, ts.getString("TABLE_NAME"))
-            }
-        }
-    }
-
-    fun tableInfo(meta: DatabaseMetaData, name: String) {
-        println("------  $name  ------")
-
-        val rs = meta.getColumns(null, null, name, null)
-        val names = """
-            |COLUMN_NAME, DATA_TYPE, TYPE_NAME,
-            |COLUMN_SIZE, DECIMAL_DIGITS, NUM_PREC_RADIX,
-            |NULLABLE, REMARKS, COLUMN_DEF, SQL_DATA_TYPE, SQL_DATETIME_SUB, CHAR_OCTET_LENGTH,
-            |ORDINAL_POSITION, IS_NULLABLE, IS_AUTOINCREMENT, IS_GENERATEDCOLUMN
-        """.trimMargin().replace("\n", "").split(",").map { it.trim() }.also { println(it.joinToString()) }
-        while (rs.next()) {
-            names.forEach { println("$it: ${rs.getObject(it)}") }
-            println("-----------")
-        }
-
     }
 }

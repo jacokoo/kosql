@@ -2,4 +2,4 @@ spring.datasource:
   driver-class-name: com.mysql.jdbc.Driver
   username: root
   password: root
-  url: jdbc:mysql://127.0.0.1/order
+  url: jdbc:mysql://127.0.0.1/order?useSSL=false
