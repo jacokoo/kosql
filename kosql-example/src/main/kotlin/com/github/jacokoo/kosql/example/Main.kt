@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql.example
 
 import com.github.jacokoo.kosql.KoSQL
+import com.github.jacokoo.kosql.example.kosql.OrderDatabase
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration

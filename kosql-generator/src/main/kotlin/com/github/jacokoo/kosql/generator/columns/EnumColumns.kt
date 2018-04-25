@@ -12,7 +12,7 @@ class EnumColumnGenerator(private val useEnum: UseEnum<*>): ColumnGenerator {
         val type = "${ns.tableClassName(tableName)}${ns.entityFieldName(def.name).capitalize()}EnumType"
         val typeClass = useEnum.enumType.kotlin
         val defaultValue = "${useEnum.enumType.simpleName}.${useEnum.defaultValue.toString()}"
-        val define = "createColumn(\"${def.name}\", $type, false, $defaultValue)"
+        val define = "createColumn(\"${def.name}\", $type(), false, $defaultValue)"
         return ColumnInfo(name, "${config.outputPackage}.kosql.$type", typeClass, defaultValue, define, def)
     }
 }

@@ -5,7 +5,6 @@ import com.github.jacokoo.kosql.DecimalType
 import com.github.jacokoo.kosql.IntType
 import com.github.jacokoo.kosql.StringType
 import com.github.jacokoo.kosql.Table
-import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.statements.Column5
 import java.math.BigDecimal
 import java.time.LocalDateTime

@@ -1,7 +1,6 @@
 package com.github.jacokoo.kosql.generator
 
 import com.github.jacokoo.kosql.Table
-import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.mapping.Entity
 import com.github.jacokoo.kosql.statements.Columns
 
@@ -39,22 +38,22 @@ interface TableGenerator {
 
 class DefaultTableGenerator: TableGenerator {
     override fun generate(table: TableDefinition, config: KoSQLGeneratorConfig): TableInfo {
-        var imports = Imports()
-            .add(Table::class, Database::class)
+        val imports = Imports()
+            .add(Table::class)
             .add(
                 if (table.columns.size > 22) Columns::class.qualifiedName!!
                 else "com.github.jacokoo.kosql.statements.Column${table.columns.size}"
             )
-        var entityImports = Imports()
+        val entityImports = Imports()
                 .add(Entity::class)
 
 
         val columns = table.columns.map { generateColumn(table.name, it, config) }
-        columns.forEach { imports = imports.add(it.typeClass).add(it.type) }
+        columns.forEach { imports.add(it.typeClass).add(it.type) }
 
         val pk = table.columns.indexOf(table.columns.find { it.name == table.primaryKey }!!)
         val fields = columns.map {
-            entityImports = entityImports.add(it.typeClass)
+            entityImports.add(it.typeClass)
             val type = if (it.def.nullable) it.typeClass.simpleName + "?" else it.typeClass.simpleName
             FieldInfo(config.namingStrategy.entityFieldName(it.def.name), type!!, it.defaultValue)
         }
@@ -63,7 +62,7 @@ class DefaultTableGenerator: TableGenerator {
         val tableName = config.namingStrategy.tableClassName(table.name)
         val objectName = config.namingStrategy.tableObjectName(table.name)
 
-        entityImports = entityImports
+        entityImports
             .add("${config.outputPackage}.kosql.table.$tableName")
             .add("${config.outputPackage}.kosql.table.$objectName")
 

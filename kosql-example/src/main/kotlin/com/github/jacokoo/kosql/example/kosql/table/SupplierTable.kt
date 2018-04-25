@@ -3,7 +3,6 @@ package com.github.jacokoo.kosql.example.kosql.table
 import com.github.jacokoo.kosql.IntType
 import com.github.jacokoo.kosql.StringType
 import com.github.jacokoo.kosql.Table
-import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.statements.Column8
 
 open class SupplierTable protected constructor(alias: String = ""): Table<Int>("t_supplier", alias, "") {

@@ -1,4 +1,4 @@
-package com.github.jacokoo.kosql.example
+package com.github.jacokoo.kosql.example.kosql
 
 import com.github.jacokoo.kosql.example.kosql.entity.Abc
 import com.github.jacokoo.kosql.example.kosql.entity.Customer
@@ -14,7 +14,6 @@ import com.github.jacokoo.kosql.example.kosql.table.PRODUCT
 import com.github.jacokoo.kosql.example.kosql.table.SUPPLIER
 import com.github.jacokoo.kosql.mapping.Database
 
-
 object OrderDatabase: Database {
     init {
         Database.register(ABC, Abc::class)
@@ -23,6 +22,5 @@ object OrderDatabase: Database {
         Database.register(ORDER_ITEM, OrderItem::class)
         Database.register(PRODUCT, Product::class)
         Database.register(SUPPLIER, Supplier::class)
-
     }
 }

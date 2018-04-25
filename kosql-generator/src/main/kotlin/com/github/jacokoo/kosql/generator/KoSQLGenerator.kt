@@ -74,7 +74,7 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
 
             it.writer().use {
                 it.write("""
-                    |package ${config.outputPackage}
+                    |package ${config.outputPackage}.kosql
                     |
                     |${imports.map { "import $it" }.joinToString("\n")}
                     |
@@ -99,7 +99,7 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
 
             it.writer().use {
                 it.write("""
-                    |package ${config.outputPackage}
+                    |package ${config.outputPackage}.kosql
                     |
                     |${imports.map { "import $it" }.joinToString("\n")}
                     |
