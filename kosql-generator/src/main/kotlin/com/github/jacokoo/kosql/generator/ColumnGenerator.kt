@@ -42,8 +42,8 @@ data class ColumnDefinition(
 
 data class ColumnInfo(
         val name: String,
-        val type: DataType<*>,
-        val typeClass: KClass<*>,
+        val type: String, // the Datatype class for import
+        val typeClass: KClass<*>,  // the kotlin class for field declaration
         val defaultValue: String,
         val define: String,
         val def: ColumnDefinition
@@ -68,7 +68,7 @@ abstract class AbstractColumnGenerator<T>: ColumnGenerator {
     abstract fun kotlinType(): KClass<*>
     override fun generete(tableName: String, def: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {
         val (define, dv) = createColumn(def)
-        return ColumnInfo(config.namingStrategy.tableFieldName(def.name), type, kotlinType(), dv, define, def)
+        return ColumnInfo(config.namingStrategy.tableFieldName(def.name), type::class.qualifiedName!!, kotlinType(), dv, define, def)
     }
 
     protected fun createColumn(def: ColumnDefinition): Pair<String, String> {

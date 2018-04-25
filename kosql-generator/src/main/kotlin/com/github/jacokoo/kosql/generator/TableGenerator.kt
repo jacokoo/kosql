@@ -50,7 +50,7 @@ class DefaultTableGenerator: TableGenerator {
 
 
         val columns = table.columns.map { generateColumn(table.name, it, config) }
-        columns.forEach { imports = imports.add(it.typeClass, it.type::class) }
+        columns.forEach { imports = imports.add(it.typeClass).add(it.type) }
 
         val pk = table.columns.indexOf(table.columns.find { it.name == table.primaryKey }!!)
         val fields = columns.map {

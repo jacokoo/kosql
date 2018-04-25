@@ -9,13 +9,20 @@ import org.springframework.context.support.beans
 @Configuration
 open class Main
 
+enum class Color { RED, GREEN, BLUE }
+enum class State { INIT, STARTED, ENDED }
+
 fun main(args: Array<String>) {
     runApplication<Main>(*args) {
         addInitializers(beans {
             bean {
                 KoSQLGeneratorConfig(
                         outputDirectory = "/tmp/ko",
-                        outputPackage = "com.github.jacokoo.kosql.example"
+                        outputPackage = "com.github.jacokoo.kosql.example",
+                        useEnums = listOf(
+                                UseEnum.int("t_abc", "f_color", Color::class.java, Color.RED),
+                                UseEnum.str("t_abc", "f_state", State::class.java, State.INIT)
+                        )
                 )
             }
             bean<KoSQLGenerator>()

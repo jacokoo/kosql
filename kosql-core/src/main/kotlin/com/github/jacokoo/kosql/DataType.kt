@@ -98,3 +98,17 @@ class BooleanType: DataType<Boolean> {
 
     override fun toDb(t: Any?): Any? = t?.let { if (it as Boolean) 1 else 0 }
 }
+
+abstract class IntEnumType<T: Enum<*>>: DataType<T> {
+    override val needQuote: Boolean = false
+    abstract val clazz: Class<T>
+    override fun fromDb(o: Any?): T = o?.let { clazz.enumConstants[it as Int] } ?: nullValue
+    override fun toDb(t: Any?): Any? = t?.let { clazz.enumConstants.indexOf(it) }
+}
+
+abstract class StringEnumType<T: Enum<*>>: DataType<T> {
+    override val needQuote: Boolean = false
+    abstract val clazz: Class<T>
+    override fun fromDb(o: Any?): T = o?.let { clazz.enumConstants.find { it.name == (it as String) } } ?: nullValue
+    override fun toDb(t: Any?): Any? = t?.let { it.toString() }
+}
