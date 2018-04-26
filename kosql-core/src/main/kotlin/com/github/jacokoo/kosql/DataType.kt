@@ -11,16 +11,11 @@ import java.time.ZoneId
 
 interface DataType<out T> {
     val nullValue: T
-    val needQuote: Boolean
     fun fromDb(o: Any?): T
     fun toDb(t: Any?): Any? = t
 }
 
-abstract class AbstractDataType<out T>: DataType<T> {
-    override val needQuote: Boolean = false
-}
-
-class IntType: AbstractDataType<Int>() {
+class IntType: DataType<Int> {
     override val nullValue: Int = 0
     override fun fromDb(o: Any?): Int = o?.let { when (it) {
         is Long -> it.toInt()  // auto-increment key returned from db is Long
@@ -29,7 +24,7 @@ class IntType: AbstractDataType<Int>() {
     } } ?: 0
 }
 
-class LongType: AbstractDataType<Long>() {
+class LongType: DataType<Long> {
     override val nullValue: Long = 0L
     override fun fromDb(o: Any?): Long = o?.let { when (it) {
         is ByteArray -> it.fold(0L) {acc, i -> (acc shl 8) or (i.toLong() and 0xff)}
@@ -37,17 +32,17 @@ class LongType: AbstractDataType<Long>() {
     } } ?: 0L
 }
 
-class FloatType: AbstractDataType<Float>() {
+class FloatType: DataType<Float> {
     override val nullValue: Float = 0.0f
     override fun fromDb(o: Any?): Float = (o ?: 0) as Float
 }
 
-class DoubleType: AbstractDataType<Double>() {
+class DoubleType: DataType<Double> {
     override val nullValue: Double = 0.0
     override fun fromDb(o: Any?): Double = (o ?: 0) as Double
 }
 
-class DecimalType: AbstractDataType<BigDecimal>() {
+class DecimalType: DataType<BigDecimal> {
     override val nullValue: BigDecimal = BigDecimal.ZERO
     override fun fromDb(o: Any?): BigDecimal {
         if (o == null) return BigDecimal.ZERO
@@ -58,13 +53,12 @@ class DecimalType: AbstractDataType<BigDecimal>() {
     }
 }
 
-class StringType: AbstractDataType<String>() {
+class StringType: DataType<String> {
     override val nullValue: String = ""
-    override val needQuote: Boolean = true
     override fun fromDb(o: Any?): String = (o ?: "") as String
 }
 
-class DateType: AbstractDataType<LocalDate>() {
+class DateType: DataType<LocalDate> {
     override val nullValue = LocalDate.MIN
     override fun fromDb(o: Any?) = o?.let { when (it) {
         is Date -> it.toLocalDate()
@@ -74,13 +68,13 @@ class DateType: AbstractDataType<LocalDate>() {
     override fun toDb(t: Any?): Any? = t?.let { Timestamp.valueOf((it as LocalDate).atStartOfDay()) }
 }
 
-class DateTimeType: AbstractDataType<LocalDateTime>() {
+class DateTimeType: DataType<LocalDateTime> {
     override val nullValue = LocalDateTime.MIN
     override fun fromDb(o: Any?) = o?.let { (it as Timestamp).toLocalDateTime() } ?: nullValue
     override fun toDb(t: Any?): Any? = t?.let { Timestamp.valueOf(it as LocalDateTime) }
 }
 
-class DateTimeLongType: AbstractDataType<LocalDateTime>() {
+class DateTimeLongType: DataType<LocalDateTime> {
     override val nullValue = LocalDateTime.MIN
     override fun fromDb(o: Any?) = o?.let {
         Instant.ofEpochMilli(it as Long).atZone(ZoneId.systemDefault()).toLocalDateTime()
@@ -89,7 +83,7 @@ class DateTimeLongType: AbstractDataType<LocalDateTime>() {
             .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 }
 
-class BooleanType: AbstractDataType<Boolean>() {
+class BooleanType: DataType<Boolean> {
     override val nullValue: Boolean = false
     override fun fromDb(o: Any?): Boolean = o?.let {
         when (o) {
@@ -102,7 +96,7 @@ class BooleanType: AbstractDataType<Boolean>() {
     override fun toDb(t: Any?): Any? = t?.let { if (it as Boolean) 1 else 0 }
 }
 
-class ByteArrayType: AbstractDataType<ByteArray>() {
+class ByteArrayType: DataType<ByteArray> {
     override val nullValue: ByteArray = ByteArray(0)
     override fun fromDb(o: Any?): ByteArray = o?.let { when (it) {
         is Blob -> it.getBytes(1, it.length().toInt())
@@ -110,13 +104,13 @@ class ByteArrayType: AbstractDataType<ByteArray>() {
     } } ?: nullValue
 }
 
-abstract class IntEnumType<T: Enum<*>>: AbstractDataType<T>() {
+abstract class IntEnumType<T: Enum<*>>: DataType<T> {
     abstract val clazz: Class<T>
     override fun fromDb(o: Any?): T = o?.let { clazz.enumConstants[it as Int] } ?: nullValue
     override fun toDb(t: Any?): Any? = t?.let { clazz.enumConstants.indexOf(it) }
 }
 
-abstract class StringEnumType<T: Enum<*>>: AbstractDataType<T>() {
+abstract class StringEnumType<T: Enum<*>>: DataType<T> {
     abstract val clazz: Class<T>
     override fun fromDb(o: Any?): T = o?.let { oo -> clazz.enumConstants.find { it.name == oo } } ?: nullValue
     override fun toDb(t: Any?): Any? = t?.let { it.toString() }

@@ -1,7 +1,6 @@
 package com.github.jacokoo.kosql.example
 
 import com.github.jacokoo.kosql.KoSQL
-import com.github.jacokoo.kosql.example.kosql.entity.Order
 import com.github.jacokoo.kosql.example.kosql.table.ORDER
 import javax.annotation.PostConstruct
 
@@ -18,11 +17,11 @@ class Demo(private val ko: KoSQL) {
             FROM(ORDER)
         }
 
-        val orders: List<Order> = sql.fetch(Order::class)
+        //val orders: List<Order> = sql.fetch(Order::class)
         val strs: List<String> = sql.fetch().map { (v: String, i: Int) -> v }
         val strs2: List<String> = sql.fetch({ it[ORDER.ORDER_NUMBER] })
 
-        println(orders)
+        //println(orders)
         println(strs)
         println(strs2)
 

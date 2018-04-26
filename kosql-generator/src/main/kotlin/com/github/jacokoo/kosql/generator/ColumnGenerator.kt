@@ -55,6 +55,8 @@ interface ColumnGenerator {
     companion object {
         val ints = listOf(Types.INTEGER, Types.SMALLINT, Types.TINYINT)
         val bits = listOf(Types.BIT, Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY)
+        val strs = listOf(Types.CLOB, Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR,
+                Types.LONGNVARCHAR, Types.NCHAR, Types.NVARCHAR)
     }
 
     /**

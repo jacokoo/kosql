@@ -29,19 +29,34 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
     }
 
     override fun writeMethods() {
-        writer.write("    override fun get(name: String): Any? = when(name) {\n")
-        (0 until table.columns.size).forEach {
-            writer.write("        ${table.objectName}.${table.columns[it].name}.name -> this.${table.entity.fields[it].name}\n")
+        val getter: (Int, ColumnInfo) -> String = {idx, it ->
+            "        ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name}"
         }
-        writer.write("        else -> null\n    }\n\n")
-
-        writer.write("    override fun set(name: String, value: Any?) {\n")
-        writer.write("        when (name) {\n")
-        (0 until table.columns.size).forEach {
-            writer.write("            ${table.objectName}.${table.columns[it].name}.name -> ")
-            writer.write("this.${table.entity.fields[it].name} = value as ${table.columns[it].typeClass.simpleName}\n")
+        val setter: (Int, ColumnInfo) -> String = {idx, it ->
+            "            ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name} = value as ${it.typeClass.simpleName}"
         }
-        writer.write("        }\n")
-        writer.write("    }\n\n")
+        writer.write("""
+            |    override fun get(name: String): Any? = when(name) {
+            |${table.columns.mapIndexed(getter).joinToString("\n")}
+            |        else -> null
+            |    }
+            |
+            |    override fun set(name: String, value: Any?) {
+            |        when (name) {
+            |${table.columns.mapIndexed(setter).joinToString("\n")}
+            |        }
+            |    }
+            |
+            |    fun copy(block: (${table.entity.name}) -> Unit): ${table.entity.name} = ${table.entity.name}().also {
+            |${table.entity.fields.map { "        it.${it.name} = ${it.name}" }.joinToString("\n") }
+            |        block(it)
+            |    }
+            |
+            |    override fun toString(): String = buildString {
+            |        append("${table.entity.name} (")
+            |        append("${table.entity.fields.map { "${it.name} = \$${it.name}" }.joinToString()}")
+            |        append(")")
+            |    }
+        """.trimMargin())
     }
 }

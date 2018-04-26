@@ -32,5 +32,18 @@ open class Order: Entity<Int, OrderTable> {
         }
     }
 
-}
+    fun copy(block: (Order) -> Unit): Order = Order().also {
+        it.id = id
+        it.orderDate = orderDate
+        it.orderNumber = orderNumber
+        it.customerId = customerId
+        it.totalAmount = totalAmount
+        block(it)
+    }
+
+    override fun toString(): String = buildString {
+        append("Order (")
+        append("id = $id, orderDate = $orderDate, orderNumber = $orderNumber, customerId = $customerId, totalAmount = $totalAmount")
+        append(")")
+    }}
 

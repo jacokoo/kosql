@@ -15,6 +15,7 @@ open class Abc: Entity<Int, AbcTable> {
     var bool2: Boolean = false
     var bit1: Long = 12L
     var bit2: ByteArray = ByteArray(0)
+    var text: String? = null
 
     override fun get(name: String): Any? = when(name) {
         ABC.ID.name -> this.id
@@ -25,6 +26,7 @@ open class Abc: Entity<Int, AbcTable> {
         ABC.BOOL2.name -> this.bool2
         ABC.BIT1.name -> this.bit1
         ABC.BIT2.name -> this.bit2
+        ABC.TEXT.name -> this.text
         else -> null
     }
 
@@ -38,8 +40,26 @@ open class Abc: Entity<Int, AbcTable> {
             ABC.BOOL2.name -> this.bool2 = value as Boolean
             ABC.BIT1.name -> this.bit1 = value as Long
             ABC.BIT2.name -> this.bit2 = value as ByteArray
+            ABC.TEXT.name -> this.text = value as String
         }
     }
 
-}
+    fun copy(block: (Abc) -> Unit): Abc = Abc().also {
+        it.id = id
+        it.a = a
+        it.color = color
+        it.state = state
+        it.bool1 = bool1
+        it.bool2 = bool2
+        it.bit1 = bit1
+        it.bit2 = bit2
+        it.text = text
+        block(it)
+    }
+
+    override fun toString(): String = buildString {
+        append("Abc (")
+        append("id = $id, a = $a, color = $color, state = $state, bool1 = $bool1, bool2 = $bool2, bit1 = $bit1, bit2 = $bit2, text = $text")
+        append(")")
+    }}
 

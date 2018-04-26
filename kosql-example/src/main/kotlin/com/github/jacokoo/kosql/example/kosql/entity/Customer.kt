@@ -33,5 +33,19 @@ open class Customer: Entity<Int, CustomerTable> {
         }
     }
 
-}
+    fun copy(block: (Customer) -> Unit): Customer = Customer().also {
+        it.id = id
+        it.firstName = firstName
+        it.lastName = lastName
+        it.city = city
+        it.country = country
+        it.phone = phone
+        block(it)
+    }
+
+    override fun toString(): String = buildString {
+        append("Customer (")
+        append("id = $id, firstName = $firstName, lastName = $lastName, city = $city, country = $country, phone = $phone")
+        append(")")
+    }}
 

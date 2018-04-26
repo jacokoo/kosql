@@ -39,5 +39,21 @@ open class Supplier: Entity<Int, SupplierTable> {
         }
     }
 
-}
+    fun copy(block: (Supplier) -> Unit): Supplier = Supplier().also {
+        it.id = id
+        it.companyName = companyName
+        it.contactName = contactName
+        it.contactTitle = contactTitle
+        it.city = city
+        it.country = country
+        it.phone = phone
+        it.fax = fax
+        block(it)
+    }
+
+    override fun toString(): String = buildString {
+        append("Supplier (")
+        append("id = $id, companyName = $companyName, contactName = $contactName, contactTitle = $contactTitle, city = $city, country = $country, phone = $phone, fax = $fax")
+        append(")")
+    }}
 

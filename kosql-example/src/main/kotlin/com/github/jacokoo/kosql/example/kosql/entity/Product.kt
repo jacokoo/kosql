@@ -34,5 +34,19 @@ open class Product: Entity<Int, ProductTable> {
         }
     }
 
-}
+    fun copy(block: (Product) -> Unit): Product = Product().also {
+        it.id = id
+        it.productName = productName
+        it.supplierId = supplierId
+        it.unitPrice = unitPrice
+        it.package1 = package1
+        it.isDiscontinued = isDiscontinued
+        block(it)
+    }
+
+    override fun toString(): String = buildString {
+        append("Product (")
+        append("id = $id, productName = $productName, supplierId = $supplierId, unitPrice = $unitPrice, package1 = $package1, isDiscontinued = $isDiscontinued")
+        append(")")
+    }}
 
