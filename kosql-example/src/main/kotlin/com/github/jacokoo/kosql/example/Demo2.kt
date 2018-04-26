@@ -9,23 +9,17 @@ class Demo2(private val ko: KoSQL) {
 
     @PostConstruct fun demo() {
         ko.run {
-            INSERT(
-                Abc().also { it.a = 11; it.state = State.STARTED },
-                Abc().also { it.a = 12; it.color = Color.GREEN }
-            ).executeBatch().let { (ids, rows) ->
-                println(ids)
-                println(rows)
-            }
+            INSERT(Abc().also { it.bool1 = true; it.bool2 = true }).execute().also { println(it) }
 
-            INSERT(Abc().also { it.a = 13 }).execute().let { (id, rows) ->
-                println(id)
-                println(rows)
-            }
+            (UPDATE(ABC) SET {
+                it[ABC.BOOL2] = false
+                it[ABC.BOOL1] = true
+            } WHERE (ABC.ID EQ 1)).execute().also { println("updated $it") }
 
             SELECT(ABC()) {
                 FROM(ABC)
             }.fetch(Abc::class).forEach {
-                println("${it.id}, ${it.color}, ${it.a}, ${it.state}")
+                println("${it.id}, ${it.color}, ${it.a}, ${it.state}, ${it.bool1}, ${it.bool2}")
             }
         }
     }

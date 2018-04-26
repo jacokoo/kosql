@@ -71,6 +71,6 @@ class DefaultTableGenerator: TableGenerator {
 
     fun generateColumn(name: String, col: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {
         return config.columnGenerators.find { it.support(name, col) }?.generete(name, col, config) ?:
-            throw RuntimeException("column ${col.name} in table $name is not supported")
+            throw RuntimeException("column ${col.name} in table $name is not supported, $col")
     }
 }

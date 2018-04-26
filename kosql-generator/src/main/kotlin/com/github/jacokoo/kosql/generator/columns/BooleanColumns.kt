@@ -11,7 +11,9 @@ class BooleanColumnGenerator: AbstractColumnGenerator<Boolean>() {
     override val type: DataType<Boolean> = BooleanType()
     override fun kotlinType(): KClass<*> = Boolean::class
     override fun support(tableName: String, def: ColumnDefinition) =
-        Types.BOOLEAN == def.dataType || (Types.BIT == def.dataType && def.columnSize == 1)
+        Types.BOOLEAN == def.dataType ||
+                (Types.BIT == def.dataType && def.columnSize < 2) ||  // mysql tinyint(1) got BIT(null) here
+                (Types.TINYINT == def.dataType && def.columnSize == 1)
 
     override fun parseDefaultValue(v: Any?) = v?.let { if (v == "b'1'") "true" else "false" } ?: "null"
 }

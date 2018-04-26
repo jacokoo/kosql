@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 class IntColumnGenerator: AbstractColumnGenerator<Int>() {
     override val type: DataType<Int> = IntType()
     override fun kotlinType(): KClass<*> = Int::class
-    private val supported = listOf(Types.INTEGER, Types.SMALLINT, Types.TINYINT, Types.BIT)
+    private val supported = listOf(Types.INTEGER, Types.SMALLINT, Types.TINYINT)
 
     override fun support(tableName: String, def: ColumnDefinition): Boolean {
         return supported.contains(def.dataType)
