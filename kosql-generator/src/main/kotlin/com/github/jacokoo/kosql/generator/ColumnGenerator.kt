@@ -77,7 +77,9 @@ abstract class AbstractColumnGenerator<T>: ColumnGenerator {
             if (def.nullable) null else type.nullValue
         } else def.defaultValue
         val dv = parseDefaultValue(defaultValue)
-        return "createColumn(\"${def.name}\", $typeName(), ${def.nullable}, $dv)" to dv
+        var str = "createColumn(\"${def.name}\", $typeName(), ${def.nullable}, $dv)"
+        if (def.isAutoIncrement) str += ".autoIncrement()"
+        return  str to dv
     }
 
     protected open fun parseDefaultValue(v: Any?): String = v?.toString() ?: "null"

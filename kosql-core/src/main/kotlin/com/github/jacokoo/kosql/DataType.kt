@@ -18,7 +18,10 @@ interface DataType<out T> {
 class IntType: DataType<Int> {
     override val nullValue: Int = 0
     override val needQuote: Boolean = false
-    override fun fromDb(o: Any?): Int = (o ?: 0) as Int
+    override fun fromDb(o: Any?): Int = o?.let { when (o) {
+        is Long -> o.toInt()  // auto-increment key returned from db is Long
+        else -> o as Int
+    } } ?: 0
 }
 
 class LongType: DataType<Long> {

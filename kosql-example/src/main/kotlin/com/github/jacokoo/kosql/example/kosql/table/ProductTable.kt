@@ -9,7 +9,7 @@ import com.github.jacokoo.kosql.statements.Column6
 import java.math.BigDecimal
 
 open class ProductTable protected constructor(alias: String = ""): Table<Int>("t_product", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0)
+    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val PRODUCT_NAME = createColumn("f_product_name", StringType(), false, "")
     val SUPPLIER_ID = createColumn("f_supplier_id", IntType(), false, 0)
     val UNIT_PRICE = createColumn("f_unit_price", DecimalType(), true, BigDecimal("0.00"))

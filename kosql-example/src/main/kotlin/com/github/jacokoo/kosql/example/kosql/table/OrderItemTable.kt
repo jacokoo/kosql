@@ -7,7 +7,7 @@ import com.github.jacokoo.kosql.statements.Column5
 import java.math.BigDecimal
 
 open class OrderItemTable protected constructor(alias: String = ""): Table<Int>("t_order_item", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0)
+    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val ORDER_ID = createColumn("f_order_id", IntType(), false, 0)
     val PRODUCT_ID = createColumn("f_product_id", IntType(), false, 0)
     val UNIT_PRICE = createColumn("f_unit_price", DecimalType(), false, BigDecimal("0.00"))

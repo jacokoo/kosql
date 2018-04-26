@@ -10,7 +10,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 open class OrderTable protected constructor(alias: String = ""): Table<Int>("t_order", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0)
+    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val ORDER_DATE = createColumn("f_order_date", DateTimeType(), false, LocalDateTime.MIN)
     val ORDER_NUMBER = createColumn("f_order_number", StringType(), true, null)
     val CUSTOMER_ID = createColumn("f_customer_id", IntType(), false, 0)

@@ -6,7 +6,7 @@ import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.statements.Column8
 
 open class SupplierTable protected constructor(alias: String = ""): Table<Int>("t_supplier", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0)
+    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val COMPANY_NAME = createColumn("f_company_name", StringType(), false, "")
     val CONTACT_NAME = createColumn("f_contact_name", StringType(), true, null)
     val CONTACT_TITLE = createColumn("f_contact_title", StringType(), true, null)

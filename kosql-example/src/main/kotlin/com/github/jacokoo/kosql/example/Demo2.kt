@@ -9,25 +9,22 @@ class Demo2(private val ko: KoSQL) {
 
     @PostConstruct fun demo() {
         ko.run {
-            val a1 = Abc().also {
-                it.a = 100
-                it.color = Color.GREEN
-                it.state = State.STARTED
+            INSERT(
+                Abc().also { it.a = 11; it.state = State.STARTED },
+                Abc().also { it.a = 12; it.color = Color.GREEN }
+            ).executeBatch().let { (ids, rows) ->
+                println(ids)
+                println(rows)
             }
 
-            val a2 = Abc().also {
-                it.a = 88
+            INSERT(Abc().also { it.a = 13 }).execute().let { (id, rows) ->
+                println(id)
+                println(rows)
             }
 
-            val (id, rows) = INSERT(a1, a2).execute()
-            println(id)
-            println(rows)
-
-            val abcs = SELECT(ABC()) {
+            SELECT(ABC()) {
                 FROM(ABC)
-            }.fetch(Abc::class)
-
-            abcs.forEach {
+            }.fetch(Abc::class).forEach {
                 println("${it.id}, ${it.color}, ${it.a}, ${it.state}")
             }
         }

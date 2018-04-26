@@ -20,6 +20,7 @@ interface Column<T>: Nameable<Column<T>> {
     val type: DataType<T>
     val allowNull: Boolean
     val defaultValue: T
+    val autoIncrement: Boolean
 
     fun ASC(): Pair<Column<T>, Order> = this to Order.ASC
     fun DESC(): Pair<Column<T>, Order> = this to Order.DESC
@@ -32,13 +33,15 @@ data class DefaultColumn<T>(
         override val alias: String = "",
         override val aliasRequired: Boolean = false,
         override val allowNull: Boolean = false,
-        override val defaultValue: T = type.nullValue
+        override val defaultValue: T = type.nullValue,
+        override val autoIncrement: Boolean = false
 ): Column<T> {
     override fun AS(alias: String): Column<T> = this.copy(alias = alias)
     override fun sqlName(ctx: SQLBuilderContext): String = "${ctx.alias(table)}.$name"
 
     fun nullable(): DefaultColumn<T> = this.copy(allowNull = true)
     fun default(t: T): DefaultColumn<T> = this.copy(defaultValue = t)
+    fun autoIncrement(auto: Boolean = true): DefaultColumn<T> = this.copy(autoIncrement = auto)
 }
 
 abstract class Table<T>(override val name: String, override val alias: String = "", comment: String = ""): Nameable<Table<T>> {

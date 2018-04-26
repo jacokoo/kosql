@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql.statements
 
 import com.github.jacokoo.kosql.*
+import java.sql.PreparedStatement
 
 class SQLBuilder {
     fun build(part: QueryPart): BuildResult = build(part.data, SQLBuilderContext(this, part))
@@ -140,5 +141,9 @@ class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
         val a = if (target.alias == "" || aliasMap.values.contains(target.alias)) "$prefix${aliasIndex++}" else target.alias
         aliasMap[target] = a
         return a
+    }
+
+    fun fillArguments(ps: PreparedStatement) {
+        arguments.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)}
     }
 }
