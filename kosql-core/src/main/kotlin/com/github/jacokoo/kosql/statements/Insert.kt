@@ -60,7 +60,7 @@ interface Insert {
         }
     }
 
-    fun V(vararg v: Any): Values = Values(v.toList())
+    fun V(v: List<Any>): Values = Values(v)
     fun <T: Any, R: Table<T>> E(vararg e: Entity<T, R>): Entities = Entities(e.toList())
     operator fun<T> Table<T>.invoke(vararg columns: Column<*>): Fields<T> = Fields(this, Columns(columns.toList()))
 

@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql
 import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.mapping.ResultSetMapper
 import com.github.jacokoo.kosql.mapping.ResultSetRow
+import com.github.jacokoo.kosql.mapping.Shortcuts
 import com.github.jacokoo.kosql.statements.*
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
@@ -15,7 +16,7 @@ open class KoSQL(
         private val database: Database,
         private val jdbc: JdbcTemplate,
         private val builder: SQLBuilder = SQLBuilder()
-): Query(), Selects {
+): Query(), Selects, Shortcuts {
 
     override fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T> =
         builder.build(qp).let { (sql, context) ->
@@ -34,15 +35,18 @@ open class KoSQL(
             }!!
         }
 
-
     fun UpdatePart.execute(): Int =
         builder.build(this).let { (sql, context) ->
             println(sql)
             jdbc.update { it.prepareStatement(sql).also { context.fillArguments(it) } }
         }
 
-    fun <T> InsertPart<T>.executeBatch(): Pair<List<T>, Int> =
-        builder.build(this).let { (sql, context) ->
+    fun <T> InsertPart<T>.executeBatch(): Pair<List<T>, Int> = executeBatchInsert(this)
+
+    fun <T> InsertPart<T>.execute(): Pair<T, Int> = executeInsert(this)
+
+    fun <T> executeBatchInsert(part: InsertPart<T>): Pair<List<T>, Int> =
+        builder.build(part).let { (sql, context) ->
             println(sql)
             val pk = (context.statement as InsertPart<*>).data.table.primaryKey()
             if (pk.autoIncrement)
@@ -54,8 +58,9 @@ open class KoSQL(
         }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> InsertPart<T>.execute(): Pair<T, Int> =
-        builder.build(this).let { (sql, context) ->
+    override fun <T> executeInsert(part: InsertPart<T>): Pair<T, Int> =
+        builder.build(part).let { (sql, context) ->
+            println(sql)
             val pk = (context.statement as InsertPart<*>).data.table.primaryKey()
             if (pk.autoIncrement)
                 executeInsertWithKey(sql, context).let { (key, rows) ->

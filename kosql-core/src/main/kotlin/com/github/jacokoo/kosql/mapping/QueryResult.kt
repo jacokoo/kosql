@@ -83,6 +83,7 @@ interface QueryResultExtension {
         override fun map(rs: ResultSetRow): T = mapper(rs)
     })
     fun SelectStatement.fetch(): QueryResults = QueryResults(this.data.columns, this, this@QueryResultExtension)
+
 }
 
 

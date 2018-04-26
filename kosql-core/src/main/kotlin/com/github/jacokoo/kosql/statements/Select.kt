@@ -19,6 +19,12 @@ data class QueryData(
 interface QueryPart: Statement {
     val data: QueryData
     fun AS(alias: String): TableLike = TableLike(data, alias, data.columns.columns)
+    fun toCount(): SelectStatement1<Int> {
+        val count = Count<Int>()
+        val col = Column1(count)
+        val dd = data.copy(columns = col, orderBy = listOf(), offset = null, rowCount = null)
+        return SelectStatement1(Column1(Count<Int>()), dd)
+    }
 }
 
 interface LimitOperate {
@@ -86,7 +92,6 @@ interface Select {
 
         operator fun invoke(columns: Columns, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
         operator fun invoke(vararg tables: Table<*>, block: SelectCreator) = invoke(Columns(tables.fold(listOf()) {acc, i -> acc + i.columns}), block)
-
     }
 }
 
