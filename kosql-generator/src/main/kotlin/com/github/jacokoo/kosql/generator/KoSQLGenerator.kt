@@ -33,7 +33,7 @@ data class KoSQLGeneratorConfig(
         val columnGenerators: List<ColumnGenerator> = listOf(
                 BooleanColumnGenerator(),
                 DateColumnGenerator(), DateTimeColumnGenerator(), DateTimeLongColumnGenerator(),
-                StringColumnGenerator(),
+                StringColumnGenerator(), ByteArrayColumnGenerator(),
                 IntColumnGenerator(), LongColumnGenerator(), FloatColumnGenerator(),
                 DoubleColumnGenerator(), DecimalColumnGenerator()
         ),

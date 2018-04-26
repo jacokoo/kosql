@@ -11,8 +11,10 @@ open class Abc: Entity<Int, AbcTable> {
     var a: Int? = null
     var color: Color = Color.RED
     var state: State = State.INIT
-    var bool1: Boolean? = null
+    var bool1: Boolean = false
     var bool2: Boolean = false
+    var bit1: Long = 12L
+    var bit2: ByteArray = ByteArray(0)
 
     override fun get(name: String): Any? = when(name) {
         ABC.ID.name -> this.id
@@ -21,6 +23,8 @@ open class Abc: Entity<Int, AbcTable> {
         ABC.STATE.name -> this.state
         ABC.BOOL1.name -> this.bool1
         ABC.BOOL2.name -> this.bool2
+        ABC.BIT1.name -> this.bit1
+        ABC.BIT2.name -> this.bit2
         else -> null
     }
 
@@ -32,6 +36,8 @@ open class Abc: Entity<Int, AbcTable> {
             ABC.STATE.name -> this.state = value as State
             ABC.BOOL1.name -> this.bool1 = value as Boolean
             ABC.BOOL2.name -> this.bool2 = value as Boolean
+            ABC.BIT1.name -> this.bit1 = value as Long
+            ABC.BIT2.name -> this.bit2 = value as ByteArray
         }
     }
 

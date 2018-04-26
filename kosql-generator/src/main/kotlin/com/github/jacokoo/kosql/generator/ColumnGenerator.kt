@@ -2,6 +2,7 @@ package com.github.jacokoo.kosql.generator
 
 import com.github.jacokoo.kosql.DataType
 import java.sql.ResultSet
+import java.sql.Types
 import kotlin.reflect.KClass
 
 data class ColumnDefinition(
@@ -50,6 +51,11 @@ data class ColumnInfo(
 )
 
 interface ColumnGenerator {
+
+    companion object {
+        val ints = listOf(Types.INTEGER, Types.SMALLINT, Types.TINYINT)
+        val bits = listOf(Types.BIT, Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY)
+    }
 
     /**
      * check if this generator support che column specification
