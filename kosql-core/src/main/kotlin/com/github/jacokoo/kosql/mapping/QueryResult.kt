@@ -1,19 +1,12 @@
 package com.github.jacokoo.kosql.mapping
 
 import com.github.jacokoo.kosql.Column
-import com.github.jacokoo.kosql.statements.ColumnList
-import com.github.jacokoo.kosql.statements.QueryPart
-import com.github.jacokoo.kosql.statements.SelectStatement
+import com.github.jacokoo.kosql.statements.*
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
-interface ResultRow {
-    val values: List<Any?>
-    operator fun get(idx: Int): Any? = values[idx]
-}
-
-internal class ResultIterator<T: ResultRow>(private val t: QueryResult<T>): AbstractIterator<T>() {
+internal class ResultIterator<T: Value>(private val t: QueryResult<T>): AbstractIterator<T>() {
     private var current = 0
 
     override fun computeNext() {
@@ -46,7 +39,7 @@ class ColumnsToEntityMapper<R: Entity<*, *>>(val columns: ColumnList, val entity
     }
 }
 
-interface QueryResult<out T: ResultRow>: Iterable<T> {
+interface QueryResult<out T: Value>: Iterable<T> {
     val columns: ColumnList
     val values: List<T>
 
@@ -67,11 +60,10 @@ interface QueryResult<out T: ResultRow>: Iterable<T> {
     override fun iterator(): Iterator<T> = ResultIterator(this)
 }
 
-data class ResultRows(override val values: List<Any?>): ResultRow
-data class QueryResults(override val columns: ColumnList, override val values: List<ResultRows>): QueryResult<ResultRows> {
+data class QueryResults(override val columns: ColumnList, override val values: List<Values>): QueryResult<Values> {
     constructor(cs: ColumnList, qp: QueryPart, ko: QueryResultExtension): this(cs, ko.execute(qp, Mapper(cs)))
-    private class Mapper(private val cs: ColumnList): ResultSetMapper<ResultRows> {
-        override fun map(rs: ResultSetRow) = ResultRows(cs.columns.mapIndexed {idx, col -> rs[idx, col]})
+    private class Mapper(private val cs: ColumnList): ResultSetMapper<Values> {
+        override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col]})
     }
 }
 

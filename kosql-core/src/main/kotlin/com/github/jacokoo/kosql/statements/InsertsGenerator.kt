@@ -19,15 +19,13 @@ fun main(args: Array<String>) {
         |   override val data: InsertData<T> = InsertData(table, c, listOf())
         |   infix fun VALUES(v: Value$it<${times(it) {"T$it"}}>): Repeat$it<T, ${times(it) {"T$it"}}> = Repeat$it(append(data, v))
         |}
-        |data class Value$it<${times(it) { "out T$it" }}>(${times(it) { "val v$it: T$it" }})
-        |data class Repeat$it<T, ${times(it) { "in T$it" }}>(override val data: InsertData<T>): InsertPart<T> {
-        |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, ${times(it) {"v.v$it"}}))
+        |data class Repeat$it<T, ${times(it) { "T$it" }}>(override val data: InsertData<T>): InsertPart<T> {
+        |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
         |}
         |
     """.trimMargin()
 
     fun methodPart(it: Int) = """
-        |    fun <${times(it) {"T$it"}}> V(${times(it) {"v$it: T$it"}}): Value$it<${times(it) {"T$it"}}> = Value$it(${times(it) {"v$it"}})
         |    operator fun <T, ${times(it) {"T$it"}}> Table<T>.invoke(${times(it) {"c$it: Column<T$it>"}}): Field$it<T, ${times(it) {"T$it"}}> = Field$it(this, Column$it(${times(it) {"c$it"}}))
         |
     """.trimMargin()
@@ -35,7 +33,7 @@ fun main(args: Array<String>) {
     println(buildString {
         append(title)
         (1..count).forEach { append(classPart(it)) }
-        append("interface Inserts {\n")
+        append("\ninterface Inserts: ValueSupport {\n")
         (1..count).forEach { append(methodPart(it)) }
         append("}")
     })

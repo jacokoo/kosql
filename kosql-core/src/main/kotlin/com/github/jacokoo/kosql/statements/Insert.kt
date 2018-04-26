@@ -18,8 +18,8 @@ interface InsertPart<T>: Statement {
     val data: InsertData<T>
 }
 
-internal fun <T> append(data: InsertData<T>, vararg cs: Any?): InsertData<T> {
-    return data.copy(values = data.values + listOf(cs.toList()))
+internal fun <T> append(data: InsertData<T>, vararg cs: Value): InsertData<T> {
+    return data.copy(values = data.values + cs.map { it.values })
 }
 
 data class InsertEnd<T>(override val data: InsertData<T>): InsertPart<T>
@@ -40,12 +40,11 @@ interface ExtraValues<T> {
 
 data class Fields<T>(val table: Table<T>, val columns: ColumnList): ExtraValues<T> {
     override val data: InsertData<T> = InsertData(table, columns, listOf())
-    infix fun VALUES(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
+    infix fun VALUES(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, v))
 }
 
-data class Values(val values: List<Any>)
 data class ValuesRepeatPart<T>(override val data: InsertData<T>): InsertPart<T> {
-    infix fun AND(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, *v.values.toTypedArray()))
+    infix fun AND(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, v))
 }
 
 interface Insert {
@@ -60,7 +59,6 @@ interface Insert {
         }
     }
 
-    fun V(v: List<Any>): Values = Values(v)
     fun <T: Any, R: Table<T>> E(vararg e: Entity<T, R>): Entities = Entities(e.toList())
     operator fun<T> Table<T>.invoke(vararg columns: Column<*>): Fields<T> = Fields(this, Columns(columns.toList()))
 

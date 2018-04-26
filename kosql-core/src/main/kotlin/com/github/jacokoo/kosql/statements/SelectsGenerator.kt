@@ -14,13 +14,12 @@ fun main(args: Array<String>) {
     fun classPart(it: Int) = """
         |
         |data class SelectStatement$it<${times(it) { "T$it" }}>(val c: Column$it<${times(it) {"T$it"}}>, override val data: QueryData): QueryPart
-        |data class ResultRow$it<${times(it) { "T$it" }}>(${times(it) { "val v$it: T$it" }}, override val values: List<Any?> = listOf(${times(it) {"v$it"}})): ResultRow
-        |data class QueryResult$it<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) {"T$it"}}>, override val values: List<ResultRow$it<${times(it) { "T$it" }}>>): QueryResult<ResultRow$it<${times(it) { "T$it" }}>> {
+        |class QueryResultMapper$it<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) {"T$it"}}>): ResultSetMapper<Value$it<${times(it) { "T$it" }}>> {
+        |    override fun map(rs: ResultSetRow) = Value$it(${times(it) {"rs[${it - 1}, c.c$it]"}})
+        |}
+        |data class QueryResult$it<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) {"T$it"}}>, override val values: List<Value$it<${times(it) { "T$it" }}>>): QueryResult<Value$it<${times(it) { "T$it" }}>> {
         |    override val columns = c
-        |    constructor(c: Column$it<${times(it) {"T$it"}}>, qp: QueryPart, ko: QueryResultExtension): this(c, ko.execute(qp, Mapper(c)))
-        |    private class Mapper<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) {"T$it"}}>): ResultSetMapper<ResultRow$it<${times(it) { "T$it" }}>> {
-        |        override fun map(rs: ResultSetRow) = ResultRow$it(${times(it) {"rs[${it - 1}, c.c$it]"}})
-        |    }
+        |    constructor(c: Column$it<${times(it) {"T$it"}}>, qp: QueryPart, ko: QueryResultExtension): this(c, ko.execute(qp, QueryResultMapper$it(c)))
         |}
         |
     """.trimMargin()
