@@ -1,4 +1,4 @@
-package com.github.jacokoo.kosql.statements
+package com.github.jacokoo.kosql.typesafe
 
 interface Value {
     val values: List<Any?>

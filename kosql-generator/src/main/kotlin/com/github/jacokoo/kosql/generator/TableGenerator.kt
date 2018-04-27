@@ -2,7 +2,7 @@ package com.github.jacokoo.kosql.generator
 
 import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.mapping.Entity
-import com.github.jacokoo.kosql.statements.Columns
+import com.github.jacokoo.kosql.typesafe.Columns
 
 data class TableDefinition(
     val name: String,

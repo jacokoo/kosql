@@ -1,4 +1,4 @@
-package com.github.jacokoo.kosql.statements
+package com.github.jacokoo.kosql.typesafe
 
 fun main(args: Array<String>) {
     val count = 22
@@ -16,12 +16,12 @@ fun main(args: Array<String>) {
     """.trimMargin()
 
     fun classPart(it: Int) = """
-        |data class Value$it<${times(it) {"T$it"}}>(${times(it) {"val v$it: T$it"}}, override val values: List<Any?> = listOf(${times(it) {"v$it"}})): Value
+        |data class Value$it<${times(it) { "T$it" }}>(${times(it) { "val v$it: T$it" }}, override val values: List<Any?> = listOf(${times(it) { "v$it" }})): Value
         |
     """.trimMargin()
 
     fun bodyPaart(it: Int) = """
-        |    fun <${times(it) {"T$it"}}> V(${times(it) {"v$it: T$it"}}) = Value$it(${times(it) {"v$it"}})
+        |    fun <${times(it) { "T$it" }}> V(${times(it) { "v$it: T$it" }}) = Value$it(${times(it) { "v$it" }})
         |
     """.trimMargin()
 

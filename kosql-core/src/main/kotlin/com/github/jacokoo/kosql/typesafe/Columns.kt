@@ -1,4 +1,4 @@
-package com.github.jacokoo.kosql.statements
+package com.github.jacokoo.kosql.typesafe
 
 import com.github.jacokoo.kosql.Column
 import com.github.jacokoo.kosql.Table

@@ -5,6 +5,10 @@ import com.github.jacokoo.kosql.Statement
 import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.mapping.Database
 import com.github.jacokoo.kosql.mapping.Entity
+import com.github.jacokoo.kosql.typesafe.ColumnList
+import com.github.jacokoo.kosql.typesafe.Columns
+import com.github.jacokoo.kosql.typesafe.Value
+import com.github.jacokoo.kosql.typesafe.Values
 import kotlin.reflect.KClass
 
 data class InsertData<T>(

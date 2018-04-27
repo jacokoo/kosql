@@ -5,7 +5,7 @@ import com.github.jacokoo.kosql.DecimalType
 import com.github.jacokoo.kosql.IntType
 import com.github.jacokoo.kosql.StringType
 import com.github.jacokoo.kosql.Table
-import com.github.jacokoo.kosql.statements.Column6
+import com.github.jacokoo.kosql.typesafe.Column6
 import java.math.BigDecimal
 
 open class ProductTable protected constructor(alias: String = ""): Table<Int>("t_product", alias, "") {

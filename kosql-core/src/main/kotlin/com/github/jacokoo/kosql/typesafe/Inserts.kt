@@ -1,7 +1,11 @@
-package com.github.jacokoo.kosql.statements
+package com.github.jacokoo.kosql.typesafe
 
 import com.github.jacokoo.kosql.Column
 import com.github.jacokoo.kosql.Table
+import com.github.jacokoo.kosql.statements.ExtraValues
+import com.github.jacokoo.kosql.statements.InsertData
+import com.github.jacokoo.kosql.statements.InsertPart
+import com.github.jacokoo.kosql.statements.append
 
 data class Field1<T, T1>(val table: Table<T>, val c: Column1<T1>): ExtraValues<T> {
     override val data: InsertData<T> = InsertData(table, c, listOf())

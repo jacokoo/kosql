@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.mapping
 import com.github.jacokoo.kosql.Operators
 import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.statements.*
+import com.github.jacokoo.kosql.typesafe.Columns
 
 interface Shortcuts: Operators {
 

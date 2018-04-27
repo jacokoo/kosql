@@ -3,7 +3,7 @@ package com.github.jacokoo.kosql.example.kosql.table
 import com.github.jacokoo.kosql.IntType
 import com.github.jacokoo.kosql.StringType
 import com.github.jacokoo.kosql.Table
-import com.github.jacokoo.kosql.statements.Column6
+import com.github.jacokoo.kosql.typesafe.Column6
 
 open class CustomerTable protected constructor(alias: String = ""): Table<Int>("t_customer", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()

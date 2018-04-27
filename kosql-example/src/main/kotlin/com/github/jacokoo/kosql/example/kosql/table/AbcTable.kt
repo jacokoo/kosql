@@ -10,7 +10,7 @@ import com.github.jacokoo.kosql.example.Color
 import com.github.jacokoo.kosql.example.State
 import com.github.jacokoo.kosql.example.kosql.AbcTableColorEnumType
 import com.github.jacokoo.kosql.example.kosql.AbcTableStateEnumType
-import com.github.jacokoo.kosql.statements.Column9
+import com.github.jacokoo.kosql.typesafe.Column9
 
 open class AbcTable protected constructor(alias: String = ""): Table<Int>("t_abc", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()

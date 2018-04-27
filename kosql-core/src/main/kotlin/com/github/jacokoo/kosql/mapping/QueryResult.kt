@@ -2,6 +2,9 @@ package com.github.jacokoo.kosql.mapping
 
 import com.github.jacokoo.kosql.Column
 import com.github.jacokoo.kosql.statements.*
+import com.github.jacokoo.kosql.typesafe.ColumnList
+import com.github.jacokoo.kosql.typesafe.Value
+import com.github.jacokoo.kosql.typesafe.Values
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -63,7 +66,7 @@ interface QueryResult<out T: Value>: Iterable<T> {
 data class QueryResults(override val columns: ColumnList, override val values: List<Values>): QueryResult<Values> {
     constructor(cs: ColumnList, qp: QueryPart, ko: QueryResultExtension): this(cs, ko.execute(qp, Mapper(cs)))
     private class Mapper(private val cs: ColumnList): ResultSetMapper<Values> {
-        override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col]})
+        override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col] })
     }
 }
 

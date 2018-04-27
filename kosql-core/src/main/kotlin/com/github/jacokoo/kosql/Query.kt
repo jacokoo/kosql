@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql
 
 import com.github.jacokoo.kosql.statements.*
+import com.github.jacokoo.kosql.typesafe.Inserts
 
 enum class Order { ASC, DESC }
 

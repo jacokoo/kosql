@@ -1,10 +1,8 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.mapping.Database
-import com.github.jacokoo.kosql.mapping.ResultSetMapper
-import com.github.jacokoo.kosql.mapping.ResultSetRow
-import com.github.jacokoo.kosql.mapping.Shortcuts
+import com.github.jacokoo.kosql.mapping.*
 import com.github.jacokoo.kosql.statements.*
+import com.github.jacokoo.kosql.typesafe.Selects
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder

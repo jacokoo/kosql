@@ -1,4 +1,4 @@
-package com.github.jacokoo.kosql.statements
+package com.github.jacokoo.kosql.typesafe
 
 fun times(n: Int, b: (Int) -> String): String = (1..n).map { b(it) }.joinToString()
 
@@ -15,9 +15,9 @@ fun main(args: Array<String>) {
     """.trimMargin()
 
     fun classPart(it: Int) = """
-        |data class Field$it<T, ${times(it) { "T$it" }}>(val table: Table<T>, val c: Column$it<${times(it) {"T$it"}}>): ExtraValues<T> {
+        |data class Field$it<T, ${times(it) { "T$it" }}>(val table: Table<T>, val c: Column$it<${times(it) { "T$it" }}>): ExtraValues<T> {
         |   override val data: InsertData<T> = InsertData(table, c, listOf())
-        |   infix fun VALUES(v: Value$it<${times(it) {"T$it"}}>): Repeat$it<T, ${times(it) {"T$it"}}> = Repeat$it(append(data, v))
+        |   infix fun VALUES(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
         |}
         |data class Repeat$it<T, ${times(it) { "T$it" }}>(override val data: InsertData<T>): InsertPart<T> {
         |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
     """.trimMargin()
 
     fun methodPart(it: Int) = """
-        |    operator fun <T, ${times(it) {"T$it"}}> Table<T>.invoke(${times(it) {"c$it: Column<T$it>"}}): Field$it<T, ${times(it) {"T$it"}}> = Field$it(this, Column$it(${times(it) {"c$it"}}))
+        |    operator fun <T, ${times(it) { "T$it" }}> Table<T>.invoke(${times(it) { "c$it: Column<T$it>" }}): Field$it<T, ${times(it) { "T$it" }}> = Field$it(this, Column$it(${times(it) { "c$it" }}))
         |
     """.trimMargin()
 

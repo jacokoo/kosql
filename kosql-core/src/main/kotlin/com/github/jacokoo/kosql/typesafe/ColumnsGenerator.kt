@@ -1,4 +1,4 @@
-package com.github.jacokoo.kosql.statements
+package com.github.jacokoo.kosql.typesafe
 
 fun main(args: Array<String>) {
     val count = 22
@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
     fun sign(it: Int) = """
         |
         |
-        |data class Column$it<${times(it) { "T$it" }}>(${times(it) {"val c$it: Column<T$it>"}}, override val columns: List<Column<*>> = listOf(${times(it) {"c$it"}})): ColumnList {
+        |data class Column$it<${times(it) { "T$it" }}>(${times(it) { "val c$it: Column<T$it>" }}, override val columns: List<Column<*>> = listOf(${times(it) { "c$it" }})): ColumnList {
     """.trimMargin()
 
     fun addOne(it: Int) = if (it < count) """

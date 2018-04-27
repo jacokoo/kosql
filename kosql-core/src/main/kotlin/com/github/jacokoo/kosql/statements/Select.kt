@@ -1,6 +1,10 @@
 package com.github.jacokoo.kosql.statements
 
 import com.github.jacokoo.kosql.*
+import com.github.jacokoo.kosql.typesafe.Column1
+import com.github.jacokoo.kosql.typesafe.ColumnList
+import com.github.jacokoo.kosql.typesafe.Columns
+import com.github.jacokoo.kosql.typesafe.SelectStatement1
 
 data class Join(val table: Table<*>, val type: JoinType, val expression: Expression<*>)
 
@@ -132,7 +136,7 @@ internal typealias SelectCreator = SelectFromPart.() -> QueryPart
 interface Select {
     object SELECT {
         operator fun invoke(columns: Columns, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
-        operator fun invoke(vararg tables: Table<*>, block: SelectCreator) = invoke(Columns(tables.fold(listOf()) {acc, i -> acc + i.columns}), block)
+        operator fun invoke(vararg tables: Table<*>, block: SelectCreator) = invoke(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }), block)
     }
 }
 
