@@ -42,7 +42,7 @@ class DefaultTableGenerator: TableGenerator {
             .add(Table::class)
             .add(
                 if (table.columns.size > 22) Columns::class.qualifiedName!!
-                else "com.github.jacokoo.kosql.statements.Column${table.columns.size}"
+                else "com.github.jacokoo.kosql.typesafe.Column${table.columns.size}"
             )
         val entityImports = Imports()
                 .add(Entity::class)
