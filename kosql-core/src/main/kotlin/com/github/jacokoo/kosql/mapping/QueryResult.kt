@@ -70,12 +70,18 @@ data class QueryResults(override val columns: ColumnList, override val values: L
 interface QueryResultExtension {
     fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T>
     fun <T> QueryPart.fetch(mapper: ResultSetMapper<T>): List<T> = execute(this, mapper)
+    fun <T> QueryPart.fetchOne(mapper: ResultSetMapper<T>) = fetch(mapper).firstOrNull()
+
     fun <T: Entity<*, *>> QueryPart.fetch(entityClass: KClass<T>) = fetch(ColumnsToEntityMapper(this.data.columns, entityClass))
+    fun <T: Entity<*, *>> QueryPart.fetchOne(entityClass: KClass<T>) = fetch(entityClass).firstOrNull()
+
     fun <T> QueryPart.fetch(mapper: (ResultSetRow) -> T): List<T> = fetch(object: ResultSetMapper<T>{
         override fun map(rs: ResultSetRow): T = mapper(rs)
     })
-    fun SelectStatement.fetch(): QueryResults = QueryResults(this.data.columns, this, this@QueryResultExtension)
+    fun <T> QueryPart.fetchOne(mapper: (ResultSetRow) -> T) = fetch(mapper).firstOrNull()
 
+    fun SelectStatement.fetch(): QueryResults = QueryResults(this.data.columns, this, this@QueryResultExtension)
+    fun SelectStatement.fetchOne() = fetch().values.firstOrNull()
 }
 
 

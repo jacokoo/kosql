@@ -29,6 +29,7 @@ fun main(args: Array<String>) {
         |    operator fun <${times(it) { "T$it" }}> Select.SELECT.invoke(${times(it) { "c$it: Column<T$it>" }}, block: SelectCreator) =  SelectStatement$it(Column$it(${times(it) {"c$it"}}), SelectFromPart(${times(it) {"c$it"}}).block().data)
         |    operator fun <${times(it) { "T$it" }}> Select.SELECT.invoke(c: Column$it<${times(it) {"T$it"}}>, block: SelectCreator) =  SelectStatement$it(c, SelectFromPart(c).block().data)
         |    fun <${times(it) { "T$it" }}> SelectStatement$it<${times(it) { "T$it" }}>.fetch(): QueryResult$it<${times(it) { "T$it" }}> = QueryResult$it(c, this, this@Selects)
+        |    fun <${times(it) { "T$it" }}> SelectStatement$it<${times(it) { "T$it" }}>.fetchOne() = fetch().values.firstOrNull()
         |
     """.trimMargin()
 
