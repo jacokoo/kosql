@@ -2,7 +2,14 @@ package com.github.jacokoo.kosql
 
 import com.github.jacokoo.kosql.statements.SQLBuilderContext
 
-interface Expression<T>: SQLPart
+interface Expression<T>: SQLPart {
+    fun and(right: Expression<*>) = ComposeExpression("AND", this, right, false)
+    fun or(right: Expression<*>) = ComposeExpression("OR", this, right, true)
+}
+
+interface ExpressionContainer<T> {
+    fun set(exp: Expression<*>): T
+}
 
 object TRUE: Expression<Any> {
     override fun toSQL(ctx: SQLBuilderContext): String = "1 = 1"

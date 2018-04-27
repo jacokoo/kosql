@@ -42,6 +42,21 @@ interface GroupByOperate {
     infix fun GROUP_BY(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
 }
 
+interface JoinOperate {
+    val data: QueryData
+    infix fun JOIN(t: Table<*>) = JoinOnPart(data, JoinType.INNER, t)
+    infix fun LEFT_JOIN(t: Table<*>) = JoinOnPart(data, JoinType.LEFT, t)
+    infix fun RIGHT_JOIN(t: Table<*>) = JoinOnPart(data, JoinType.RIGHT, t)
+    infix fun FULL_JOIN(t: Table<*>) = JoinOnPart(data, JoinType.FULL, t)
+    infix fun INNER_JOIN(t: Table<*>) = JoinOnPart(data, JoinType.INNER, t)
+}
+
+interface WhereOperate {
+    val data: QueryData
+    infix fun WHERE(e: Expression<*>): AfterWherePart = AfterWherePart(data.copy(expression = e))
+    infix fun <T> WHERE(c: Column<T>) = PartialExpression(WherePartial(data), c)
+}
+
 data class SelectEnd(override val data: QueryData): QueryPart
 
 data class LimitPart(override val data: QueryData): QueryPart {
@@ -50,9 +65,20 @@ data class LimitPart(override val data: QueryData): QueryPart {
 
 data class AfterGroupByPart(override val data: QueryData): OrderByOperate, LimitOperate, QueryPart
 
+data class HavingPartial(override val data: QueryData): ExpressionContainer<HavingPartial>, OrderByOperate, LimitOperate, QueryPart {
+    override fun set(exp: Expression<*>) = data.having?.let {
+        HavingPartial(data.copy(having = it.and(exp)))
+    } ?: HavingPartial(data.copy(having = exp))
+
+    infix fun <T> AND(column: Column<T>) = PartialExpression(this, column)
+    infix fun <T> AND(e: Expression<T>) = HavingPartial(data.copy(having = data.having!!.and(e)))
+    infix fun <T> OR(e: Expression<T>) = HavingPartial(data.copy(having = data.having!!.or(e)))
+}
+
 data class GroupByMorePart(override val data: QueryData): LimitOperate, OrderByOperate, QueryPart {
     infix fun AND(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
     infix fun HAVING(e: Expression<*>): AfterGroupByPart = AfterGroupByPart(data.copy(having = e))
+    infix fun <T> HAVING(c: Column<T>) = PartialExpression(HavingPartial(data), c)
 }
 
 data class OrderByMorePart(override val data: QueryData): LimitOperate, QueryPart {
@@ -61,18 +87,36 @@ data class OrderByMorePart(override val data: QueryData): LimitOperate, QueryPar
 
 data class AfterWherePart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart
 
-data class JoinOnPart(private val data: QueryData, private val type: JoinType, private val t: Table<*>) {
-    infix fun ON(e: Expression<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(joins = data.joins + Join(t, type, e)))
+data class JoinOnPartial(
+        override val data: QueryData, private val type: JoinType, private val t: Table<*>, private val join: Join? = null
+): ExpressionContainer<JoinOnPartial>, WhereOperate, JoinOperate, LimitOperate, OrderByOperate, GroupByOperate, QueryPart {
+    override fun set(exp: Expression<*>) = join?.let { jj ->
+        jj.copy(expression = jj.expression.and(exp)).let { this.copy(join = it, data = data.copy(joins = data.joins - jj + it)) }
+    } ?: Join(t, type, exp).let { this.copy(join = it, data = data.copy(joins = data.joins + it)) }
+
+    infix fun <T> AND(column: Column<T>) = PartialExpression(this, column)
+    infix fun <T> AND(e: Expression<T>) =
+            join!!.copy(expression = join.expression.and(e)).let { this.copy(join = it, data = data.copy(joins = data.joins - join + it)) }
+    infix fun <T> OR(e: Expression<T>) =
+        join!!.copy(expression = join.expression.or(e)).let { this.copy(join = it, data = data.copy(joins = data.joins - join + it)) }
 }
 
-data class WhereAndJoinPart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart {
-    infix fun WHERE(e: Expression<*>): AfterWherePart = AfterWherePart(data.copy(expression = e))
-    infix fun JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.INNER, t)
-    infix fun LEFT_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.LEFT, t)
-    infix fun RIGHT_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.RIGHT, t)
-    infix fun FULL_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.FULL, t)
-    infix fun INNER_JOIN(t: Table<*>): JoinOnPart = JoinOnPart(data, JoinType.INNER, t)
+data class JoinOnPart(private val data: QueryData, private val type: JoinType, private val t: Table<*>) {
+    infix fun ON(e: Expression<*>) = WhereAndJoinPart(data.copy(joins = data.joins + Join(t, type, e)))
+    infix fun <T> ON(c: Column<T>) = PartialExpression(JoinOnPartial(data, type, t), c)
 }
+
+data class WherePartial(override val data: QueryData): ExpressionContainer<WherePartial>, QueryPart, LimitOperate, OrderByOperate, GroupByOperate {
+    override fun set(exp: Expression<*>) = data.expression?.let {
+        WherePartial(data.copy(expression = it.and(exp)))
+    } ?: WherePartial(data.copy(expression = exp))
+
+    infix fun <T> AND(column: Column<T>) = PartialExpression(this, column)
+    infix fun <T> AND(e: Expression<T>) = WherePartial(data.copy(expression = data.expression!!.and(e)))
+    infix fun <T> OR(e: Expression<T>) = WherePartial(data.copy(expression = data.expression!!.or(e)))
+}
+
+data class WhereAndJoinPart(override val data: QueryData): WhereOperate, JoinOperate, LimitOperate, OrderByOperate, GroupByOperate, QueryPart
 
 data class SelectFromPart(private val data: QueryData): Operators {
     constructor(cs: ColumnList): this(QueryData(cs))
@@ -87,9 +131,6 @@ internal typealias SelectCreator = SelectFromPart.() -> QueryPart
 
 interface Select {
     object SELECT {
-        // operator fun invoke(vararg columns: Column<out Any>): SelectFromPart = SelectFromPart(QueryData(columns.toList()))
-        // operator fun invoke(table: Table<*>): WhereAndJoinPart = WhereAndJoinPart(QueryData(table().toList(), table))
-
         operator fun invoke(columns: Columns, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
         operator fun invoke(vararg tables: Table<*>, block: SelectCreator) = invoke(Columns(tables.fold(listOf()) {acc, i -> acc + i.columns}), block)
     }
