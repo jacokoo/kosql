@@ -98,7 +98,7 @@ class SQLBuilder {
     private fun appendJoins(str: StringBuilder, joins: List<Join>, ctx: SQLBuilderContext) {
         if (!joins.none()) str.append(" ")
         joins.map {
-            "${it.type} JOIN ${it.table.toSQL(ctx)} ON ${it.expression.toSQL(ctx)}"
+            "${it.type} JOIN ${it.table.toSQL(ctx)} ON ${it.expression!!.toSQL(ctx)}"
         }.joinTo(str, " ")
     }
 

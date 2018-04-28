@@ -2,6 +2,21 @@ package com.github.jacokoo.kosql.statements
 
 import com.github.jacokoo.kosql.Column
 
+interface ExpressionContainer<T> {
+    fun set(exp: Expression<*>, isAnd: Boolean = true): T
+
+    fun <T> Expression<T>.and(right: Expression<*>) = LogicPartial(this, right, true)
+    fun <T> Expression<T>.or(right: Expression<*>) = LogicPartial(this, right, true)
+}
+
+abstract class AbstractExpressionContainer<R: ExpressionContainer<R>>: ExpressionContainer<R> {
+    abstract fun refer(): R
+
+    infix fun <T> AND(column: Column<T>) = PartialExpression(refer(), column)
+    infix fun <T> AND(e: Expression<T>) = set(e)
+    infix fun <T> OR(e: Expression<T>) = set(e, false)
+}
+
 data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val right: Column<T>): CompareOperators {
     infix fun EQ(v: Column<T>): L = left.set(right.EQ(v))
     infix fun EQ(v: T): L = left.set(right.EQ(v))
@@ -34,15 +49,14 @@ data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val righ
     fun IS_NOT_NULL() = left.set(right.IS_NOT_NULL())
 }
 
-data class AndPartial<T>(val left: Expression<T>, val right: Expression<*>? = null): ExpressionContainer<AndPartial<T>>, Expression<T> {
-    override fun set(exp: Expression<*>) = AndPartial(left, exp)
-    override fun toSQL(ctx: SQLBuilderContext) = right?.let { "${left.toSQL(ctx)} AND ${right.toSQL(ctx)}" } ?: throw RuntimeException("AND expression is not finished")
-}
+data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = null, val isAnd: Boolean = true): AbstractExpressionContainer<LogicPartial<T>>(), Expression<T> {
+    override fun set(exp: Expression<*>, isAnd: Boolean) = LogicPartial(left, exp, isAnd)
+    override fun toSQL(ctx: SQLBuilderContext) = right?.let {
+        if (isAnd) "${left.toSQL(ctx)} AND ${right.toSQL(ctx)}"
+        else "(${left.toSQL(ctx)}) OR (${right.toSQL(ctx)})"
+    } ?: throw RuntimeException("AND expression is not finished")
 
-interface LogicOperators {
-    infix fun <T> Expression<T>.AND(other: Expression<out Any>?) = other?.let { this.and(other) } ?: this
-    infix fun <T, R> Expression<T>.AND(c: Column<R>) = PartialExpression(AndPartial(this), c)
-    infix fun <T> Expression<T>.OR(other: Expression<out Any>?) = other?.let { this.or(other) } ?: this
+    override fun refer(): LogicPartial<T> = this
 }
 
 interface CompareOperators {
@@ -89,4 +103,4 @@ interface ComputeOperators {
     operator fun <T : Number> Column<T>.div(v: Column<T>) = ColumnToColumnExpression("/", this, v)
 }
 
-interface Operators: LogicOperators, CompareOperators, ComputeOperators
+interface Operators: CompareOperators, ComputeOperators

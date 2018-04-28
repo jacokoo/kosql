@@ -3,29 +3,10 @@ package com.github.jacokoo.kosql.statements
 import com.github.jacokoo.kosql.Column
 import com.github.jacokoo.kosql.SQLPart
 
-interface Expression<T>: SQLPart {
-    fun and(right: Expression<*>) = ComposeExpression("AND", this, right, false)
-    fun or(right: Expression<*>) = ComposeExpression("OR", this, right, true)
-}
-
-interface ExpressionContainer<T> {
-    fun set(exp: Expression<*>): T
-}
+interface Expression<T>: SQLPart
 
 object TRUE: Expression<Any> {
     override fun toSQL(ctx: SQLBuilderContext): String = "1 = 1"
-}
-
-data class ComposeExpression<T> (
-        private val op: String,
-        private val left: Expression<T>,
-        private val right: Expression<*>,
-        private val quote: Boolean
-): Expression<T> {
-    override fun toSQL(ctx: SQLBuilderContext): String = when (quote) {
-        true -> "(${left.toSQL(ctx)}) $op (${right.toSQL(ctx)})"
-        else -> "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
-    }
 }
 
 data class SingleColumnExpression<T> (private val op: String, private val column: Column<T>): Expression<T> {
