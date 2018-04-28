@@ -1,6 +1,7 @@
-package com.github.jacokoo.kosql
+package com.github.jacokoo.kosql.statements
 
-import com.github.jacokoo.kosql.statements.SQLBuilderContext
+import com.github.jacokoo.kosql.Column
+import com.github.jacokoo.kosql.SQLPart
 
 interface Expression<T>: SQLPart {
     fun and(right: Expression<*>) = ComposeExpression("AND", this, right, false)

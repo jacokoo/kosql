@@ -1,6 +1,6 @@
-package com.github.jacokoo.kosql
+package com.github.jacokoo.kosql.statements
 
-import com.github.jacokoo.kosql.statements.SQLBuilderContext
+import com.github.jacokoo.kosql.*
 
 open class Function<T>(private val fn: String, val column: Column<T>): Column<T> by column{
     override fun sqlName(ctx: SQLBuilderContext): String = "$fn(${column.toSQL(ctx)})"

@@ -6,10 +6,14 @@ fun main(args: Array<String>) {
     val count  = 22
 
     val title = """
-        |package com.github.jacokoo.kosql.statements
+        |package com.github.jacokoo.kosql.typesafe
         |
         |import com.github.jacokoo.kosql.Column
         |import com.github.jacokoo.kosql.Table
+        |import com.github.jacokoo.kosql.statements.ExtraValues
+        |import com.github.jacokoo.kosql.statements.InsertData
+        |import com.github.jacokoo.kosql.statements.InsertStatement
+        |import com.github.jacokoo.kosql.statements.append
         |
         |
     """.trimMargin()
@@ -19,7 +23,7 @@ fun main(args: Array<String>) {
         |   override val data: InsertData<T> = InsertData(table, c, listOf())
         |   infix fun VALUES(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
         |}
-        |data class Repeat$it<T, ${times(it) { "T$it" }}>(override val data: InsertData<T>): InsertPart<T> {
+        |data class Repeat$it<T, ${times(it) { "T$it" }}>(override val data: InsertData<T>): InsertStatement<T> {
         |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
         |}
         |

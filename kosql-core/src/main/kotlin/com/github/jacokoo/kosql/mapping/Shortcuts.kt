@@ -1,14 +1,14 @@
 package com.github.jacokoo.kosql.mapping
 
-import com.github.jacokoo.kosql.Operators
+import com.github.jacokoo.kosql.statements.Operators
 import com.github.jacokoo.kosql.Table
 import com.github.jacokoo.kosql.statements.*
 import com.github.jacokoo.kosql.typesafe.Columns
 
 interface Shortcuts: Operators {
 
-    fun <T> executeInsert(part: InsertPart<T>): Pair<T, Int>
-    fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T>
+    fun <T> executeInsert(statement: InsertStatement<T>): Pair<T, Int>
+    fun <T> execute(qp: SelectStatement, mapper: ResultSetMapper<T>): List<T>
 
     fun <R, T: Entity<R, Table<R>>> T.save(): Boolean {
         val table = Database[this::class]!!
@@ -24,7 +24,7 @@ interface Shortcuts: Operators {
     fun <T, R: Table<T>> R.byId(t: T): Entity<T, Table<T>>? {
         val entity = Database[this]!!
         val exp = this.primaryKey() EQ t
-        val part = SelectEnd(QueryData(Columns(this.columns), this, expression = exp))
+        val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp))
         return execute(part, ColumnsToEntityMapper(part.data.columns, entity)).firstOrNull()
     }
 

@@ -1,6 +1,6 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.statements.QueryData
+import com.github.jacokoo.kosql.statements.SelectData
 import com.github.jacokoo.kosql.statements.SQLBuilderContext
 
 interface Nameable<out T>: SQLPart {
@@ -11,7 +11,7 @@ interface Nameable<out T>: SQLPart {
 
     fun sqlName(ctx: SQLBuilderContext): String = name
     override fun toSQL(ctx: SQLBuilderContext): String =
-            ctx.alias(this)?.let { "${sqlName(ctx) } AS $it" } ?: sqlName(ctx)
+            ctx.alias(this)?.let { "${sqlName(ctx)} AS $it" } ?: sqlName(ctx)
 
 }
 
@@ -73,7 +73,7 @@ open class EmptyTable(alias: String = ""): Table<Any>(alias) {
     }
 }
 
-class TableLike(private val data: QueryData, alias: String, private val original: List<Column<*>>): EmptyTable(alias) {
+class TableLike(private val data: SelectData, alias: String, private val original: List<Column<*>>): EmptyTable(alias) {
     private val map = original.associate { it to DefaultColumn(this, if (it.alias == "") it.name else it.alias, it.type) }
     init {
         this.columns = map.values.toList()

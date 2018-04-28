@@ -4,22 +4,27 @@ fun main(args: Array<String>) {
     val count = 22
 
     val title = """
-        |package com.github.jacokoo.kosql.statements
+        |package com.github.jacokoo.kosql.typesafe
         |
         |import com.github.jacokoo.kosql.Column
+        |import com.github.jacokoo.kosql.mapping.QueryResult
+        |import com.github.jacokoo.kosql.mapping.QueryResultExtension
+        |import com.github.jacokoo.kosql.mapping.ResultSetMapper
+        |import com.github.jacokoo.kosql.mapping.ResultSetRow
         |import com.github.jacokoo.kosql.mapping.*
+        |
         |
     """.trimMargin()
 
     fun classPart(it: Int) = """
         |
-        |data class SelectStatement$it<${times(it) { "T$it" }}>(val c: Column$it<${times(it) { "T$it" }}>, override val data: QueryData): QueryPart
+        |data class SelectStatement$it<${times(it) { "T$it" }}>(val c: Column$it<${times(it) { "T$it" }}>, override val data: SelectData): SelectStatement
         |class QueryResultMapper$it<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) { "T$it" }}>): ResultSetMapper<Value$it<${times(it) { "T$it" }}>> {
         |    override fun map(rs: ResultSetRow) = Value$it(${times(it) { "rs[${it - 1}, c.c$it]" }})
         |}
         |data class QueryResult$it<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) { "T$it" }}>, override val values: List<Value$it<${times(it) { "T$it" }}>>): QueryResult<Value$it<${times(it) { "T$it" }}>> {
         |    override val columns = c
-        |    constructor(c: Column$it<${times(it) { "T$it" }}>, qp: QueryPart, ko: QueryResultExtension): this(c, ko.execute(qp, QueryResultMapper$it(c)))
+        |    constructor(c: Column$it<${times(it) { "T$it" }}>, qp: SelectStatement, ko: QueryResultExtension): this(c, ko.execute(qp, QueryResultMapper$it(c)))
         |}
         |
     """.trimMargin()

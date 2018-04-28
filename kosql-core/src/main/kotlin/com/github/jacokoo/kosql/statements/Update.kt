@@ -1,6 +1,9 @@
 package com.github.jacokoo.kosql.statements
 
-import com.github.jacokoo.kosql.*
+import com.github.jacokoo.kosql.Column
+import com.github.jacokoo.kosql.JoinType
+import com.github.jacokoo.kosql.Statement
+import com.github.jacokoo.kosql.Table
 
 data class UpdateData(
         val table: Table<*>,
@@ -9,7 +12,7 @@ data class UpdateData(
         val expression: Expression<*>? = null
 )
 
-interface UpdatePart: Statement {
+interface UpdateStatement: Statement {
     val data: UpdateData
 }
 
@@ -33,9 +36,9 @@ class SetBlock {
     }
 }
 
-data class UpdateEnd(override val data: UpdateData): UpdatePart
+data class UpdateEnd(override val data: UpdateData): UpdateStatement
 
-data class UpdateWherePart(override val data: UpdateData): UpdatePart {
+data class UpdateWherePart(override val data: UpdateData): UpdateStatement {
     infix fun WHERE(e: Expression<*>): UpdateEnd = UpdateEnd(data.copy(expression = e))
 }
 
@@ -43,7 +46,7 @@ data class UpdateJoinPart(private val data: UpdateData, private val type: JoinTy
     infix fun ON(e: Expression<*>): SetPart = SetPart(data.copy(joins = data.joins + Join(t, type, e)))
 }
 
-data class SetPart(override val data: UpdateData): UpdatePart {
+data class SetPart(override val data: UpdateData): UpdateStatement {
     infix fun SET(block: (SetBlock) -> Unit): UpdateWherePart {
         val d = SetBlock()
         block(d)

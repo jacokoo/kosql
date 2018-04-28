@@ -1,6 +1,6 @@
-package com.github.jacokoo.kosql
+package com.github.jacokoo.kosql.statements
 
-import com.github.jacokoo.kosql.statements.SQLBuilderContext
+import com.github.jacokoo.kosql.Column
 
 data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val right: Column<T>): CompareOperators {
     infix fun EQ(v: Column<T>): L = left.set(right.EQ(v))

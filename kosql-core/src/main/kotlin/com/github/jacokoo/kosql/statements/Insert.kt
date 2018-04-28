@@ -15,10 +15,10 @@ data class InsertData<T>(
         val table: Table<T>,
         val columns: ColumnList,
         val values: List<List<Any?>> = listOf(),
-        val query: QueryPart? = null
+        val query: SelectStatement? = null
 )
 
-interface InsertPart<T>: Statement {
+interface InsertStatement<T>: Statement {
     val data: InsertData<T>
 }
 
@@ -26,7 +26,7 @@ internal fun <T> append(data: InsertData<T>, vararg cs: Value): InsertData<T> {
     return data.copy(values = data.values + cs.map { it.values })
 }
 
-data class InsertEnd<T>(override val data: InsertData<T>): InsertPart<T>
+data class InsertEnd<T>(override val data: InsertData<T>): InsertStatement<T>
 data class Entities(val entities: List<Entity<*, *>>)
 interface ExtraValues<T> {
     val data: InsertData<T>
@@ -39,7 +39,7 @@ interface ExtraValues<T> {
         return InsertEnd(data.copy(values = values))
     }
 
-    infix fun FROM(q: QueryPart): InsertEnd<T> = InsertEnd(data.copy(query = q))
+    infix fun FROM(q: SelectStatement): InsertEnd<T> = InsertEnd(data.copy(query = q))
 }
 
 data class Fields<T>(val table: Table<T>, val columns: ColumnList): ExtraValues<T> {
@@ -47,7 +47,7 @@ data class Fields<T>(val table: Table<T>, val columns: ColumnList): ExtraValues<
     infix fun VALUES(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, v))
 }
 
-data class ValuesRepeatPart<T>(override val data: InsertData<T>): InsertPart<T> {
+data class ValuesRepeatPart<T>(override val data: InsertData<T>): InsertStatement<T> {
     infix fun AND(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, v))
 }
 

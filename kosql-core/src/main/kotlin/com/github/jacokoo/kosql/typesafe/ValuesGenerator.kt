@@ -4,7 +4,7 @@ fun main(args: Array<String>) {
     val count = 22
 
     val title = """
-        |package com.github.jacokoo.kosql.statements
+        |package com.github.jacokoo.kosql.typesafe
         |
         |interface Value {
         |    val values: List<Any?>

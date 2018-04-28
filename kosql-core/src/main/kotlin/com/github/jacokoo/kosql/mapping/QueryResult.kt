@@ -1,7 +1,7 @@
 package com.github.jacokoo.kosql.mapping
 
 import com.github.jacokoo.kosql.Column
-import com.github.jacokoo.kosql.statements.*
+import com.github.jacokoo.kosql.statements.SelectStatement
 import com.github.jacokoo.kosql.typesafe.ColumnList
 import com.github.jacokoo.kosql.typesafe.Value
 import com.github.jacokoo.kosql.typesafe.Values
@@ -64,27 +64,27 @@ interface QueryResult<out T: Value>: Iterable<T> {
 }
 
 data class QueryResults(override val columns: ColumnList, override val values: List<Values>): QueryResult<Values> {
-    constructor(cs: ColumnList, qp: QueryPart, ko: QueryResultExtension): this(cs, ko.execute(qp, Mapper(cs)))
+    constructor(cs: ColumnList, qp: SelectStatement, ko: QueryResultExtension): this(cs, ko.execute(qp, Mapper(cs)))
     private class Mapper(private val cs: ColumnList): ResultSetMapper<Values> {
         override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col] })
     }
 }
 
 interface QueryResultExtension {
-    fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T>
-    fun <T> execute(qp: QueryPart, mapper: (ResultSetRow) -> T): List<T> = execute(qp, object: ResultSetMapper<T> {
+    fun <T> execute(qp: SelectStatement, mapper: ResultSetMapper<T>): List<T>
+    fun <T> execute(qp: SelectStatement, mapper: (ResultSetRow) -> T): List<T> = execute(qp, object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)
     })
-    fun <T: Entity<*, *>> execute(qp: QueryPart, entityClass: KClass<T>): List<T> = execute(qp, ColumnsToEntityMapper(qp.data.columns, entityClass))
+    fun <T: Entity<*, *>> execute(qp: SelectStatement, entityClass: KClass<T>): List<T> = execute(qp, ColumnsToEntityMapper(qp.data.columns, entityClass))
 
-    fun <T> QueryPart.fetch(mapper: ResultSetMapper<T>): List<T> = execute(this, mapper)
-    fun <T> QueryPart.fetchOne(mapper: ResultSetMapper<T>) = execute(this, mapper).firstOrNull()
+    fun <T> SelectStatement.fetch(mapper: ResultSetMapper<T>): List<T> = execute(this, mapper)
+    fun <T> SelectStatement.fetchOne(mapper: ResultSetMapper<T>) = execute(this, mapper).firstOrNull()
 
-    fun <T: Entity<*, *>> QueryPart.fetch(entityClass: KClass<T>) = execute(this, entityClass)
-    fun <T: Entity<*, *>> QueryPart.fetchOne(entityClass: KClass<T>) = execute(this, entityClass).firstOrNull()
+    fun <T: Entity<*, *>> SelectStatement.fetch(entityClass: KClass<T>) = execute(this, entityClass)
+    fun <T: Entity<*, *>> SelectStatement.fetchOne(entityClass: KClass<T>) = execute(this, entityClass).firstOrNull()
 
-    fun <T> QueryPart.fetch(mapper: (ResultSetRow) -> T): List<T> = execute(this, mapper)
-    fun <T> QueryPart.fetchOne(mapper: (ResultSetRow) -> T) = execute(this, mapper).firstOrNull()
+    fun <T> SelectStatement.fetch(mapper: (ResultSetRow) -> T): List<T> = execute(this, mapper)
+    fun <T> SelectStatement.fetchOne(mapper: (ResultSetRow) -> T) = execute(this, mapper).firstOrNull()
 
     fun SelectStatement.fetch(): QueryResults = QueryResults(this.data.columns, this, this@QueryResultExtension)
     fun SelectStatement.fetchOne() = fetch().values.firstOrNull()

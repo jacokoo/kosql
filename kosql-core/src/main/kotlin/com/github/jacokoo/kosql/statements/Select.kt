@@ -8,7 +8,7 @@ import com.github.jacokoo.kosql.typesafe.SelectStatement1
 
 data class Join(val table: Table<*>, val type: JoinType, val expression: Expression<*>)
 
-data class QueryData(
+data class SelectData(
         val columns: ColumnList,               // select columns
         val table: Table<*>? = null,                   // select from table
         val joins: List<Join> = listOf(),           // joins
@@ -20,8 +20,8 @@ data class QueryData(
         val rowCount: Int? = null
 )
 
-interface QueryPart: Statement {
-    val data: QueryData
+interface SelectStatement: Statement {
+    val data: SelectData
     fun AS(alias: String): TableLike = TableLike(data, alias, data.columns.columns)
     fun toCount(): SelectStatement1<Int> {
         val count = Count<Int>()
@@ -32,22 +32,22 @@ interface QueryPart: Statement {
 }
 
 interface LimitOperate {
-    val data: QueryData
+    val data: SelectData
     infix fun LIMIT(count: Int): LimitPart = LimitPart(data.copy(rowCount = count))
 }
 
 interface OrderByOperate {
-    val data: QueryData
+    val data: SelectData
     infix fun ORDER_BY(p: Pair<Column<*>, Order>): OrderByMorePart = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
 }
 
 interface GroupByOperate {
-    val data: QueryData
+    val data: SelectData
     infix fun GROUP_BY(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
 }
 
 interface JoinOperate {
-    val data: QueryData
+    val data: SelectData
     infix fun JOIN(t: Table<*>) = JoinOnPart(data, JoinType.INNER, t)
     infix fun LEFT_JOIN(t: Table<*>) = JoinOnPart(data, JoinType.LEFT, t)
     infix fun RIGHT_JOIN(t: Table<*>) = JoinOnPart(data, JoinType.RIGHT, t)
@@ -56,20 +56,20 @@ interface JoinOperate {
 }
 
 interface WhereOperate {
-    val data: QueryData
+    val data: SelectData
     infix fun WHERE(e: Expression<*>): AfterWherePart = AfterWherePart(data.copy(expression = e))
     infix fun <T> WHERE(c: Column<T>) = PartialExpression(WherePartial(data), c)
 }
 
-data class SelectEnd(override val data: QueryData): QueryPart
+data class SelectEnd(override val data: SelectData): SelectStatement
 
-data class LimitPart(override val data: QueryData): QueryPart {
+data class LimitPart(override val data: SelectData): SelectStatement {
     infix fun OFFSET(os: Int): SelectEnd = SelectEnd(data.copy(offset = os))
 }
 
-data class AfterGroupByPart(override val data: QueryData): OrderByOperate, LimitOperate, QueryPart
+data class AfterGroupByPart(override val data: SelectData): OrderByOperate, LimitOperate, SelectStatement
 
-data class HavingPartial(override val data: QueryData): ExpressionContainer<HavingPartial>, OrderByOperate, LimitOperate, QueryPart {
+data class HavingPartial(override val data: SelectData): ExpressionContainer<HavingPartial>, OrderByOperate, LimitOperate, SelectStatement {
     override fun set(exp: Expression<*>) = data.having?.let {
         HavingPartial(data.copy(having = it.and(exp)))
     } ?: HavingPartial(data.copy(having = exp))
@@ -79,21 +79,21 @@ data class HavingPartial(override val data: QueryData): ExpressionContainer<Havi
     infix fun <T> OR(e: Expression<T>) = HavingPartial(data.copy(having = data.having!!.or(e)))
 }
 
-data class GroupByMorePart(override val data: QueryData): LimitOperate, OrderByOperate, QueryPart {
+data class GroupByMorePart(override val data: SelectData): LimitOperate, OrderByOperate, SelectStatement {
     infix fun AND(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
     infix fun HAVING(e: Expression<*>): AfterGroupByPart = AfterGroupByPart(data.copy(having = e))
     infix fun <T> HAVING(c: Column<T>) = PartialExpression(HavingPartial(data), c)
 }
 
-data class OrderByMorePart(override val data: QueryData): LimitOperate, QueryPart {
+data class OrderByMorePart(override val data: SelectData): LimitOperate, SelectStatement {
     infix fun AND(p: Pair<Column<*>, Order>): OrderByMorePart = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
 }
 
-data class AfterWherePart(override val data: QueryData): LimitOperate, OrderByOperate, GroupByOperate, QueryPart
+data class AfterWherePart(override val data: SelectData): LimitOperate, OrderByOperate, GroupByOperate, SelectStatement
 
 data class JoinOnPartial(
-        override val data: QueryData, private val type: JoinType, private val t: Table<*>, private val join: Join? = null
-): ExpressionContainer<JoinOnPartial>, WhereOperate, JoinOperate, LimitOperate, OrderByOperate, GroupByOperate, QueryPart {
+        override val data: SelectData, private val type: JoinType, private val t: Table<*>, private val join: Join? = null
+): ExpressionContainer<JoinOnPartial>, WhereOperate, JoinOperate, LimitOperate, OrderByOperate, GroupByOperate, SelectStatement {
     override fun set(exp: Expression<*>) = join?.let { jj ->
         jj.copy(expression = jj.expression.and(exp)).let { this.copy(join = it, data = data.copy(joins = data.joins - jj + it)) }
     } ?: Join(t, type, exp).let { this.copy(join = it, data = data.copy(joins = data.joins + it)) }
@@ -105,12 +105,12 @@ data class JoinOnPartial(
         join!!.copy(expression = join.expression.or(e)).let { this.copy(join = it, data = data.copy(joins = data.joins - join + it)) }
 }
 
-data class JoinOnPart(private val data: QueryData, private val type: JoinType, private val t: Table<*>) {
+data class JoinOnPart(private val data: SelectData, private val type: JoinType, private val t: Table<*>) {
     infix fun ON(e: Expression<*>) = WhereAndJoinPart(data.copy(joins = data.joins + Join(t, type, e)))
     infix fun <T> ON(c: Column<T>) = PartialExpression(JoinOnPartial(data, type, t), c)
 }
 
-data class WherePartial(override val data: QueryData): ExpressionContainer<WherePartial>, QueryPart, LimitOperate, OrderByOperate, GroupByOperate {
+data class WherePartial(override val data: SelectData): ExpressionContainer<WherePartial>, SelectStatement, LimitOperate, OrderByOperate, GroupByOperate {
     override fun set(exp: Expression<*>) = data.expression?.let {
         WherePartial(data.copy(expression = it.and(exp)))
     } ?: WherePartial(data.copy(expression = exp))
@@ -120,22 +120,20 @@ data class WherePartial(override val data: QueryData): ExpressionContainer<Where
     infix fun <T> OR(e: Expression<T>) = WherePartial(data.copy(expression = data.expression!!.or(e)))
 }
 
-data class WhereAndJoinPart(override val data: QueryData): WhereOperate, JoinOperate, LimitOperate, OrderByOperate, GroupByOperate, QueryPart
+data class WhereAndJoinPart(override val data: SelectData): WhereOperate, JoinOperate, LimitOperate, OrderByOperate, GroupByOperate, SelectStatement
 
-data class SelectFromPart(private val data: QueryData): Operators {
-    constructor(cs: ColumnList): this(QueryData(cs))
-    constructor(vararg cs: Column<*>): this(QueryData(Columns(cs.toList())))
+data class SelectFromPart(private val data: SelectData): Operators {
+    constructor(cs: ColumnList): this(SelectData(cs))
+    constructor(vararg cs: Column<*>): this(SelectData(Columns(cs.toList())))
 
     fun FROM(t: Table<*>): WhereAndJoinPart = WhereAndJoinPart(data.copy(table = t))
 }
 
-data class SelectStatement(override val data: QueryData): QueryPart
-
-internal typealias SelectCreator = SelectFromPart.() -> QueryPart
+internal typealias SelectCreator = SelectFromPart.() -> SelectStatement
 
 interface Select {
     object SELECT {
-        operator fun invoke(columns: Columns, block: SelectCreator) = SelectStatement(SelectFromPart(columns).block().data)
+        operator fun invoke(columns: Columns, block: SelectCreator) = SelectEnd(SelectFromPart(columns).block().data)
         operator fun invoke(vararg tables: Table<*>, block: SelectCreator) = invoke(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }), block)
     }
 }

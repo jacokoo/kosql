@@ -1,6 +1,9 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.mapping.*
+import com.github.jacokoo.kosql.mapping.Database
+import com.github.jacokoo.kosql.mapping.ResultSetMapper
+import com.github.jacokoo.kosql.mapping.ResultSetRow
+import com.github.jacokoo.kosql.mapping.Shortcuts
 import com.github.jacokoo.kosql.statements.*
 import com.github.jacokoo.kosql.typesafe.Selects
 import org.springframework.jdbc.core.JdbcTemplate
@@ -16,7 +19,7 @@ open class KoSQL(
         private val builder: SQLBuilder = SQLBuilder()
 ): Query(), Selects, Shortcuts {
 
-    override fun <T> execute(qp: QueryPart, mapper: ResultSetMapper<T>): List<T> =
+    override fun <T> execute(qp: SelectStatement, mapper: ResultSetMapper<T>): List<T> =
         builder.build(qp).let { (sql, context) ->
             println(sql)
             jdbc.execute { conn: Connection ->
@@ -33,20 +36,20 @@ open class KoSQL(
             }!!
         }
 
-    fun UpdatePart.execute(): Int =
+    fun UpdateStatement.execute(): Int =
         builder.build(this).let { (sql, context) ->
             println(sql)
             jdbc.update { it.prepareStatement(sql).also { context.fillArguments(it) } }
         }
 
-    fun <T> InsertPart<T>.executeBatch(): Pair<List<T>, Int> = executeBatchInsert(this)
+    fun <T> InsertStatement<T>.executeBatch(): Pair<List<T>, Int> = executeBatchInsert(this)
 
-    fun <T> InsertPart<T>.execute(): Pair<T, Int> = executeInsert(this)
+    fun <T> InsertStatement<T>.execute(): Pair<T, Int> = executeInsert(this)
 
-    fun <T> executeBatchInsert(part: InsertPart<T>): Pair<List<T>, Int> =
-        builder.build(part).let { (sql, context) ->
+    fun <T> executeBatchInsert(statement: InsertStatement<T>): Pair<List<T>, Int> =
+        builder.build(statement).let { (sql, context) ->
             println(sql)
-            val pk = (context.statement as InsertPart<*>).data.table.primaryKey()
+            val pk = (context.statement as InsertStatement<*>).data.table.primaryKey()
             if (pk.autoIncrement)
                 executeInsertWithKey(sql, context).let { (key, rows) ->
                     @Suppress("UNCHECKED_CAST")
@@ -56,10 +59,10 @@ open class KoSQL(
         }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> executeInsert(part: InsertPart<T>): Pair<T, Int> =
-        builder.build(part).let { (sql, context) ->
+    override fun <T> executeInsert(statement: InsertStatement<T>): Pair<T, Int> =
+        builder.build(statement).let { (sql, context) ->
             println(sql)
-            val pk = (context.statement as InsertPart<*>).data.table.primaryKey()
+            val pk = (context.statement as InsertStatement<*>).data.table.primaryKey()
             if (pk.autoIncrement)
                 executeInsertWithKey(sql, context).let { (key, rows) ->
                     key.keyList.first().let { pk.type.fromDb(it.values.first()) as T } to rows

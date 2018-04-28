@@ -1,11 +1,13 @@
 package com.github.jacokoo.kosql.statements
 
-import com.github.jacokoo.kosql.*
+import com.github.jacokoo.kosql.Column
+import com.github.jacokoo.kosql.Nameable
+import com.github.jacokoo.kosql.Statement
 import java.sql.PreparedStatement
 
 class SQLBuilder {
-    fun build(part: QueryPart): BuildResult = build(part.data, SQLBuilderContext(this, part))
-    fun build(data: QueryData, ctx: SQLBuilderContext): BuildResult {
+    fun build(part: SelectStatement): BuildResult = build(part.data, SQLBuilderContext(this, part))
+    fun build(data: SelectData, ctx: SQLBuilderContext): BuildResult {
         if (data.table == null) throw RuntimeException("no table specified")
         return BuildResult.build(ctx) {
             append(" FROM ").append(data.table.toSQL(ctx))
@@ -34,7 +36,7 @@ class SQLBuilder {
         }
     }
 
-    fun build(update: UpdatePart): BuildResult = build(update.data, SQLBuilderContext(this, update))
+    fun build(update: UpdateStatement): BuildResult = build(update.data, SQLBuilderContext(this, update))
     fun build(data: UpdateData, ctx: SQLBuilderContext): BuildResult = BuildResult.build(ctx) {
         if (data.pairs.none()) throw RuntimeException("no column to update")
 
@@ -57,7 +59,7 @@ class SQLBuilder {
         appendExpression("WHERE", this, data.expression, ctx)
     }
 
-    fun build(delete: DeletePart): BuildResult = build(delete.data, SQLBuilderContext(this, delete))
+    fun build(delete: DeleteStatement): BuildResult = build(delete.data, SQLBuilderContext(this, delete))
     fun build(data: DeleteData, ctx: SQLBuilderContext): BuildResult {
         if (data.deletes.none()) throw RuntimeException("no table specified for delete")
         return BuildResult.build(ctx) {
@@ -75,7 +77,7 @@ class SQLBuilder {
         }
     }
 
-    fun <T> build(insert: InsertPart<T>) = build(insert.data, SQLBuilderContext(this, insert))
+    fun <T> build(insert: InsertStatement<T>) = build(insert.data, SQLBuilderContext(this, insert))
     fun <T> build(data: InsertData<T>, ctx: SQLBuilderContext): BuildResult {
         if (data.query == null && data.values.none()) throw RuntimeException("no data to insert")
         return BuildResult.build(ctx) {
