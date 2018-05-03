@@ -18,7 +18,7 @@ open class ProductTable protected constructor(alias: String = ""): Table<Int>("t
 
     override fun AS(alias: String) = ProductTable(alias)
     override fun primaryKey() = ID
-    operator fun invoke() = Column6(ID, PRODUCT_NAME, SUPPLIER_ID, UNIT_PRICE, PACKAGE1, IS_DISCONTINUED)
+    operator fun unaryMinus() = Column6(ID, PRODUCT_NAME, SUPPLIER_ID, UNIT_PRICE, PACKAGE1, IS_DISCONTINUED)
 }
 
 object PRODUCT: ProductTable()

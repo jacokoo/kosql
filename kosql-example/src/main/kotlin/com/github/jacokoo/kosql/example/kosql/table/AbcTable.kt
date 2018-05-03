@@ -20,12 +20,12 @@ open class AbcTable protected constructor(alias: String = ""): Table<Int>("t_abc
     val BOOL1 = createColumn("f_bool1", BooleanType(), false, false)
     val BOOL2 = createColumn("f_bool2", BooleanType(), false, false)
     val BIT1 = createColumn("f_bit1", LongType(), false, 12L)
-    val BIT2 = createColumn("f_bit2", ByteArrayType(), false, ByteArray(0))
+    val BIT2 = createColumn("f_bit2", ByteArrayType(), true, ByteArray(0))
     val TEXT = createColumn("f_text", StringType(), true, null)
 
     override fun AS(alias: String) = AbcTable(alias)
     override fun primaryKey() = ID
-    operator fun invoke() = Column9(ID, A, COLOR, STATE, BOOL1, BOOL2, BIT1, BIT2, TEXT)
+    operator fun unaryMinus() = Column9(ID, A, COLOR, STATE, BOOL1, BOOL2, BIT1, BIT2, TEXT)
 }
 
 object ABC: AbcTable()

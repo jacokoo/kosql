@@ -18,7 +18,7 @@ open class OrderTable protected constructor(alias: String = ""): Table<Int>("t_o
 
     override fun AS(alias: String) = OrderTable(alias)
     override fun primaryKey() = ID
-    operator fun invoke() = Column5(ID, ORDER_DATE, ORDER_NUMBER, CUSTOMER_ID, TOTAL_AMOUNT)
+    operator fun unaryMinus() = Column5(ID, ORDER_DATE, ORDER_NUMBER, CUSTOMER_ID, TOTAL_AMOUNT)
 }
 
 object ORDER: OrderTable()

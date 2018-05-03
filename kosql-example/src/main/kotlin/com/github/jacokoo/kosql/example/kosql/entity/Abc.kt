@@ -14,7 +14,7 @@ open class Abc: Entity<Int, AbcTable> {
     var bool1: Boolean = false
     var bool2: Boolean = false
     var bit1: Long = 12L
-    var bit2: ByteArray = ByteArray(0)
+    var bit2: ByteArray? = ByteArray(0)
     var text: String? = null
 
     override fun get(name: String): Any? = when(name) {

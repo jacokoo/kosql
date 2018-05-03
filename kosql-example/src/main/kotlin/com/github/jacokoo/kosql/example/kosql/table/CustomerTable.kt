@@ -15,7 +15,7 @@ open class CustomerTable protected constructor(alias: String = ""): Table<Int>("
 
     override fun AS(alias: String) = CustomerTable(alias)
     override fun primaryKey() = ID
-    operator fun invoke() = Column6(ID, FIRST_NAME, LAST_NAME, CITY, COUNTRY, PHONE)
+    operator fun unaryMinus() = Column6(ID, FIRST_NAME, LAST_NAME, CITY, COUNTRY, PHONE)
 }
 
 object CUSTOMER: CustomerTable()

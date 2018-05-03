@@ -17,7 +17,7 @@ open class SupplierTable protected constructor(alias: String = ""): Table<Int>("
 
     override fun AS(alias: String) = SupplierTable(alias)
     override fun primaryKey() = ID
-    operator fun invoke() = Column8(ID, COMPANY_NAME, CONTACT_NAME, CONTACT_TITLE, CITY, COUNTRY, PHONE, FAX)
+    operator fun unaryMinus() = Column8(ID, COMPANY_NAME, CONTACT_NAME, CONTACT_TITLE, CITY, COUNTRY, PHONE, FAX)
 }
 
 object SUPPLIER: SupplierTable()

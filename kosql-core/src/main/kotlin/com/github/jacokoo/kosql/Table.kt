@@ -1,7 +1,8 @@
 package com.github.jacokoo.kosql
 
-import com.github.jacokoo.kosql.statements.SelectData
 import com.github.jacokoo.kosql.statements.SQLBuilderContext
+import com.github.jacokoo.kosql.statements.SelectData
+import com.github.jacokoo.kosql.typesafe.Column1
 
 interface Nameable<out T>: SQLPart {
     val name: String
@@ -24,6 +25,8 @@ interface Column<T>: Nameable<Column<T>> {
 
     fun ASC(): Pair<Column<T>, Order> = this to Order.ASC
     fun DESC(): Pair<Column<T>, Order> = this to Order.DESC
+
+    operator fun unaryPlus(): Column1<T> = Column1(this)
 }
 
 data class DefaultColumn<T>(
