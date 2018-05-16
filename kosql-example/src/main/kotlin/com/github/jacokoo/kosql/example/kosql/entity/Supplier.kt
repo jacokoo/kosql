@@ -55,5 +55,5 @@ open class Supplier: Entity<Int, SupplierTable> {
         append("Supplier (")
         append("id = $id, companyName = $companyName, contactName = $contactName, contactTitle = $contactTitle, city = $city, country = $country, phone = $phone, fax = $fax")
         append(")")
-    }}
-
+    }
+}

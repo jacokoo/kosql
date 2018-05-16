@@ -39,6 +39,6 @@ open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val tab
     }
 
     override fun writeTail() {
-        writer.write("object ${table.objectName}: ${table.tableName}()\n")
+        writer.write("\nobject ${table.objectName}: ${table.tableName}()\n")
     }
 }

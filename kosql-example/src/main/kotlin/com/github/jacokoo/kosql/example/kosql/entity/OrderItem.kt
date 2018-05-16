@@ -44,5 +44,5 @@ open class OrderItem: Entity<Int, OrderItemTable> {
         append("OrderItem (")
         append("id = $id, orderId = $orderId, productId = $productId, unitPrice = $unitPrice, quantity = $quantity")
         append(")")
-    }}
-
+    }
+}

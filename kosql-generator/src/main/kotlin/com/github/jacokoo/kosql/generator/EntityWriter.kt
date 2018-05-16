@@ -57,6 +57,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
             |        append("${table.entity.fields.map { "${it.name} = \$${it.name}" }.joinToString()}")
             |        append(")")
             |    }
+            |
         """.trimMargin())
     }
 }

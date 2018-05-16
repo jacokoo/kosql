@@ -47,5 +47,5 @@ open class Customer: Entity<Int, CustomerTable> {
         append("Customer (")
         append("id = $id, firstName = $firstName, lastName = $lastName, city = $city, country = $country, phone = $phone")
         append(")")
-    }}
-
+    }
+}

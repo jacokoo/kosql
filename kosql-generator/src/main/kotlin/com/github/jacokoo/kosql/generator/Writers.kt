@@ -22,7 +22,6 @@ abstract class AbstractClassWriter(val writer: Writer): ClassWriter {
         writer.write("\n")
         writeMethods()
         writer.write("}\n")
-        writer.write("\n")
         writeTail()
     }
     abstract fun writePackage()

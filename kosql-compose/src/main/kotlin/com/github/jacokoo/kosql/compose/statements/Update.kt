@@ -20,6 +20,8 @@ interface UpdateStatement: Statement {
     val data: UpdateData
 }
 
+data class UpdateEnd(override val data: UpdateData): UpdateStatement
+
 class SetBlock {
     var data: MutableMap<Column<*>, Any?> = mutableMapOf()
     operator fun <T> set(col: Column<T>, v: T) { data[col] = v }

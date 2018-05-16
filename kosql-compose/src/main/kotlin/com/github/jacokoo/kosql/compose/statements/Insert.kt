@@ -52,7 +52,7 @@ interface Insert {
         infix fun <T> INTO(t: T): T = t
         operator fun <T: Any, R: Table<T>> invoke(vararg entities: Entity<T, R>): InsertEnd<T> {
             if (entities.isEmpty()) throw RuntimeException("You have to supply at least one entity")
-            val table = Database[entities[0]::class] ?: throw RuntimeException("")
+            val table = Database[entities[0]::class]!!
             val columns = table.columns
             val values = entities.map { e -> columns.map { it.type.toDb(e[it.name]) } }
             return InsertEnd(InsertData(table, Columns(columns), values))

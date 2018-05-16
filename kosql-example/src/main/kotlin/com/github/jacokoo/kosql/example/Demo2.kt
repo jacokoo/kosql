@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql.example
 
 import com.github.jacokoo.kosql.compose.SQLBuilder
+import com.github.jacokoo.kosql.example.kosql.entity.Order
 import com.github.jacokoo.kosql.example.kosql.table.ORDER
 import com.github.jacokoo.kosql.example.kosql.table.ORDER_ITEM
 import com.github.jacokoo.kosql.spring.jdbc.KoSQL
@@ -29,6 +30,8 @@ class Demo2(private val ko: KoSQL) {
             }
 
             println(SQLBuilder().build(sql).sql)
+
+            val o: Order = ORDER.byId(1) as Order;
 
             println()
         }

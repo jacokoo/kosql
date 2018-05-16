@@ -33,6 +33,7 @@ open class KoSQL(
         jdbc.update { it.prepareStatement(sql).also { context.fillArguments(it) } }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> execute(insert: InsertStatement<T>): Pair<T, Int> = builder.build(insert).let { (sql, context) ->
         val pk = (context.statement as InsertStatement<*>).data.table.primaryKey()
         if (pk.autoIncrement)

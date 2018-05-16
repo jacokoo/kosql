@@ -19,6 +19,8 @@ interface DeleteStatement: Statement {
     val data: DeleteData
 }
 
+data class DeleteEnd(override val data: DeleteData): DeleteStatement
+
 data class DeleteWhereDataContainer(override val data: DeleteData): AbstractWhereDataContainer<DeleteData, DeleteWhereDataContainer>() {
     override fun refer(data: DeleteData) = DeleteWhereDataContainer(data)
 }

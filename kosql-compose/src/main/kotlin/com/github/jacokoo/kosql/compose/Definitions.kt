@@ -119,18 +119,19 @@ class EmptyEntity: Entity<Any, EmptyTable> {
     override fun set(name: String, value: Any?) {}
 }
 
-@Suppress("UNCHECKED_CAST")
-object Database {
+interface Database {
 
-    private var entityToTable: MutableMap<in KClass<out Entity<*, Table<*>>>, Table<out Any>> = mutableMapOf()
-    private var tableToEntity: MutableMap<in Table<out Any>, KClass<out Entity<*, Table<*>>>> = mutableMapOf()
+    @Suppress("UNCHECKED_CAST")
+    companion object {
+        private var entityToTable: MutableMap<in KClass<out Entity<*, Table<*>>>, Table<out Any>> = mutableMapOf()
+        private var tableToEntity: MutableMap<in Table<out Any>, KClass<out Entity<*, Table<*>>>> = mutableMapOf()
 
-    fun <T: Any> register(table: Table<out T>, entity: KClass<out Entity<T, Table<T>>>) {
-        tableToEntity[table] = entity
-        entityToTable[entity] = table
+        fun <T: Any> register(table: Table<out T>, entity: KClass<out Entity<T, Table<T>>>) {
+            tableToEntity[table] = entity
+            entityToTable[entity] = table
+        }
+
+        operator fun <T> get(table: Table<T>): KClass<out Entity<T, Table<T>>>? = tableToEntity[table] as KClass<out Entity<T, Table<T>>>
+        operator fun <T> get(entity: KClass<out Entity<T, Table<T>>>): Table<T>? = entityToTable[entity] as Table<T>
     }
-
-    operator fun <T> get(table: Table<T>): KClass<out Entity<T, Table<T>>>? = tableToEntity[table] as KClass<out Entity<T, Table<T>>>
-    operator fun <T> get(entity: KClass<out Entity<T, Table<T>>>): Table<T>? = entityToTable[entity] as Table<T>
-
 }

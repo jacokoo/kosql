@@ -57,5 +57,5 @@ open class Abc: Entity<Int, AbcTable> {
         append("Abc (")
         append("id = $id, a = $a, color = $color, state = $state, bool1 = $bool1, bool2 = $bool2, bit1 = $bit1, text = $text")
         append(")")
-    }}
-
+    }
+}

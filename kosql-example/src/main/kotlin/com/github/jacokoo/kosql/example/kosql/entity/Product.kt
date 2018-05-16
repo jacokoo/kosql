@@ -48,5 +48,5 @@ open class Product: Entity<Int, ProductTable> {
         append("Product (")
         append("id = $id, productName = $productName, supplierId = $supplierId, unitPrice = $unitPrice, package1 = $package1, isDiscontinued = $isDiscontinued")
         append(")")
-    }}
-
+    }
+}
