@@ -1,6 +1,6 @@
 package com.github.jacokoo.kosql.generator.columns
 
-import com.github.jacokoo.kosql.*
+import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.generator.AbstractColumnGenerator
 import com.github.jacokoo.kosql.generator.ColumnDefinition
 import com.github.jacokoo.kosql.generator.ColumnGenerator

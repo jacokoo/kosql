@@ -1,9 +1,6 @@
 package com.github.jacokoo.kosql.generator.columns
 
-import com.github.jacokoo.kosql.DataType
-import com.github.jacokoo.kosql.DateTimeLongType
-import com.github.jacokoo.kosql.DateTimeType
-import com.github.jacokoo.kosql.DateType
+import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.generator.AbstractColumnGenerator
 import com.github.jacokoo.kosql.generator.ColumnDefinition
 import java.sql.Types

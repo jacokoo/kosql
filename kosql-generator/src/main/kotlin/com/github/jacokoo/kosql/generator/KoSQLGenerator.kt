@@ -1,9 +1,9 @@
 package com.github.jacokoo.kosql.generator
 
-import com.github.jacokoo.kosql.IntEnumType
-import com.github.jacokoo.kosql.StringEnumType
+import com.github.jacokoo.kosql.compose.IntEnumType
+import com.github.jacokoo.kosql.compose.StringEnumType
 import com.github.jacokoo.kosql.generator.columns.*
-import com.github.jacokoo.kosql.mapping.Database
+import com.github.jacokoo.kosql.compose.Database
 import org.springframework.jdbc.core.JdbcTemplate
 import java.io.File
 import java.sql.Connection

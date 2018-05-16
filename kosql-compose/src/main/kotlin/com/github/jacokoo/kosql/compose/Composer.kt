@@ -4,12 +4,10 @@ import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.Inserts
 import com.github.jacokoo.kosql.compose.typesafe.Selects
 
-interface Composer: Operators, Selects, Inserts, Update, Delete {
-    companion object {
-        val TRUE = Expression.TRUE
-        val INSERT = Insert.INSERT
-        val DELETE = Delete.DELETE
-    }
+open class Composer: Operators, Selects, Inserts, Update, Delete {
+    val TRUE = Expression.TRUE
+    val INSERT = Insert.INSERT
+    val DELETE = Delete.DELETE
 
     fun <T: Number> sum(c: Column<T>): Column<out T> = Sum(c)
     fun <T: Number> avg(c: Column<T>): Column<out T> = Avg(c)

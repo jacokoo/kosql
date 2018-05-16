@@ -1,8 +1,8 @@
 package com.github.jacokoo.kosql.generator
 
-import com.github.jacokoo.kosql.Table
-import com.github.jacokoo.kosql.mapping.Entity
-import com.github.jacokoo.kosql.typesafe.Columns
+import com.github.jacokoo.kosql.compose.Entity
+import com.github.jacokoo.kosql.compose.Table
+import com.github.jacokoo.kosql.compose.typesafe.Columns
 
 data class TableDefinition(
     val name: String,
@@ -42,7 +42,7 @@ class DefaultTableGenerator: TableGenerator {
             .add(Table::class)
             .add(
                 if (table.columns.size > 22) Columns::class.qualifiedName!!
-                else "com.github.jacokoo.kosql.typesafe.Column${table.columns.size}"
+                else "com.github.jacokoo.kosql.compose.typesafe.Column${table.columns.size}"
             )
         val entityImports = Imports()
                 .add(Entity::class)

@@ -1,5 +1,6 @@
 package com.github.jacokoo.kosql.spring.jdbc
 
+import com.github.jacokoo.kosql.compose.Composer
 import com.github.jacokoo.kosql.compose.Database
 import com.github.jacokoo.kosql.compose.SQLBuilder
 import com.github.jacokoo.kosql.compose.SQLBuilderContext
@@ -22,7 +23,7 @@ open class KoSQL(
     private val database: Database,
     private val jdbc: JdbcTemplate,
     private val builder: SQLBuilder = SQLBuilder()
-): Queries, Shortcut {
+): Composer(), Queries, Shortcut {
 
     override fun execute(update: UpdateStatement): Int = builder.build(update).let { (sql, context) ->
         jdbc.update { it.prepareStatement(sql).also { context.fillArguments(it) } }

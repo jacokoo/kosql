@@ -1,6 +1,6 @@
 package com.github.jacokoo.kosql.generator
 
-import com.github.jacokoo.kosql.DataType
+import com.github.jacokoo.kosql.compose.DataType
 import java.sql.ResultSet
 import java.sql.Types
 import kotlin.reflect.KClass

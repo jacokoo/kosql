@@ -11,7 +11,7 @@
         <module>kosql-compose</module>
         <module>kosql-executor</module>
         <module>kosql-spring-jdbc</module>
-        <module>kosql-exmaple</module>
+        <module>kosql-example</module>
         <module>kosql-generator</module>
     </modules>
     <packaging>pom</packaging>
@@ -19,6 +19,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.2.31</kotlin.version>
+        <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <junit.version>4.12</junit.version>
         <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
@@ -49,7 +50,12 @@
             <dependency>
                 <groupId>com.github.jacokoo</groupId>
                 <artifactId>kosql-spring-jdbc</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.jacokoo</groupId>
+                <artifactId>kosql-generator</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>

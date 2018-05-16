@@ -1,7 +1,7 @@
 package com.github.jacokoo.kosql.generator.columns
 
-import com.github.jacokoo.kosql.DataType
-import com.github.jacokoo.kosql.StringType
+import com.github.jacokoo.kosql.compose.DataType
+import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.generator.AbstractColumnGenerator
 import com.github.jacokoo.kosql.generator.ColumnDefinition
 import com.github.jacokoo.kosql.generator.ColumnGenerator
