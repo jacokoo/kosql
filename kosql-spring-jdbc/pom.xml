@@ -9,6 +9,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kosql-generator</artifactId>
+    <artifactId>kosql-spring-jdbc</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.jacokoo</groupId>
+            <artifactId>kosql-executor</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+    </dependencies>
 </project>
