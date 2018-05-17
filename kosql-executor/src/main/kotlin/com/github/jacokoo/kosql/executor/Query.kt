@@ -40,7 +40,7 @@ class ColumnsToEntityMapper<T, R: Entity<T>>(val columns: ColumnList, val entity
     @Suppress("UNCHECKED_CAST")
     override fun map(rs: ResultSetRow): R {
         val cs = columns.columns.filter { Database[it.table as Table<T, R>] == entityClass }
-        if (cs.none()) throw RuntimeException("no columns for entity")
+        assert(cs.isNotEmpty())
         val clazz = Database[cs[0].table as Table<T, R>] ?: throw RuntimeException("no entity class found")
         return clazz.createInstance().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}

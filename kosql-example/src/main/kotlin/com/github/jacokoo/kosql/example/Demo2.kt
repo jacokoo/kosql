@@ -1,6 +1,8 @@
 package com.github.jacokoo.kosql.example
 
 import com.github.jacokoo.kosql.compose.SQLBuilder
+import com.github.jacokoo.kosql.example.kosql.entity.Order
+import com.github.jacokoo.kosql.example.kosql.entity.OrderItem
 import com.github.jacokoo.kosql.example.kosql.table.ORDER
 import com.github.jacokoo.kosql.example.kosql.table.ORDER_ITEM
 import com.github.jacokoo.kosql.spring.jdbc.KoSQL
@@ -30,9 +32,11 @@ class Demo2(private val ko: KoSQL) {
 
             println(SQLBuilder().build(sql).sql)
 
-            val o = ORDER.byId(1);
-            var o2 = ORDER.fetch(ORDER.ID EQ 2);
+            val o: Order = ORDER.byId(1)!!;
+            var o2: List<Order> = ORDER.fetch(ORDER.ID EQ 2);
             val o3 = ORDER.fetch(ORDER.CUSTOMER_ID NE 79 AND (ORDER.TOTAL_AMOUNT GT 1000.toBigDecimal()))
+
+            val aa = INSERT(o, Order(), OrderItem())
 
             println(o)
             println(o2)

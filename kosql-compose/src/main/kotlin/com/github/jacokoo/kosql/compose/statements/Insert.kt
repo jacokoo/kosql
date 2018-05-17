@@ -5,7 +5,6 @@ import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import com.github.jacokoo.kosql.compose.typesafe.Columns
 import com.github.jacokoo.kosql.compose.typesafe.Value
 import com.github.jacokoo.kosql.compose.typesafe.Values
-import kotlin.reflect.KClass
 
 data class InsertData<T>(
     val table: Table<T, Entity<T>>,
@@ -23,14 +22,12 @@ internal fun <T> append(data: InsertData<T>, vararg cs: Value): InsertData<T> {
 }
 
 data class InsertEnd<T>(override val data: InsertData<T>): InsertStatement<T>
-data class Entities(val entities: List<Entity<*>>)
+data class Entities<T: Entity<*>>(val entities: List<T>)
 interface ExtraValues<T> {
     val data: InsertData<T>
 
-    @Suppress("UNCHECKED_CAST")
-    infix fun VALUES(e: Entities): InsertEnd<T> {
-        val es = e.entities.filter { Database[it::class as KClass<out Entity<T>>] != data.table }
-        if (!es.none()) throw RuntimeException("There have entities not match table")
+    infix fun VALUES(e: Entities<Entity<T>>): InsertEnd<T> {
+        assert(e.entities.all { Database[it::class] == data.table });
         val values = e.entities.map { ee -> data.columns.columns.map { it.type.toDb(ee[it.name]) } }
         return InsertEnd(data.copy(values = values))
     }
@@ -50,8 +47,10 @@ data class ValuesRepeatPart<T>(override val data: InsertData<T>): InsertStatemen
 interface Insert {
     object INSERT {
         infix fun <T> INTO(t: T): T = t
-        operator fun <T: Any, R: Table<T, Entity<T>>> invoke(vararg entities: Entity<T>): InsertEnd<T> {
-            if (entities.isEmpty()) throw RuntimeException("You have to supply at least one entity")
+        operator fun <T, E: Entity<T>> invoke(vararg entities: E): InsertEnd<T> {
+            assert(entities.isNotEmpty());
+            assert(entities.all { it::class == entities[0]::class })
+
             val table = Database[entities[0]::class]!!
             val columns = table.columns
             val values = entities.map { e -> columns.map { it.type.toDb(e[it.name]) } }
@@ -59,6 +58,6 @@ interface Insert {
         }
     }
 
-    fun <T: Any> E(vararg e: Entity<T>): Entities = Entities(e.toList())
+    fun <T, E: Entity<T>> E(vararg e: E) = Entities(e.toList())
     operator fun<T> Table<T, Entity<T>>.invoke(vararg columns: Column<*>): Fields<T> = Fields(this, Columns(columns.toList()))
 }

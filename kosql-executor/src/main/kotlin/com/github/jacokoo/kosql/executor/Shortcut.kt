@@ -6,6 +6,7 @@ import com.github.jacokoo.kosql.compose.typesafe.Column1
 import com.github.jacokoo.kosql.compose.typesafe.Columns
 import com.github.jacokoo.kosql.compose.typesafe.SelectStatement1
 import com.github.jacokoo.kosql.executor.typesafe.SelectResultMapper1
+import kotlin.reflect.KClass
 
 interface Shortcut: Query, Operators {
     fun <T> Entity<T>.save(): T? {
@@ -27,8 +28,9 @@ interface Shortcut: Query, Operators {
         return execute(UpdateEnd(UpdateData(table, pairs = values, expression = exp)));
     }
 
-    fun <T, R: Table<T, Entity<T>>> R.byId(t: T): Entity<T>? {
-        val entity = Database[this]!!
+    @Suppress("UNCHECKED_CAST")
+    fun <T, E: Entity<T>, R: Table<T, E>> R.byId(t: T): E? {
+        val entity = Database[this]!! as KClass<E>
         val exp = this.primaryKey() EQ t
         val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp))
         return execute(part, ColumnsToEntityMapper(part.data.columns, entity)).firstOrNull()
@@ -41,8 +43,9 @@ interface Shortcut: Query, Operators {
         return execute(SelectStatement1(col, SelectData(col, this, expression = exp)), SelectResultMapper1(col)).firstOrNull()!!.v1;
     }
 
-    fun <T, R: Table<T, Entity<T>>> R.fetch(exp: Expression<*>, vararg orders: Pair<Column<*>, Order>): List<Entity<T>> {
-        val entity = Database[this]!!
+    @Suppress("UNCHECKED_CAST")
+    fun <T, E: Entity<T>, R: Table<T, E>> R.fetch(exp: Expression<*>, vararg orders: Pair<Column<*>, Order>): List<E> {
+        val entity = Database[this]!! as KClass<E>
         val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp, orderBy = orders.toList()))
         return execute(part, ColumnsToEntityMapper(part.data.columns, entity));
     }
