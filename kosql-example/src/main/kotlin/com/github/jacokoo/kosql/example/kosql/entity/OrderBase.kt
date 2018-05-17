@@ -5,7 +5,7 @@ import com.github.jacokoo.kosql.example.kosql.table.ORDER
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-open class Order: Entity<Int> {
+open class OrderBase: Entity<Int> {
     var id: Int = 0
     var orderDate: LocalDateTime = LocalDateTime.MIN
     var orderNumber: String? = null
@@ -31,7 +31,7 @@ open class Order: Entity<Int> {
         }
     }
 
-    fun copy(block: (Order) -> Unit): Order = Order().also {
+    fun copy(block: (OrderBase) -> Unit): OrderBase = OrderBase().also {
         it.id = id
         it.orderDate = orderDate
         it.orderNumber = orderNumber
@@ -41,7 +41,7 @@ open class Order: Entity<Int> {
     }
 
     override fun toString(): String = buildString {
-        append("Order (")
+        append("OrderBase (")
         append("id = $id, orderDate = $orderDate, orderNumber = $orderNumber, customerId = $customerId, totalAmount = $totalAmount")
         append(")")
     }

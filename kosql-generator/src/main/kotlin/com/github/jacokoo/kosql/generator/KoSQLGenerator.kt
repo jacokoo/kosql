@@ -1,9 +1,9 @@
 package com.github.jacokoo.kosql.generator
 
+import com.github.jacokoo.kosql.compose.Database
 import com.github.jacokoo.kosql.compose.IntEnumType
 import com.github.jacokoo.kosql.compose.StringEnumType
 import com.github.jacokoo.kosql.generator.columns.*
-import com.github.jacokoo.kosql.compose.Database
 import org.springframework.jdbc.core.JdbcTemplate
 import java.io.File
 import java.sql.Connection
@@ -39,14 +39,14 @@ data class KoSQLGeneratorConfig(
         ),
         val tableGenerator: TableGenerator = DefaultTableGenerator(),
         val entityWriterFactory: ClassWriterFactory = EntityWriterFactory(),
+        val entitySubWriterFactory: EntitySubWriterFactory = EntitySubWriterFactory(),
         val tableWriterFactory: TableWriterFactory = TableWriterFactory(),
-        val useEnums: List<UseEnum<*>> = listOf()
+        val useEnums: List<UseEnum<*>> = listOf(),
+        val needEntitySubClass: Boolean = false
 ) {
-    fun dir() = File(File(outputDirectory, outputPackage.replace(".", "/")), "kosql").also {
-        if (!it.exists()) it.mkdirs()
-    }
+    fun root() = File(outputDirectory, outputPackage.replace(".", "/"))
+    fun dir() = File(root(), "kosql")
 }
-
 
 open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
     private val config = cfg.copy(columnGenerators = cfg.useEnums.map { EnumColumnGenerator(it) } + cfg.columnGenerators)
@@ -59,12 +59,17 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
                 TableDefinition(k, v, columns(k, meta))
             }.map { config.tableGenerator.generate(it, config) }
         }!!
-        if (config.useEnums.isNotEmpty()) writeEnums("Enums", config)
+
+        config.dir().also {
+            if (it.exists()) it.deleteRecursively()
+            it.mkdirs()
+        }
+        if (config.useEnums.isNotEmpty()) writeEnums("Enums")
         writeDatabase(config.namingStrategy.databaseClassName(name), list)
         writeFiles(list)
     }
 
-    fun writeEnums(name: String, config: KoSQLGeneratorConfig) {
+    fun writeEnums(name: String) {
         var imports = Imports().add(IntEnumType::class, StringEnumType::class)
         config.useEnums.forEach { imports.add(it.enumType) }
 
@@ -89,9 +94,10 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
     fun writeDatabase(name: String, ts: List<TableInfo>) {
         var imports = Imports().add(Database::class)
         ts.forEach {
-            imports = imports
-                .add("${config.outputPackage}.kosql.entity.${it.entity.name}")
-                .add("${config.outputPackage}.kosql.table.${it.objectName}")
+            imports = imports.add("${config.outputPackage}.kosql.table.${it.objectName}")
+            it.entitySub?.let {
+                imports.add("${config.outputPackage}.entity.${it.name}")
+            } ?: imports.add("${config.outputPackage}.kosql.entity.${it.entity.name}")
         }
         File(config.dir(), "$name.kt").also {
             if (it.exists()) it.delete()
@@ -105,7 +111,7 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
                     |
                     |object $name: Database {
                     |    init {
-                    |${ts.map { "        Database.register(${it.objectName}, ${it.entity.name}::class)" }.joinToString("\n")}
+                    |${ts.map { "        Database.register(${it.objectName}, ${it.entitySub?.let { it.name } ?: it.entity.name}::class)" }.joinToString("\n")}
                     |    }
                     |}
                 """.trimMargin())
@@ -133,8 +139,26 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
                 config.entityWriterFactory.create(writer, config, it).doWrite()
             }
 
+            it.entitySub?.also { info -> writeEntitySub(it, info)}
         }
     }
+
+    fun writeEntitySub(table: TableInfo, info: EntitySubInfo) {
+        val dir = File(config.root(), "entity").also {
+            if (!it.exists()) it.mkdirs()
+        }
+
+        File(dir, "${config.namingStrategy.entitySubClassName(info.name)}.kt").also {
+            if (!it.exists()) {
+                it.createNewFile()
+                it.writer().use { writer ->
+                    config.entitySubWriterFactory.create(writer, config, table).doWrite()
+                }
+            }
+        }
+
+    }
+
 
     fun primaryKey(name: String, meta: DatabaseMetaData): String? {
         val rs = meta.getPrimaryKeys(null, null, name)

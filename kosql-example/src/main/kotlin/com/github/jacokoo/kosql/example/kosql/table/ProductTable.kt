@@ -6,7 +6,7 @@ import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column6
-import com.github.jacokoo.kosql.example.kosql.entity.Product
+import com.github.jacokoo.kosql.example.entity.Product
 import java.math.BigDecimal
 
 open class ProductTable protected constructor(alias: String = ""): Table<Int, Product>("t_product", alias, "") {

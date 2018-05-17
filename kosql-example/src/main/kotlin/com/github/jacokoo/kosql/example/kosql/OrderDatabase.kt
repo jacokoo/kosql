@@ -1,12 +1,12 @@
 package com.github.jacokoo.kosql.example.kosql
 
 import com.github.jacokoo.kosql.compose.Database
-import com.github.jacokoo.kosql.example.kosql.entity.Abc
-import com.github.jacokoo.kosql.example.kosql.entity.Customer
-import com.github.jacokoo.kosql.example.kosql.entity.Order
-import com.github.jacokoo.kosql.example.kosql.entity.OrderItem
-import com.github.jacokoo.kosql.example.kosql.entity.Product
-import com.github.jacokoo.kosql.example.kosql.entity.Supplier
+import com.github.jacokoo.kosql.example.entity.Abc
+import com.github.jacokoo.kosql.example.entity.Customer
+import com.github.jacokoo.kosql.example.entity.Order
+import com.github.jacokoo.kosql.example.entity.OrderItem
+import com.github.jacokoo.kosql.example.entity.Product
+import com.github.jacokoo.kosql.example.entity.Supplier
 import com.github.jacokoo.kosql.example.kosql.table.ABC
 import com.github.jacokoo.kosql.example.kosql.table.CUSTOMER
 import com.github.jacokoo.kosql.example.kosql.table.ORDER

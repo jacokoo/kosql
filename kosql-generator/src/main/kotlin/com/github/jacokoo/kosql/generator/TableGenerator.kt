@@ -22,6 +22,10 @@ data class EntityInfo(
     val fields: List<FieldInfo>
 )
 
+data class EntitySubInfo(
+    val name: String
+)
+
 data class TableInfo(
     val tableName: String,
     val primaryKey: ColumnInfo,
@@ -29,6 +33,7 @@ data class TableInfo(
     val imports: Imports,
     val columns: List<ColumnInfo>,
     val entity: EntityInfo,
+    val entitySub: EntitySubInfo?,
     val def: TableDefinition
 )
 
@@ -58,13 +63,19 @@ class DefaultTableGenerator: TableGenerator {
             FieldInfo(config.namingStrategy.entityFieldName(it.def.name), type!!, it.defaultValue)
         }
 
-        val entityName = config.namingStrategy.entityClassName(table.name)
+        val entityName = config.namingStrategy.entityClassName(table.name, config.needEntitySubClass)
         val tableName = config.namingStrategy.tableClassName(table.name)
         val objectName = config.namingStrategy.tableObjectName(table.name)
 
-        imports.add("${config.outputPackage}.kosql.entity.$entityName")
+        var entitySub: EntitySubInfo? = null;
+        if (config.needEntitySubClass) {
+            entitySub = EntitySubInfo(config.namingStrategy.entitySubClassName(table.name))
+            imports.add("${config.outputPackage}.entity.${entitySub.name}")
+        } else {
+            imports.add("${config.outputPackage}.kosql.entity.$entityName")
+        }
         entityImports.add("${config.outputPackage}.kosql.table.$objectName")
-        return TableInfo(tableName, columns[pk], objectName, imports, columns, EntityInfo(entityName, entityImports, fields), table)
+        return TableInfo(tableName, columns[pk], objectName, imports, columns, EntityInfo(entityName, entityImports, fields), entitySub, table)
     }
 
     fun generateColumn(name: String, col: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {

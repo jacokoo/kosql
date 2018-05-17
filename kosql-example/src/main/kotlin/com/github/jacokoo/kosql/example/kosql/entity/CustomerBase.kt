@@ -3,7 +3,7 @@ package com.github.jacokoo.kosql.example.kosql.entity
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.CUSTOMER
 
-open class Customer: Entity<Int> {
+open class CustomerBase: Entity<Int> {
     var id: Int = 0
     var firstName: String = ""
     var lastName: String = ""
@@ -32,7 +32,7 @@ open class Customer: Entity<Int> {
         }
     }
 
-    fun copy(block: (Customer) -> Unit): Customer = Customer().also {
+    fun copy(block: (CustomerBase) -> Unit): CustomerBase = CustomerBase().also {
         it.id = id
         it.firstName = firstName
         it.lastName = lastName
@@ -43,7 +43,7 @@ open class Customer: Entity<Int> {
     }
 
     override fun toString(): String = buildString {
-        append("Customer (")
+        append("CustomerBase (")
         append("id = $id, firstName = $firstName, lastName = $lastName, city = $city, country = $country, phone = $phone")
         append(")")
     }

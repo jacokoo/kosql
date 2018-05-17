@@ -4,7 +4,7 @@ import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.ORDER_ITEM
 import java.math.BigDecimal
 
-open class OrderItem: Entity<Int> {
+open class OrderItemBase: Entity<Int> {
     var id: Int = 0
     var orderId: Int = 0
     var productId: Int = 0
@@ -30,7 +30,7 @@ open class OrderItem: Entity<Int> {
         }
     }
 
-    fun copy(block: (OrderItem) -> Unit): OrderItem = OrderItem().also {
+    fun copy(block: (OrderItemBase) -> Unit): OrderItemBase = OrderItemBase().also {
         it.id = id
         it.orderId = orderId
         it.productId = productId
@@ -40,7 +40,7 @@ open class OrderItem: Entity<Int> {
     }
 
     override fun toString(): String = buildString {
-        append("OrderItem (")
+        append("OrderItemBase (")
         append("id = $id, orderId = $orderId, productId = $productId, unitPrice = $unitPrice, quantity = $quantity")
         append(")")
     }

@@ -5,7 +5,7 @@ import com.github.jacokoo.kosql.example.Color
 import com.github.jacokoo.kosql.example.State
 import com.github.jacokoo.kosql.example.kosql.table.ABC
 
-open class Abc: Entity<Int> {
+open class AbcBase: Entity<Int> {
     var id: Int = 0
     var a: Int? = null
     var color: Color = Color.RED
@@ -40,7 +40,7 @@ open class Abc: Entity<Int> {
         }
     }
 
-    fun copy(block: (Abc) -> Unit): Abc = Abc().also {
+    fun copy(block: (AbcBase) -> Unit): AbcBase = AbcBase().also {
         it.id = id
         it.a = a
         it.color = color
@@ -53,7 +53,7 @@ open class Abc: Entity<Int> {
     }
 
     override fun toString(): String = buildString {
-        append("Abc (")
+        append("AbcBase (")
         append("id = $id, a = $a, color = $color, state = $state, bool1 = $bool1, bool2 = $bool2, bit1 = $bit1, text = $text")
         append(")")
     }

@@ -6,7 +6,7 @@ import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column5
-import com.github.jacokoo.kosql.example.kosql.entity.Order
+import com.github.jacokoo.kosql.example.entity.Order
 import java.math.BigDecimal
 import java.time.LocalDateTime
 

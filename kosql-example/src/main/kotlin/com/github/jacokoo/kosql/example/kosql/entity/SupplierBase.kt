@@ -3,7 +3,7 @@ package com.github.jacokoo.kosql.example.kosql.entity
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.SUPPLIER
 
-open class Supplier: Entity<Int> {
+open class SupplierBase: Entity<Int> {
     var id: Int = 0
     var companyName: String = ""
     var contactName: String? = null
@@ -38,7 +38,7 @@ open class Supplier: Entity<Int> {
         }
     }
 
-    fun copy(block: (Supplier) -> Unit): Supplier = Supplier().also {
+    fun copy(block: (SupplierBase) -> Unit): SupplierBase = SupplierBase().also {
         it.id = id
         it.companyName = companyName
         it.contactName = contactName
@@ -51,7 +51,7 @@ open class Supplier: Entity<Int> {
     }
 
     override fun toString(): String = buildString {
-        append("Supplier (")
+        append("SupplierBase (")
         append("id = $id, companyName = $companyName, contactName = $contactName, contactTitle = $contactTitle, city = $city, country = $country, phone = $phone, fax = $fax")
         append(")")
     }

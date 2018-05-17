@@ -4,7 +4,7 @@ import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.PRODUCT
 import java.math.BigDecimal
 
-open class Product: Entity<Int> {
+open class ProductBase: Entity<Int> {
     var id: Int = 0
     var productName: String = ""
     var supplierId: Int = 0
@@ -33,7 +33,7 @@ open class Product: Entity<Int> {
         }
     }
 
-    fun copy(block: (Product) -> Unit): Product = Product().also {
+    fun copy(block: (ProductBase) -> Unit): ProductBase = ProductBase().also {
         it.id = id
         it.productName = productName
         it.supplierId = supplierId
@@ -44,7 +44,7 @@ open class Product: Entity<Int> {
     }
 
     override fun toString(): String = buildString {
-        append("Product (")
+        append("ProductBase (")
         append("id = $id, productName = $productName, supplierId = $supplierId, unitPrice = $unitPrice, package1 = $package1, isDiscontinued = $isDiscontinued")
         append(")")
     }
