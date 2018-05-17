@@ -8,7 +8,7 @@ import com.github.jacokoo.kosql.compose.typesafe.SelectStatement1
 
 data class SelectData (
     val columns: ColumnList,               // select columns
-    val table: Table<*>? = null,                   // select from table
+    val table: Table<*, Entity<*>>? = null,                   // select from table
     val joins: List<Join> = listOf(),           // joins
     val expression: Expression<*>? = null,      // where expression
     val groupBy: List<Column<*>> = listOf(),    // group by columns
@@ -105,13 +105,13 @@ data class SelectFromPart(private val data: SelectData): Operators {
     constructor(cs: ColumnList): this(SelectData(cs))
     constructor(vararg cs: Column<*>): this(SelectData(Columns(cs.toList())))
 
-    fun FROM(t: Table<*>) = WhereAndJoinPart(data.copy(table = t))
+    fun FROM(t: Table<*, Entity<*>>) = WhereAndJoinPart(data.copy(table = t))
 }
 
 internal typealias SelectCreator = SelectFromPart.() -> SelectStatement
 
 interface Select {
     fun SELECT(columns: Columns, block: SelectCreator) = SelectEnd(SelectFromPart(columns).block().data)
-    fun SELECT(vararg tables: Table<*>, block: SelectCreator) = SELECT(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }), block)
+    fun SELECT(vararg tables: Table<*, Entity<*>>, block: SelectCreator) = SELECT(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }), block)
 }
 

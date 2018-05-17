@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql.compose.typesafe
 
 import com.github.jacokoo.kosql.compose.Column
+import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Table
 
 interface ColumnList {
@@ -13,7 +14,7 @@ interface ColumnList {
 }
 
 data class Columns(override val columns: List<Column<*>>): ColumnList {
-    operator fun plus(table: Table<*>) = Columns(columns + table.columns)
+    operator fun plus(table: Table<*, Entity<*>>) = Columns(columns + table.columns)
 }
 
 data class Column1<T1>(val c1: Column<T1>, override val columns: List<Column<*>> = listOf(c1)): ColumnList {

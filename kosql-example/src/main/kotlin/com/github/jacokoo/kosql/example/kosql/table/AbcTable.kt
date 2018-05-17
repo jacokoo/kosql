@@ -10,8 +10,9 @@ import com.github.jacokoo.kosql.example.Color
 import com.github.jacokoo.kosql.example.State
 import com.github.jacokoo.kosql.example.kosql.AbcTableColorEnumType
 import com.github.jacokoo.kosql.example.kosql.AbcTableStateEnumType
+import com.github.jacokoo.kosql.example.kosql.entity.Abc
 
-open class AbcTable protected constructor(alias: String = ""): Table<Int>("t_abc", alias, "") {
+open class AbcTable protected constructor(alias: String = ""): Table<Int, Abc>("t_abc", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val A = createColumn("f_a", IntType(), true, null)
     val COLOR = createColumn("f_color", AbcTableColorEnumType(), false, Color.RED)

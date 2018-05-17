@@ -4,9 +4,8 @@ import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.Color
 import com.github.jacokoo.kosql.example.State
 import com.github.jacokoo.kosql.example.kosql.table.ABC
-import com.github.jacokoo.kosql.example.kosql.table.AbcTable
 
-open class Abc: Entity<Int, AbcTable> {
+open class Abc: Entity<Int> {
     var id: Int = 0
     var a: Int? = null
     var color: Color = Color.RED

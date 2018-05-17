@@ -1,11 +1,12 @@
 package com.github.jacokoo.kosql.compose.statements
 
 import com.github.jacokoo.kosql.compose.Column
+import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Statement
 import com.github.jacokoo.kosql.compose.Table
 
 data class UpdateData (
-    val table: Table<*>,
+    val table: Table<*, Entity<*>>,
     val joins: List<Join> = listOf(),
     val pairs: Map<Column<*>, Any?> = mapOf(),
     val expression: Expression<*>? = null
@@ -61,5 +62,5 @@ interface SetOperate: UpdateStatement {
 data class SetPart(override val data: UpdateData): SetOperate, UpdateJoinOperate, UpdateStatement
 
 interface Update {
-    fun UPDATE(table: Table<*>): SetPart = SetPart(UpdateData(table))
+    fun UPDATE(table: Table<*, Entity<*>>): SetPart = SetPart(UpdateData(table))
 }

@@ -2,9 +2,8 @@ package com.github.jacokoo.kosql.example.kosql.entity
 
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.SUPPLIER
-import com.github.jacokoo.kosql.example.kosql.table.SupplierTable
 
-open class Supplier: Entity<Int, SupplierTable> {
+open class Supplier: Entity<Int> {
     var id: Int = 0
     var companyName: String = ""
     var contactName: String? = null

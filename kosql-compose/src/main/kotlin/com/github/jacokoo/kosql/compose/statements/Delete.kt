@@ -1,11 +1,12 @@
 package com.github.jacokoo.kosql.compose.statements
 
+import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Statement
 import com.github.jacokoo.kosql.compose.Table
 
 data class DeleteData(
-    val deletes: List<Table<*>> = listOf(),
-    val table: Table<*>? = null,
+    val deletes: List<Table<*, Entity<*>>> = listOf(),
+    val table: Table<*, Entity<*>>? = null,
     val joins: List<Join> = listOf(),
     val expression: Expression<*>? = null
 ): WhereData<DeleteData>, JoinData<DeleteData> {
@@ -47,12 +48,12 @@ interface DeleteJoinOperate: JoinOperate<DeleteData, DeleteJoinDataContainer, De
 data class DeleteJoinPart(override val data: DeleteData): DeleteJoinOperate, DeleteWhereOperate, DeleteStatement
 
 data class DeleteFromPart(override val data: DeleteData): DeleteStatement {
-    infix fun FROM(table: Table<*>): DeleteJoinPart = DeleteJoinPart(data.copy(table = table))
+    infix fun FROM(table: Table<*, Entity<*>>): DeleteJoinPart = DeleteJoinPart(data.copy(table = table))
 }
 
 interface Delete {
     object DELETE {
-        operator fun invoke(vararg ts: Table<*>): DeleteFromPart = DeleteFromPart(DeleteData(deletes = ts.toList()))
-        infix fun FROM(t: Table<*>): DeleteWherePart = DeleteWherePart(DeleteData(deletes = listOf(t)))
+        operator fun invoke(vararg ts: Table<*, Entity<*>>): DeleteFromPart = DeleteFromPart(DeleteData(deletes = ts.toList()))
+        infix fun FROM(t: Table<*, Entity<*>>): DeleteWherePart = DeleteWherePart(DeleteData(deletes = listOf(t)))
     }
 }

@@ -4,9 +4,10 @@ import com.github.jacokoo.kosql.compose.DecimalType
 import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column5
+import com.github.jacokoo.kosql.example.kosql.entity.OrderItem
 import java.math.BigDecimal
 
-open class OrderItemTable protected constructor(alias: String = ""): Table<Int>("t_order_item", alias, "") {
+open class OrderItemTable protected constructor(alias: String = ""): Table<Int, OrderItem>("t_order_item", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val ORDER_ID = createColumn("f_order_id", IntType(), false, 0)
     val PRODUCT_ID = createColumn("f_product_id", IntType(), false, 0)

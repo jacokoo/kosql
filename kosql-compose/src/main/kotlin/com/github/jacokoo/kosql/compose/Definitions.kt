@@ -29,7 +29,7 @@ interface Nameable<out T>: SQLPart {
 }
 
 interface Column<T>: Nameable<Column<T>> {
-    val table: Table<*>
+    val table: Table<*, Entity<*>>
     val type: DataType<T>
     val allowNull: Boolean
     val defaultValue: T
@@ -42,7 +42,7 @@ interface Column<T>: Nameable<Column<T>> {
 }
 
 data class DefaultColumn<T>(
-    override val table: Table<*>,
+    override val table: Table<*, Entity<*>>,
     override val name: String,
     override val type: DataType<T>,
     override val alias: String = "",
@@ -59,7 +59,7 @@ data class DefaultColumn<T>(
     fun autoIncrement(auto: Boolean = true): DefaultColumn<T> = this.copy(autoIncrement = auto)
 }
 
-abstract class Table<T>(override val name: String, override val alias: String = "", comment: String = ""): Nameable<Table<T>> {
+abstract class Table<T, out R: Entity<T>>(override val name: String, override val alias: String = "", comment: String = ""): Nameable<Table<T, R>> {
     override val aliasRequired = true
     var columns: List<Column<*>> = listOf()
         protected set
@@ -79,7 +79,7 @@ abstract class Table<T>(override val name: String, override val alias: String = 
     abstract fun primaryKey(): Column<T>
 }
 
-open class EmptyTable(alias: String = ""): Table<Any>(alias) {
+open class EmptyTable(alias: String = ""): Table<Any, Entity<Any>>(alias) {
     override fun AS(alias: String): EmptyTable {
         throw RuntimeException("never call this method")
     }
@@ -109,12 +109,12 @@ class TableLike(private val data: SelectData, alias: String, private val origina
     }
 }
 
-interface Entity<T, out R: Table<T>> {
+interface Entity<T> {
     operator fun set(name: String, value: Any?)
     operator fun get(name: String): Any?
 }
 
-class EmptyEntity: Entity<Any, EmptyTable> {
+class EmptyEntity: Entity<Any> {
     override fun get(name: String): Any? = null
     override fun set(name: String, value: Any?) {}
 }
@@ -123,15 +123,15 @@ interface Database {
 
     @Suppress("UNCHECKED_CAST")
     companion object {
-        private var entityToTable: MutableMap<in KClass<out Entity<*, Table<*>>>, Table<out Any>> = mutableMapOf()
-        private var tableToEntity: MutableMap<in Table<out Any>, KClass<out Entity<*, Table<*>>>> = mutableMapOf()
+        private var entityToTable: MutableMap<in KClass<out Entity<*>>, Table<out Any, Entity<out Any>>> = mutableMapOf()
+        private var tableToEntity: MutableMap<in Table<out Any, Entity<out Any>>, KClass<out Entity<out Any>>> = mutableMapOf()
 
-        fun <T: Any> register(table: Table<out T>, entity: KClass<out Entity<T, Table<T>>>) {
+        fun <T: Any> register(table: Table<out T, out Entity<T>>, entity: KClass<out Entity<T>>) {
             tableToEntity[table] = entity
             entityToTable[entity] = table
         }
 
-        operator fun <T> get(table: Table<T>): KClass<out Entity<T, Table<T>>>? = tableToEntity[table] as KClass<out Entity<T, Table<T>>>
-        operator fun <T> get(entity: KClass<out Entity<T, Table<T>>>): Table<T>? = entityToTable[entity] as Table<T>
+        operator fun <T> get(table: Table<out T, out Entity<T>>): KClass<out Entity<T>>? = tableToEntity[table]?.let { it as KClass<out Entity<T>> }
+        operator fun <T> get(entity: KClass<out Entity<T>>): Table<T, out Entity<T>>? = entityToTable[entity] as Table<T, Entity<T>>
     }
 }

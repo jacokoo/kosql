@@ -2,9 +2,8 @@ package com.github.jacokoo.kosql.example.kosql.entity
 
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.CUSTOMER
-import com.github.jacokoo.kosql.example.kosql.table.CustomerTable
 
-open class Customer: Entity<Int, CustomerTable> {
+open class Customer: Entity<Int> {
     var id: Int = 0
     var firstName: String = ""
     var lastName: String = ""

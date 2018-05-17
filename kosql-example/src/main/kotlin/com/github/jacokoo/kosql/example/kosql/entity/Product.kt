@@ -2,10 +2,9 @@ package com.github.jacokoo.kosql.example.kosql.entity
 
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.PRODUCT
-import com.github.jacokoo.kosql.example.kosql.table.ProductTable
 import java.math.BigDecimal
 
-open class Product: Entity<Int, ProductTable> {
+open class Product: Entity<Int> {
     var id: Int = 0
     var productName: String = ""
     var supplierId: Int = 0

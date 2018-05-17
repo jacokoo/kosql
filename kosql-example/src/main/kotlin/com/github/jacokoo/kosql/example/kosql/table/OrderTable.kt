@@ -6,10 +6,11 @@ import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column5
+import com.github.jacokoo.kosql.example.kosql.entity.Order
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-open class OrderTable protected constructor(alias: String = ""): Table<Int>("t_order", alias, "") {
+open class OrderTable protected constructor(alias: String = ""): Table<Int, Order>("t_order", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val ORDER_DATE = createColumn("f_order_date", DateTimeType(), false, LocalDateTime.MIN)
     val ORDER_NUMBER = createColumn("f_order_number", StringType(), true, null)

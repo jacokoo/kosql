@@ -6,9 +6,10 @@ import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column6
+import com.github.jacokoo.kosql.example.kosql.entity.Product
 import java.math.BigDecimal
 
-open class ProductTable protected constructor(alias: String = ""): Table<Int>("t_product", alias, "") {
+open class ProductTable protected constructor(alias: String = ""): Table<Int, Product>("t_product", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val PRODUCT_NAME = createColumn("f_product_name", StringType(), false, "")
     val SUPPLIER_ID = createColumn("f_supplier_id", IntType(), false, 0)

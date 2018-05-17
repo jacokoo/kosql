@@ -33,3 +33,4 @@ class Demo(private val ko: KoSQL) {
         println()
     }
 }
+

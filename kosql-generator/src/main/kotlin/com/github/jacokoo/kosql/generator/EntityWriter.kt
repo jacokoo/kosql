@@ -19,7 +19,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
 
     override fun writeSignature() {
         val pk = table.primaryKey
-        writer.write("open class ${table.entity.name}: Entity<${pk.typeClass.simpleName}, ${table.tableName}>")
+        writer.write("open class ${table.entity.name}: Entity<${pk.typeClass.simpleName}>")
     }
 
     override fun writeFields() {

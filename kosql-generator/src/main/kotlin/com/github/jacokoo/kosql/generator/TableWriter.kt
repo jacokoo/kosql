@@ -20,7 +20,7 @@ open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val tab
     override fun writeSignature() {
         val pk = table.primaryKey
         writer.write("open class ${table.tableName} protected constructor(alias: String = \"\"):" +
-                " Table<${pk.typeClass.simpleName}>(\"${table.def.name}\", alias, \"\")")
+                " Table<${pk.typeClass.simpleName}, ${table.entity.name}>(\"${table.def.name}\", alias, \"\")")
     }
 
     override fun writeFields() {

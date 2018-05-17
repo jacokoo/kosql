@@ -2,11 +2,10 @@ package com.github.jacokoo.kosql.example.kosql.entity
 
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.example.kosql.table.ORDER
-import com.github.jacokoo.kosql.example.kosql.table.OrderTable
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
-open class Order: Entity<Int, OrderTable> {
+open class Order: Entity<Int> {
     var id: Int = 0
     var orderDate: LocalDateTime = LocalDateTime.MIN
     var orderNumber: String? = null

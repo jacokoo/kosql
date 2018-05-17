@@ -4,8 +4,9 @@ import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column8
+import com.github.jacokoo.kosql.example.kosql.entity.Supplier
 
-open class SupplierTable protected constructor(alias: String = ""): Table<Int>("t_supplier", alias, "") {
+open class SupplierTable protected constructor(alias: String = ""): Table<Int, Supplier>("t_supplier", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val COMPANY_NAME = createColumn("f_company_name", StringType(), false, "")
     val CONTACT_NAME = createColumn("f_contact_name", StringType(), true, null)

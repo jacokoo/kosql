@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.executor
 import com.github.jacokoo.kosql.compose.Column
 import com.github.jacokoo.kosql.compose.Database
 import com.github.jacokoo.kosql.compose.Entity
+import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.statements.DeleteStatement
 import com.github.jacokoo.kosql.compose.statements.InsertStatement
 import com.github.jacokoo.kosql.compose.statements.SelectStatement
@@ -35,12 +36,12 @@ interface ResultSetMapper<out R> {
     fun map(rs: ResultSetRow): R
 }
 
-class ColumnsToEntityMapper<R: Entity<*, *>>(val columns: ColumnList, val entityClass: KClass<R>): ResultSetMapper<R> {
+class ColumnsToEntityMapper<T, R: Entity<T>>(val columns: ColumnList, val entityClass: KClass<R>): ResultSetMapper<R> {
     @Suppress("UNCHECKED_CAST")
     override fun map(rs: ResultSetRow): R {
-        val cs = columns.columns.filter { Database[it.table] == entityClass }
+        val cs = columns.columns.filter { Database[it.table as Table<T, R>] == entityClass }
         if (cs.none()) throw RuntimeException("no columns for entity")
-        val clazz = Database[cs[0].table] ?: throw RuntimeException("no entity class found")
+        val clazz = Database[cs[0].table as Table<T, R>] ?: throw RuntimeException("no entity class found")
         return clazz.createInstance().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
         } as R
@@ -52,8 +53,8 @@ interface SelectResult<out T: Value>: Iterable<T> {
     val values: List<T>
 
     @Suppress("UNCHECKED_CAST")
-    fun <T: Entity<*, *>> into(entityClass: KClass<T>): List<T> {
-        val cs = columns.columns.filter { Database[it.table] == entityClass }
+    fun <T> into(entityClass: KClass<Entity<T>>): List<Entity<T>> {
+        val cs = columns.columns.filter { Database[it.table as Table<T, Entity<T>>] == entityClass }
         if (cs.none()) return listOf()
 
         return values.map { v -> entityClass.createInstance().also { e ->
@@ -85,10 +86,10 @@ interface Query {
     fun <T> execute(select: SelectStatement, mapper: (ResultSetRow) -> T): List<T> = execute(select, object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)
     })
-    fun <T: Entity<*, *>> execute(select: SelectStatement, entityClass: KClass<T>): List<T> = execute(select, ColumnsToEntityMapper(select.data.columns, entityClass))
+    fun <T, R: Entity<T>> execute(select: SelectStatement, entityClass: KClass<out R>): List<R> = execute(select, ColumnsToEntityMapper(select.data.columns, entityClass))
 
     fun <T> SelectStatement.fetch(mapper: ResultSetMapper<T>): List<T> = execute(this, mapper)
-    fun <T: Entity<*, *>> SelectStatement.fetch(entityClass: KClass<T>) = execute(this, entityClass)
+    fun <T, R: Entity<T>> SelectStatement.fetch(entityClass: KClass<out R>) = execute(this, entityClass)
     fun <T> SelectStatement.fetch(mapper: (ResultSetRow) -> T): List<T> = execute(this, mapper)
     fun SelectStatement.fetch(): SelectResults = SelectResults(this.data.columns, this, this@Query)
 }

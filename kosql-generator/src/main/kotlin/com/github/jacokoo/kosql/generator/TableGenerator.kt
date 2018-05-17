@@ -62,10 +62,8 @@ class DefaultTableGenerator: TableGenerator {
         val tableName = config.namingStrategy.tableClassName(table.name)
         val objectName = config.namingStrategy.tableObjectName(table.name)
 
-        entityImports
-            .add("${config.outputPackage}.kosql.table.$tableName")
-            .add("${config.outputPackage}.kosql.table.$objectName")
-
+        imports.add("${config.outputPackage}.kosql.entity.$entityName")
+        entityImports.add("${config.outputPackage}.kosql.table.$objectName")
         return TableInfo(tableName, columns[pk], objectName, imports, columns, EntityInfo(entityName, entityImports, fields), table)
     }
 

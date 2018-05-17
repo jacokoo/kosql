@@ -4,8 +4,9 @@ import com.github.jacokoo.kosql.compose.IntType
 import com.github.jacokoo.kosql.compose.StringType
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column6
+import com.github.jacokoo.kosql.example.kosql.entity.Customer
 
-open class CustomerTable protected constructor(alias: String = ""): Table<Int>("t_customer", alias, "") {
+open class CustomerTable protected constructor(alias: String = ""): Table<Int, Customer>("t_customer", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val FIRST_NAME = createColumn("f_first_name", StringType(), false, "")
     val LAST_NAME = createColumn("f_last_name", StringType(), false, "")

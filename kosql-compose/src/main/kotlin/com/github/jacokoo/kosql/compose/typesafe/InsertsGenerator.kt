@@ -10,6 +10,7 @@ fun main(args: Array<String>) {
         |
         |import com.github.jacokoo.kosql.compose.Column
         |import com.github.jacokoo.kosql.compose.Table
+        |import com.github.jacokoo.kosql.compose.Entity
         |import com.github.jacokoo.kosql.compose.statements.ExtraValues
         |import com.github.jacokoo.kosql.compose.statements.InsertData
         |import com.github.jacokoo.kosql.compose.statements.InsertStatement
@@ -19,7 +20,7 @@ fun main(args: Array<String>) {
     """.trimMargin()
 
     fun classPart(it: Int) = """
-        |data class Field$it<T, ${times(it) { "T$it" }}>(val table: Table<T>, val c: Column$it<${times(it) { "T$it" }}>): ExtraValues<T> {
+        |data class Field$it<T, ${times(it) { "T$it" }}>(val table: Table<T, Entity<T>>, val c: Column$it<${times(it) { "T$it" }}>): ExtraValues<T> {
         |   override val data: InsertData<T> = InsertData(table, c, listOf())
         |   infix fun VALUES(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
         |}
@@ -30,7 +31,7 @@ fun main(args: Array<String>) {
     """.trimMargin()
 
     fun methodPart(it: Int) = """
-        |    operator fun <T, ${times(it) { "T$it" }}> Table<T>.invoke(${times(it) { "c$it: Column<T$it>" }}): Field$it<T, ${times(it) { "T$it" }}> = Field$it(this, Column$it(${times(it) { "c$it" }}))
+        |    operator fun <T, ${times(it) { "T$it" }}> Table<T, Entity<T>>.invoke(${times(it) { "c$it: Column<T$it>" }}): Field$it<T, ${times(it) { "T$it" }}> = Field$it(this, Column$it(${times(it) { "c$it" }}))
         |
     """.trimMargin()
 

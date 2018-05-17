@@ -60,6 +60,11 @@ data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = 
     override fun refer(): LogicPartial<T> = this
 }
 
+interface LogicOperators {
+    infix fun <T> Expression<T>.AND(other: Expression<out Any>?) = other?.let { LogicPartial(this, other) } ?: this
+    infix fun <T> Expression<T>.OR(other: Expression<out Any>?) = other?.let { LogicPartial(this, other, false) } ?: this
+}
+
 interface CompareOperators {
     infix fun <T> Column<T>.EQ(v: Column<T>) = ColumnToColumnExpression("=", this, v)
     infix fun <T> Column<T>.GT(v: Column<T>) = ColumnToColumnExpression(">", this, v)
@@ -67,7 +72,6 @@ interface CompareOperators {
     infix fun <T> Column<T>.GTE(v: Column<T>) = ColumnToColumnExpression(">=", this, v)
     infix fun <T> Column<T>.LTE(v: Column<T>) = ColumnToColumnExpression("<=", this, v)
     infix fun <T> Column<T>.NE(v: Column<T>) = ColumnToColumnExpression("!=", this, v)
-
 
     infix fun <T> Column<T>.EQ(v: Expression<T>) = ColumnToExpressionExpression("=", this, v)
     infix fun <T> Column<T>.GT(v: Expression<T>) = ColumnToExpressionExpression(">", this, v)
@@ -104,4 +108,4 @@ interface ComputeOperators {
     operator fun <T : Number> Column<T>.div(v: Column<T>) = ColumnToColumnExpression("/", this, v)
 }
 
-interface Operators: CompareOperators, ComputeOperators
+interface Operators: CompareOperators, ComputeOperators, LogicOperators
