@@ -20,30 +20,30 @@ abstract class AbstractExpressionContainer<R: ExpressionContainer<R>>: Expressio
 
 data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val right: Column<T>): CompareOperators {
     infix fun EQ(v: Column<T>): L = left.set(right.EQ(v))
-    infix fun EQ(v: T): L = left.set(right.EQ(v))
-    infix fun EQ(v: Expression<T>): L = left.set(right.EQ(v))
+    infix fun EQ(v: T?): L = left.set(right.EQ(v))
+    infix fun EQ(v: Expression<T>?): L = left.set(right.EQ(v))
 
     infix fun GT(v: Column<T>): L = left.set(right.GT(v))
-    infix fun GT(v: T): L = left.set(right.GT(v))
-    infix fun GT(v: Expression<T>): L = left.set(right.GT(v))
+    infix fun GT(v: T?): L = left.set(right.GT(v))
+    infix fun GT(v: Expression<T>?): L = left.set(right.GT(v))
 
     infix fun LT(v: Column<T>): L = left.set(right.LT(v))
-    infix fun LT(v: T): L = left.set(right.LT(v))
-    infix fun LT(v: Expression<T>): L = left.set(right.LT(v))
+    infix fun LT(v: T?): L = left.set(right.LT(v))
+    infix fun LT(v: Expression<T>?): L = left.set(right.LT(v))
 
     infix fun GTE(v: Column<T>): L = left.set(right.GTE(v))
-    infix fun GTE(v: T): L = left.set(right.GTE(v))
-    infix fun GTE(v: Expression<T>): L = left.set(right.GTE(v))
+    infix fun GTE(v: T?): L = left.set(right.GTE(v))
+    infix fun GTE(v: Expression<T>?): L = left.set(right.GTE(v))
 
     infix fun LTE(v: Column<T>): L = left.set(right.GTE(v))
-    infix fun LTE(v: T): L = left.set(right.GTE(v))
-    infix fun LTE(v: Expression<T>): L = left.set(right.GTE(v))
+    infix fun LTE(v: T?): L = left.set(right.GTE(v))
+    infix fun LTE(v: Expression<T>?): L = left.set(right.GTE(v))
 
     infix fun NE(v: Column<T>): L = left.set(right.GTE(v))
-    infix fun NE(v: T): L = left.set(right.GTE(v))
-    infix fun NE(v: Expression<T>): L = left.set(right.GTE(v))
+    infix fun NE(v: T?): L = left.set(right.GTE(v))
+    infix fun NE(v: Expression<T>?): L = left.set(right.GTE(v))
 
-    fun BETWEEN(small: T, big: T) = left.set(right.BETWEEN(small, big))
+    fun BETWEEN(small: T?, big: T?) = left.set(right.BETWEEN(small, big))
     fun IN(vararg values: T) = left.set(right.IN(*values))
     fun NOT_IN(vararg values: T) = left.set(right.NOT_IN(*values))
     fun IS_NULL() = left.set(right.IS_NULL())
