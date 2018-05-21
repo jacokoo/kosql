@@ -22,7 +22,9 @@ interface DeleteStatement: Statement {
 
 data class DeleteEnd(override val data: DeleteData): DeleteStatement
 
-data class DeleteWhereDataContainer(override val data: DeleteData): AbstractWhereDataContainer<DeleteData, DeleteWhereDataContainer>() {
+data class DeleteWhereDataContainer(override val data: DeleteData):
+    AbstractWhereDataContainer<DeleteData, DeleteWhereDataContainer>(), DeleteStatement {
+
     override fun refer(data: DeleteData) = DeleteWhereDataContainer(data)
 }
 
@@ -32,7 +34,9 @@ interface DeleteWhereOperate: WhereOperate<DeleteData, DeleteWhereDataContainer>
 
 data class DeleteWherePart(override val data: DeleteData): DeleteWhereOperate, DeleteStatement
 
-data class DeleteJoinDataContainer(override val data: DeleteData, override val join: Join): AbstractJoinDataContainer<DeleteData, DeleteJoinDataContainer>() {
+data class DeleteJoinDataContainer(override val data: DeleteData, override val join: Join):
+    AbstractJoinDataContainer<DeleteData, DeleteJoinDataContainer>(), DeleteStatement {
+
     override fun refer() = this
     override fun refer(data: DeleteData, join: Join) = DeleteJoinDataContainer(data, join)
 }

@@ -31,7 +31,8 @@ class SetBlock {
     operator fun <T> set(col: Column<T>, v: ColumnToValueExpression<T>) { data[col] = v }
 }
 
-data class UpdateWhereDataContainer(override val data: UpdateData): AbstractWhereDataContainer<UpdateData, UpdateWhereDataContainer>() {
+data class UpdateWhereDataContainer(override val data: UpdateData):
+    AbstractWhereDataContainer<UpdateData, UpdateWhereDataContainer>(), UpdateStatement {
     override fun refer(data: UpdateData) = UpdateWhereDataContainer(data)
 }
 
@@ -42,7 +43,7 @@ interface UpdateWhereOperate: WhereOperate<UpdateData, UpdateWhereDataContainer>
 data class UpdateWherePart(override val data: UpdateData): UpdateWhereOperate
 
 data class UpdateJoinDataContainer(override val data: UpdateData, override val join: Join):
-    AbstractJoinDataContainer<UpdateData, UpdateJoinDataContainer>(), SetOperate {
+    AbstractJoinDataContainer<UpdateData, UpdateJoinDataContainer>(), SetOperate, UpdateStatement {
     override fun refer() = this
     override fun refer(data: UpdateData, join: Join) = UpdateJoinDataContainer(data, join)
 }
