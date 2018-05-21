@@ -18,7 +18,7 @@ data class SelectData (
     val rowCount: Int? = null
 ): WhereData<SelectData>, JoinData<SelectData> {
     override fun getWhere() = expression
-    override fun setWhere(e: Expression<*>) = copy(expression = e)
+    override fun setWhere(e: Expression<*>?) = copy(expression = e)
     override fun addJoin(join: Join) = copy(joins = joins + join)
     override fun removeJoin(join: Join) = copy(joins = joins - join)
 }
@@ -59,7 +59,7 @@ data class AfterGroupByPart(override val data: SelectData): OrderByOperate, Limi
 data class HavingPartial(override val data: SelectData): AbstractExpressionContainer<HavingPartial>(), OrderByOperate, LimitOperate, SelectStatement {
     override fun refer() = this
 
-    override fun set(exp: Expression<*>, isAnd: Boolean) = data.having?.let {
+    override fun set(exp: Expression<*>?, isAnd: Boolean) = data.having?.let {
         HavingPartial(data.copy(having = if (isAnd) it.and(exp) else it.or(exp)))
     } ?: HavingPartial(data.copy(having = exp))
 }

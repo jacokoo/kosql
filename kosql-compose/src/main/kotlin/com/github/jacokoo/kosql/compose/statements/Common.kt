@@ -7,7 +7,7 @@ import com.github.jacokoo.kosql.compose.Table
 
 interface WhereData<out T> {
     fun getWhere(): Expression<*>?
-    fun setWhere(e: Expression<*>): T
+    fun setWhere(e: Expression<*>?): T
 }
 
 interface WhereDataContainer<T: WhereData<T>, R>: ExpressionContainer<R> {
@@ -19,7 +19,7 @@ abstract class AbstractWhereDataContainer<T: WhereData<T>, R: WhereDataContainer
     WhereDataContainer<T, R> {
 
     override fun refer() = refer(data)
-    override fun set(exp: Expression<*>, isAnd: Boolean): R =
+    override fun set(exp: Expression<*>?, isAnd: Boolean): R =
         data.getWhere()?.let {
             refer(data.setWhere(if (isAnd) it.and(exp) else it.or(exp)))
         } ?: refer(data.setWhere(exp))
@@ -60,7 +60,7 @@ abstract class AbstractJoinDataContainer<T: JoinData<T>, R: JoinDataContainer<T,
     AbstractExpressionContainer<R>(),
     JoinDataContainer<T, R> {
 
-    override fun set(exp: Expression<*>, isAnd: Boolean): R = join.expression?.let {
+    override fun set(exp: Expression<*>?, isAnd: Boolean): R = join.expression?.let {
         join.copy(expression = if (isAnd) it.and(exp) else it.or(exp)).let {
             refer(data.removeJoin(join).addJoin(it), it)
         }

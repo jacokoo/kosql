@@ -12,7 +12,7 @@ data class UpdateData (
     val expression: Expression<*>? = null
 ): WhereData<UpdateData>, JoinData<UpdateData> {
     override fun getWhere() = expression
-    override fun setWhere(e: Expression<*>) = copy(expression = e)
+    override fun setWhere(e: Expression<*>?) = copy(expression = e)
     override fun addJoin(join: Join) = copy(joins = joins + join)
     override fun removeJoin(join: Join) = copy(joins = joins - join)
 }

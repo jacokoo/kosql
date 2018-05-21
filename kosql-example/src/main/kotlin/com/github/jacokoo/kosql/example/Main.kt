@@ -11,12 +11,12 @@ import org.springframework.context.support.beans
 @Configuration
 open class Main
 
+val config = beans {
+    bean {OrderDatabase}
+    bean<KoSQL>()
+    bean<Demo2>()
+}
+
 fun main(args: Array<String>) {
-    runApplication<Main>(*args) {
-        addInitializers(beans {
-            bean {OrderDatabase}
-            bean<KoSQL>()
-            bean<Demo2>()
-        })
-    }
+    runApplication<Main>(*args) { addInitializers(config) }
 }

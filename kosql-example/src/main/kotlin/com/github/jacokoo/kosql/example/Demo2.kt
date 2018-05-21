@@ -8,7 +8,6 @@ import com.github.jacokoo.kosql.spring.jdbc.KoSQL
 import javax.annotation.PostConstruct
 
 class Demo2(private val ko: KoSQL) {
-
     @PostConstruct fun demo() {
         ko.run {
             val b = ORDER_ITEM.AS("b")
@@ -26,7 +25,7 @@ class Demo2(private val ko: KoSQL) {
                 FROM(a) LEFT_JOIN
                         b ON b.ORDER_ID EQ a.ID AND b.PRODUCT_ID EQ 10 GROUP_BY
                         a.ID HAVING
-                        count(a.ID) EQ 1 AND (a.ORDER_NUMBER LIKE  "ab") AND a.ID EQ 1
+                        count(a.ID) EQ 1 AND a.ORDER_NUMBER LIKE "%a" AND a.ID EQ 1
             }
 
             println(SQLBuilder().build(sql).sql)
@@ -42,4 +41,3 @@ class Demo2(private val ko: KoSQL) {
         }
     }
 }
-

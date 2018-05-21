@@ -11,7 +11,7 @@ data class DeleteData(
     val expression: Expression<*>? = null
 ): WhereData<DeleteData>, JoinData<DeleteData> {
     override fun getWhere() = expression
-    override fun setWhere(e: Expression<*>) = copy(expression = e)
+    override fun setWhere(e: Expression<*>?) = copy(expression = e)
     override fun addJoin(join: Join) = copy(joins = joins + join)
     override fun removeJoin(join: Join) = copy(joins = joins - join)
 }
