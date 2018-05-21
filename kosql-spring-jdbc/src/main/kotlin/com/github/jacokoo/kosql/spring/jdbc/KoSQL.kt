@@ -15,6 +15,11 @@ import com.github.jacokoo.kosql.executor.typesafe.Queries
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.jdbc.support.KeyHolder
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionDefinition
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.support.DefaultTransactionDefinition
+import org.springframework.transaction.support.TransactionTemplate
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.Statement
@@ -22,8 +27,24 @@ import java.sql.Statement
 open class KoSQL(
     private val database: Database,
     private val jdbc: JdbcTemplate,
+    private val transactionManager: PlatformTransactionManager,
     private val builder: SQLBuilder = SQLBuilder()
 ): Composer(), Queries, Shortcut {
+
+    fun <T> tx(
+        timeout: Int = TransactionDefinition.TIMEOUT_DEFAULT,
+        propagation: Int = TransactionDefinition.PROPAGATION_REQUIRED,
+        isolation: Int = TransactionDefinition.ISOLATION_DEFAULT,
+        readonly: Boolean = false,
+        block: KoSQL.(TransactionStatus) -> T
+    ) = DefaultTransactionDefinition().also {
+        it.timeout = timeout
+        it.propagationBehavior = propagation
+        it.isolationLevel = isolation
+        it.isReadOnly = readonly
+    }.let { TransactionTemplate(transactionManager, it).execute { this.block(it) } }
+
+    fun <T> readonly(block: KoSQL.(TransactionStatus) -> T) = tx(readonly = true, block = block)
 
     override fun execute(update: UpdateStatement): Int = builder.build(update).let { (sql, context) ->
         jdbc.update { it.prepareStatement(sql).also { context.fillArguments(it) } }
@@ -67,7 +88,6 @@ open class KoSQL(
             }
         }!!
     }
-
 
     private fun executeInsertWithKey(sql: String, context: SQLBuilderContext): Pair<KeyHolder, Int> =
         GeneratedKeyHolder().let { it to jdbc.update({
