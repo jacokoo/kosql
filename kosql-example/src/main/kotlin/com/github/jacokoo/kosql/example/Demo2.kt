@@ -10,6 +10,19 @@ import javax.annotation.PostConstruct
 class Demo2(private val ko: KoSQL) {
     @PostConstruct fun demo() {
         ko.run {
+
+            val template = SELECT(-ORDER + ORDER.ORDER_DATE) {
+                FROM(ORDER) WHERE ORDER.ID EQ 1
+            }.template()
+
+            template.fetch().map { it ->
+                println(it)
+            }
+
+            template.fetch(0 to 2).map { it ->
+                println(it)
+            }
+
             val b = ORDER_ITEM.AS("b")
             val a = ORDER.AS("a")
             //       INT   String          LocalDateTime

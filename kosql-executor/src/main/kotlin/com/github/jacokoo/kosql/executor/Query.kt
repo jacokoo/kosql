@@ -69,11 +69,11 @@ interface SelectResult<out T: Value>: Iterable<T> {
     override fun iterator(): Iterator<T> = ResultIterator(this)
 }
 
+class SelectResultsMapper(private val cs: ColumnList): ResultSetMapper<Values> {
+    override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col] })
+}
 data class SelectResults(override val columns: ColumnList, override val values: List<Values>): SelectResult<Values> {
-    constructor(cs: ColumnList, qp: SelectStatement, ko: Query): this(cs, ko.execute(qp, Mapper(cs)))
-    private class Mapper(private val cs: ColumnList): ResultSetMapper<Values> {
-        override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col] })
-    }
+    constructor(cs: ColumnList, qp: SelectStatement, ko: Query): this(cs, ko.execute(qp, SelectResultsMapper(cs)))
 }
 
 interface Query {

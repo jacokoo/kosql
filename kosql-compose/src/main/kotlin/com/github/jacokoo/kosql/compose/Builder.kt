@@ -107,7 +107,11 @@ class SQLBuilder {
     }
 }
 
-data class BuildResult(val sql: String, val context: SQLBuilderContext) {
+interface ParameterHolder {
+    fun fill(ps: PreparedStatement)
+}
+
+data class BuildResult(val sql: String, val params: ParameterHolder) {
     companion object {
         internal fun build(ctx: SQLBuilderContext, block: StringBuilder.() -> Unit): BuildResult {
             var str = StringBuilder()
@@ -117,7 +121,7 @@ data class BuildResult(val sql: String, val context: SQLBuilderContext) {
     }
 }
 
-class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
+open class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement): ParameterHolder {
     private val prefix = "a_"
     private var aliasIndex = 0
     private var aliasMap: MutableMap<Nameable<*>, String> = mutableMapOf()
@@ -143,7 +147,7 @@ class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
         return a
     }
 
-    fun fillArguments(ps: PreparedStatement) {
+    override fun fill(ps: PreparedStatement) {
         arguments.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)}
     }
 }
