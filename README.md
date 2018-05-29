@@ -2,7 +2,7 @@
 
 `KoSQL`是一个轻量级的, 直接在`Kotlin`代码中写带有`类型检查`, `对象映射`等功能的`"原生SQL语句"`的框架
 
-# 功能
+## 功能
 
 * 类型安全, 包括`SQL`语法, 表名, 列名, 列数据类型
 * 简单, 语法基本接近`原生SQL`
@@ -14,7 +14,7 @@
 * 简化查询语句拼接, 可能为`null`的条件查询跟写正常的查询方式一样
 * DAO 支持
 
-# 示例
+## 示例
 
 * 直接写`SQL`
 
@@ -71,3 +71,13 @@
     // ORDER.TOTAL_AMOUNT GT optionalAmount is ignored because optionalAmount is null
     val orders: List<Order> = ORDER.fetch(ORDER.ID EQ optionalId AND (ORDER.TOTAL_AMOUNT GT optionalAmount))
     ```
+
+## 子项目
+
+* kosql-compose: 写 SQL 的语法定义
+* kosql-executor: 执行 SQL 的接口定义
+* kosql-spring-jdbc: 使用 spring-jdbc 来执行 SQL
+* kosql-generator: 从数据库生成代码
+
+# kosql-compose
+

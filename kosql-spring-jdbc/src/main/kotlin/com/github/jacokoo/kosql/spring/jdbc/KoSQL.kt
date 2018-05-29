@@ -47,6 +47,8 @@ open class KoSQL(
 
     fun <T> readonly(block: KoSQL.(TransactionStatus) -> T) = tx(readonly = true, block = block)
 
+    fun <T> compose(block: KoSQL.() -> T): T = block()
+
     override fun execute(update: UpdateStatement): Int = builder.build(update).let { (sql, params) ->
         jdbc.update { it.prepareStatement(sql).also { params.fill(it) } }
     }

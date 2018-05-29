@@ -8,13 +8,14 @@ import com.github.jacokoo.kosql.spring.jdbc.KoSQL
 import javax.annotation.PostConstruct
 
 class Demo2(private val ko: KoSQL) {
+    val template = ko.compose {
+        SELECT(ORDER.ORDER_DATE) {
+            FROM(ORDER) WHERE ORDER.ID EQ 1
+        }.template()
+    }
+
     @PostConstruct fun demo() {
         ko.run {
-
-            val template = SELECT(-ORDER + ORDER.ORDER_DATE) {
-                FROM(ORDER) WHERE ORDER.ID EQ 1
-            }.template()
-
             template.fetch().map { it ->
                 println(it)
             }
