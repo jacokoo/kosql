@@ -1,11 +1,12 @@
 package com.github.jacokoo.kosql.compose
 
 import com.github.jacokoo.kosql.compose.statements.*
+import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import java.sql.PreparedStatement
 
 class SQLBuilder {
-    fun build(part: SelectStatement): BuildResult = build(part.data, SQLBuilderContext(this, part))
-    fun build(data: SelectData, ctx: SQLBuilderContext): BuildResult {
+    fun <T: ColumnList> build(part: SelectStatement<T>): BuildResult = build(part.data, SQLBuilderContext(this, part))
+    fun <T: ColumnList> build(data: SelectData<T>, ctx: SQLBuilderContext): BuildResult {
         if (data.table == null) throw RuntimeException("no table specified")
         return BuildResult.build(ctx) {
             append(" FROM ").append(data.table.toSQL(ctx))

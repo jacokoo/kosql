@@ -7,19 +7,21 @@ fun main(args: Array<String>) {
         |package com.github.jacokoo.kosql.compose.typesafe
         |
         |import com.github.jacokoo.kosql.compose.Column
-        |import com.github.jacokoo.kosql.compose.statements.*
+        |import com.github.jacokoo.kosql.compose.statements.Select
+        |import com.github.jacokoo.kosql.compose.statements.SelectData
+        |import com.github.jacokoo.kosql.compose.statements.SelectFromOperate
         |
     """.trimMargin()
 
     fun classPart(it: Int) = """
         |
-        |data class SelectStatement$it<${times(it) { "T$it" }}>(val c: Column$it<${times(it) { "T$it" }}>, override val data: SelectData): SelectStatement
+        |data class SelectStatement$it<${times(it) { "T$it" }}>(override val data: SelectData<Column$it<${times(it) { "T$it" }}>>): SelectFromOperate<Column$it<${times(it) { "T$it" }}>>
     """.trimMargin()
 
     fun methodPart(it: Int) = """
         |
-        |    fun <${times(it) { "T$it" }}> SELECT(${times(it) { "c$it: Column<T$it>" }}, block: SelectCreator) =  SelectStatement$it(Column$it(${times(it) { "c$it" }}), SelectFromPart(${times(it) { "c$it" }}).block().data)
-        |    fun <${times(it) { "T$it" }}> SELECT(c: Column$it<${times(it) { "T$it" }}>, block: SelectCreator) =  SelectStatement$it(c, SelectFromPart(c).block().data)
+        |    fun <${times(it) { "T$it" }}> SELECT(${times(it) { "c$it: Column<T$it>" }}) =  SELECT(Column$it(${times(it) { "c$it" }}))
+        |    fun <${times(it) { "T$it" }}> SELECT(c: Column$it<${times(it) { "T$it" }}>) =  SelectStatement$it(SelectData(c))
         |
     """.trimMargin()
 

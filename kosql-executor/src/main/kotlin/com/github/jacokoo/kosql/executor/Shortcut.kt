@@ -4,7 +4,6 @@ import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.Column1
 import com.github.jacokoo.kosql.compose.typesafe.Columns
-import com.github.jacokoo.kosql.compose.typesafe.SelectStatement1
 import com.github.jacokoo.kosql.executor.typesafe.SelectResultMapper1
 import kotlin.reflect.KClass
 
@@ -40,7 +39,7 @@ interface Shortcut: Query, Operators {
 
     fun <T, R: Table<T, Entity<T>>> R.count(exp: Expression<Any>?): Int {
         val col = Column1(Count<Any>())
-        return execute(SelectStatement1(col, SelectData(col, this, expression = exp)), SelectResultMapper1(col)).firstOrNull()!!.v1;
+        return execute(SelectEnd(SelectData(col, this, expression = exp)), SelectResultMapper1(col)).firstOrNull()!!.v1;
     }
 
     @Suppress("UNCHECKED_CAST")

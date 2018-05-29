@@ -72,26 +72,26 @@ interface SelectResult<out T: Value>: Iterable<T> {
 class SelectResultsMapper(private val cs: ColumnList): ResultSetMapper<Values> {
     override fun map(rs: ResultSetRow) = Values(cs.columns.mapIndexed { idx, col -> rs[idx, col] })
 }
-data class SelectResults(override val columns: ColumnList, override val values: List<Values>): SelectResult<Values> {
-    constructor(cs: ColumnList, qp: SelectStatement, ko: Query): this(cs, ko.execute(qp, SelectResultsMapper(cs)))
+data class SelectResults<T: ColumnList>(override val columns: ColumnList, override val values: List<Values>): SelectResult<Values> {
+    constructor(cs: ColumnList, qp: SelectStatement<T>, ko: Query): this(cs, ko.execute(qp, SelectResultsMapper(cs)))
 }
 
 interface Query {
-    fun <T> execute(select: SelectStatement, mapper: ResultSetMapper<T>): List<T>
+    fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: ResultSetMapper<T>): List<T>
     fun execute(update: UpdateStatement): Int
     fun execute(delete: DeleteStatement): Int
     fun <T> execute(insert: InsertStatement<T>): Pair<T, Int>
     fun <T> executeBatch(insert: InsertStatement<T>): Pair<List<T>, Int>
 
-    fun <T> execute(select: SelectStatement, mapper: (ResultSetRow) -> T): List<T> = execute(select, object: ResultSetMapper<T> {
+    fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: (ResultSetRow) -> T): List<T> = execute(select, object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)
     })
-    fun <T, R: Entity<T>> execute(select: SelectStatement, entityClass: KClass<out R>): List<R> = execute(select, ColumnsToEntityMapper(select.data.columns, entityClass))
+    fun <T, R: Entity<T>, L: ColumnList> execute(select: SelectStatement<L>, entityClass: KClass<out R>): List<R> = execute(select, ColumnsToEntityMapper(select.data.columns, entityClass))
 
-    fun <T> SelectStatement.fetch(mapper: ResultSetMapper<T>): List<T> = execute(this, mapper)
-    fun <T, R: Entity<T>> SelectStatement.fetch(entityClass: KClass<out R>) = execute(this, entityClass)
-    fun <T> SelectStatement.fetch(mapper: (ResultSetRow) -> T): List<T> = execute(this, mapper)
-    fun SelectStatement.fetch(): SelectResults = SelectResults(this.data.columns, this, this@Query)
+    fun <T, R: ColumnList> SelectStatement<R>.fetch(mapper: ResultSetMapper<T>): List<T> = execute(this, mapper)
+    fun <T, R: Entity<T>, L: ColumnList> SelectStatement<L>.fetch(entityClass: KClass<out R>) = execute(this, entityClass)
+    fun <T, R: ColumnList> SelectStatement<R>.fetch(mapper: (ResultSetRow) -> T): List<T> = execute(this, mapper)
+    fun <T: ColumnList> SelectStatement<T>.fetch(): SelectResults<T> = SelectResults(this.data.columns, this, this@Query)
 }
 
 

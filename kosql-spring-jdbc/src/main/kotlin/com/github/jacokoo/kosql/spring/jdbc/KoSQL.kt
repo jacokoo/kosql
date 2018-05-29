@@ -8,6 +8,7 @@ import com.github.jacokoo.kosql.compose.statements.DeleteStatement
 import com.github.jacokoo.kosql.compose.statements.InsertStatement
 import com.github.jacokoo.kosql.compose.statements.SelectStatement
 import com.github.jacokoo.kosql.compose.statements.UpdateStatement
+import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import com.github.jacokoo.kosql.executor.ResultSetMapper
 import com.github.jacokoo.kosql.executor.ResultSetRow
 import com.github.jacokoo.kosql.executor.Shortcut
@@ -49,6 +50,8 @@ open class KoSQL(
 
     fun <T> compose(block: KoSQL.() -> T): T = block()
 
+    fun <T: ColumnList, R: SelectStatement<T>> template(block: KoSQL.() -> R) = block().template()
+
     override fun execute(update: UpdateStatement): Int = builder.build(update).let { (sql, params) ->
         jdbc.update { it.prepareStatement(sql).also { params.fill(it) } }
     }
@@ -75,7 +78,7 @@ open class KoSQL(
         else listOf<T>() to executeInsert(sql, context)
     }
 
-    override fun <T> execute(select: SelectStatement, mapper: ResultSetMapper<T>): List<T> = builder.build(select).let { (sql, context) ->
+    override fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: ResultSetMapper<T>): List<T> = builder.build(select).let { (sql, context) ->
         execute(sql, context, mapper)
     }
 

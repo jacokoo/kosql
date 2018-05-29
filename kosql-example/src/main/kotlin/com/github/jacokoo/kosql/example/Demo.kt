@@ -11,13 +11,10 @@ class Demo(private val ko: KoSQL) {
 
     @PostConstruct
     fun demo() = ko.run {
-        SELECT(ORDER.ORDER_NUMBER, ORDER.ID) {
-            FROM(ORDER) WHERE ORDER.ID EQ 1
-        }
+        SELECT(ORDER.ORDER_NUMBER, ORDER.ID) FROM ORDER WHERE ORDER.ID EQ 1
 
-        SELECT(ORDER.ID) {
-            FROM(ORDER) JOIN ORDER_ITEM ON ORDER.ID EQ ORDER_ITEM.ORDER_ID WHERE ORDER.ID EQ 1
-        }.fetch(Order::class).forEach { println(it.id) }
+        (SELECT(ORDER.ID) FROM(ORDER) JOIN ORDER_ITEM ON ORDER.ID EQ ORDER_ITEM.ORDER_ID WHERE ORDER.ID EQ 1)
+            .fetch(Order::class).forEach { println(it.id) }
 
         UPDATE(ORDER) SET {
             it[ORDER.ID] = 1

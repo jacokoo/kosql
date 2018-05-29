@@ -24,13 +24,13 @@ fun main(args: Array<String>) {
         |}
         |data class SelectResult$it<${times(it) { "T$it" }}>(private val c: Column$it<${times(it) { "T$it" }}>, override val values: List<Value$it<${times(it) { "T$it" }}>>): SelectResult<Value$it<${times(it) { "T$it" }}>> {
         |    override val columns = c
-        |    constructor(c: Column$it<${times(it) { "T$it" }}>, qp: SelectStatement, ko: Query): this(c, ko.execute(qp, SelectResultMapper$it(c)))
+        |    constructor(s: SelectStatement<Column$it<${times(it) { "T$it" }}>>, ko: Query): this(s.data.columns, ko.execute(s, SelectResultMapper$it(s.data.columns)))
         |}
     """.trimMargin()
 
     fun methodPart(it: Int) = """
         |
-        |    fun <${times(it) { "T$it" }}> SelectStatement$it<${times(it) { "T$it" }}>.fetch() = SelectResult$it(c, this, this@Queries)
+        |    fun <${times(it) { "T$it" }}> SelectStatement<Column$it<${times(it) { "T$it" }}>>.fetch() = SelectResult$it(this, this@Queries)
     """.trimMargin()
 
     println(buildString {

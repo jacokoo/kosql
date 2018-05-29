@@ -2,6 +2,7 @@ package com.github.jacokoo.kosql.compose
 
 import com.github.jacokoo.kosql.compose.statements.SelectData
 import com.github.jacokoo.kosql.compose.typesafe.Column1
+import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import kotlin.reflect.KClass
 
 enum class Order { ASC, DESC }
@@ -88,7 +89,7 @@ open class EmptyTable(alias: String = ""): Table<Any, Entity<Any>>(alias) {
     }
 }
 
-class TableLike(private val data: SelectData, alias: String, private val original: List<Column<*>>): EmptyTable(alias) {
+class TableLike<T: ColumnList>(private val data: SelectData<T>, alias: String, private val original: List<Column<*>>): EmptyTable(alias) {
     private val map = original.associate { it to DefaultColumn(this, if (it.alias == "") it.name else it.alias, it.type) }
     init {
         this.columns = map.values.toList()

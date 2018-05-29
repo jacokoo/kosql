@@ -34,17 +34,18 @@
     val rows = execute(DELETE FROM ORDER WHERE ORDER.ID EQ 1) // returns rows effected
 
     // select * from t_order where f_id = ?
-    val list: List<Order> = SELECT(-ORDER) {
-        FROM(ORDER) WHERE ORDER.ID EQ 1
-    }.fetch(Order::class)
+    val list: List<Order> = (
+        SELECT (ORDER) FROM ORDER WHERE ORDER.ID EQ 1
+    ).fetch(Order::class)
 
     val optionalId: Int? = 100
     val optionalAmount: BigDecimal? = null
     // select f_id, f_total_amount from t_order where f_id = 100
     // ORDER.TOTAL_AMOUNT GT optionalAmount is ignored because optionalAmount is null
-    SELECT(ORDER.ID, ORDER.TOTAL_AMOUNT) {
-        FROM(ORDER) WHERE ORDER.ID EQ optionalId AND ORDER.TOTAL_AMOUNT GT optionalAmount
-    }.fetch().map { (id: Int, amount: BigDecimal) ->
+    (SELECT (ORDER.ID, ORDER.TOTAL_AMOUNT) FROM ORDER
+        LEFT_JOIN ORDER_ITEM ON ORDER_ITEM.ORDER_ID EQ ORDER.ID
+        WHERE ORDER.ID EQ optionalId AND ORDER.TOTAL_AMOUNT GT optionalAmount
+    ).fetch().forEach { (id: Int, amount: BigDecimal) ->
         println(id.inc())
         println(amount.divide(10.toBigDecimal()))
     }

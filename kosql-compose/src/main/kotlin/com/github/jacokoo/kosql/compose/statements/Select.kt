@@ -6,8 +6,8 @@ import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import com.github.jacokoo.kosql.compose.typesafe.Columns
 import com.github.jacokoo.kosql.compose.typesafe.SelectStatement1
 
-data class SelectData (
-    val columns: ColumnList,               // select columns
+data class SelectData<T: ColumnList> (
+    val columns: T,               // select columns
     val table: Table<*, Entity<*>>? = null,                   // select from table
     val joins: List<Join> = listOf(),           // joins
     val expression: Expression<*>? = null,      // where expression
@@ -16,47 +16,47 @@ data class SelectData (
     val orderBy: List<Pair<Column<*>, Order>> = listOf(),   // order by pairs
     val offset: Int? = null,
     val rowCount: Int? = null
-): WhereData<SelectData>, JoinData<SelectData> {
+): WhereData<SelectData<T>>, JoinData<SelectData<T>> {
     override fun getWhere() = expression
     override fun setWhere(e: Expression<*>?) = copy(expression = e)
     override fun addJoin(join: Join) = copy(joins = joins + join)
     override fun removeJoin(join: Join) = copy(joins = joins - join)
 }
 
-interface SelectStatement: Statement {
-    val data: SelectData
-    fun AS(alias: String): TableLike = TableLike(data, alias, data.columns.columns)
+interface SelectStatement<T: ColumnList>: Statement {
+    val data: SelectData<T>
+    fun AS(alias: String): TableLike<T> = TableLike(data, alias, data.columns.columns)
     fun toCount(): SelectStatement1<Int> {
         val count = Count<Int>()
         val col = Column1(count)
-        val dd = data.copy(columns = col, orderBy = listOf(), offset = null, rowCount = null)
-        return SelectStatement1(Column1(Count<Int>()), dd)
+        val dd = SelectData(col, data.table, data.joins, data.expression, data.groupBy, data.having)
+        return SelectStatement1(dd)
     }
 }
 
-data class SelectEnd(override val data: SelectData): SelectStatement
+data class SelectEnd<T: ColumnList>(override val data: SelectData<T>): SelectStatement<T>
 
-data class LimitPart(override val data: SelectData): SelectStatement {
-    infix fun OFFSET(os: Int): SelectEnd = SelectEnd(data.copy(offset = os))
+data class LimitPart<T: ColumnList>(override val data: SelectData<T>): SelectStatement<T> {
+    infix fun OFFSET(os: Int): SelectEnd<T> = SelectEnd(data.copy(offset = os))
 }
 
-interface LimitOperate {
-    val data: SelectData
-    infix fun LIMIT(count: Int): LimitPart = LimitPart(data.copy(rowCount = count))
+interface LimitOperate<T: ColumnList> {
+    val data: SelectData<T>
+    infix fun LIMIT(count: Int): LimitPart<T> = LimitPart(data.copy(rowCount = count))
 }
 
-data class OrderByMorePart(override val data: SelectData): LimitOperate, SelectStatement {
-    infix fun AND(p: Pair<Column<*>, Order>): OrderByMorePart = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
+data class OrderByMorePart<T: ColumnList>(override val data: SelectData<T>): LimitOperate<T>, SelectStatement<T> {
+    infix fun AND(p: Pair<Column<*>, Order>): OrderByMorePart<T> = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
 }
 
-interface OrderByOperate {
-    val data: SelectData
-    infix fun ORDER_BY(p: Pair<Column<*>, Order>): OrderByMorePart = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
+interface OrderByOperate<T: ColumnList> {
+    val data: SelectData<T>
+    infix fun ORDER_BY(p: Pair<Column<*>, Order>): OrderByMorePart<T> = OrderByMorePart(data.copy(orderBy = data.orderBy + p))
 }
 
-data class AfterGroupByPart(override val data: SelectData): OrderByOperate, LimitOperate, SelectStatement
+data class AfterGroupByPart<T: ColumnList>(override val data: SelectData<T>): OrderByOperate<T>, LimitOperate<T>, SelectStatement<T>
 
-data class HavingPartial(override val data: SelectData): AbstractExpressionContainer<HavingPartial>(), OrderByOperate, LimitOperate, SelectStatement {
+data class HavingPartial<T: ColumnList>(override val data: SelectData<T>): AbstractExpressionContainer<HavingPartial<T>>(), OrderByOperate<T>, LimitOperate<T>, SelectStatement<T> {
     override fun refer() = this
 
     override fun set(exp: Expression<*>?, isAnd: Boolean) = data.having?.let {
@@ -64,54 +64,53 @@ data class HavingPartial(override val data: SelectData): AbstractExpressionConta
     } ?: HavingPartial(data.copy(having = exp))
 }
 
-data class GroupByMorePart(override val data: SelectData): LimitOperate, OrderByOperate, SelectStatement {
-    infix fun AND(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
-    infix fun HAVING(e: Expression<*>): AfterGroupByPart = AfterGroupByPart(data.copy(having = e))
+data class GroupByMorePart<T: ColumnList>(override val data: SelectData<T>): LimitOperate<T>, OrderByOperate<T>, SelectStatement<T> {
+    infix fun AND(column: Column<*>): GroupByMorePart<T> = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
+    infix fun HAVING(e: Expression<*>): AfterGroupByPart<T> = AfterGroupByPart(data.copy(having = e))
     infix fun <T> HAVING(c: Column<T>) = PartialExpression(HavingPartial(data), c)
 }
 
-interface GroupByOperate {
-    val data: SelectData
-    infix fun GROUP_BY(column: Column<*>): GroupByMorePart = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
+interface GroupByOperate<T: ColumnList> {
+    val data: SelectData<T>
+    infix fun GROUP_BY(column: Column<*>): GroupByMorePart<T> = GroupByMorePart(data.copy(groupBy = data.groupBy + column))
 }
 
-
-data class SelectWhereConainter(override val data: SelectData): AbstractWhereDataContainer<SelectData, SelectWhereConainter>(), SelectStatement {
-    override fun refer(data: SelectData) = SelectWhereConainter(data)
+data class SelectWhereContainer<T: ColumnList>(override val data: SelectData<T>):
+    AbstractWhereDataContainer<SelectData<T>, SelectWhereContainer<T>>(), SelectStatement<T>,
+    GroupByOperate<T>, OrderByOperate<T>, LimitOperate<T> {
+    override fun refer(data: SelectData<T>) = SelectWhereContainer(data)
 }
 
-interface SelectWhereOperate: WhereOperate<SelectData, SelectWhereConainter> {
-    override fun refer(data: SelectData) = SelectWhereConainter(data)
+interface SelectWhereOperate<T: ColumnList>: WhereOperate<SelectData<T>, SelectWhereContainer<T>> {
+    override fun refer(data: SelectData<T>) = SelectWhereContainer(data)
 }
 
-data class SelectJoinDataContainer(override val data: SelectData, override val join: Join):
-    AbstractJoinDataContainer<SelectData, SelectJoinDataContainer>(), SelectStatement,
-    SelectWhereOperate, SelectJoinOperate, LimitOperate, OrderByOperate, GroupByOperate {
+data class SelectJoinDataContainer<T: ColumnList>(override val data: SelectData<T>, override val join: Join):
+    AbstractJoinDataContainer<SelectData<T>, SelectJoinDataContainer<T>>(), SelectStatement<T>,
+    SelectWhereOperate<T>, SelectJoinOperate<T>, LimitOperate<T>, OrderByOperate<T>, GroupByOperate<T> {
     override fun refer() = this
-    override fun refer(data: SelectData, join: Join) = SelectJoinDataContainer(data, join)
+    override fun refer(data: SelectData<T>, join: Join) = SelectJoinDataContainer(data, join)
 }
 
-data class SelectJoinOnPart(override val data: SelectData, override val join: Join): JoinOnPart<SelectData, SelectJoinDataContainer> {
-    override fun refer(data: SelectData, join: Join) = SelectJoinDataContainer(data, join)
+data class SelectJoinOnPart<T: ColumnList>(override val data: SelectData<T>, override val join: Join): JoinOnPart<SelectData<T>, SelectJoinDataContainer<T>> {
+    override fun refer(data: SelectData<T>, join: Join) = SelectJoinDataContainer(data, join)
 }
 
-interface SelectJoinOperate: JoinOperate<SelectData, SelectJoinDataContainer, SelectJoinOnPart> {
-    override fun referJoinOn(data: SelectData, join: Join) = SelectJoinOnPart(data, join)
+interface SelectJoinOperate<T: ColumnList>: JoinOperate<SelectData<T>, SelectJoinDataContainer<T>, SelectJoinOnPart<T>> {
+    override fun referJoinOn(data: SelectData<T>, join: Join) = SelectJoinOnPart(data, join)
 }
 
-data class WhereAndJoinPart(override val data: SelectData): SelectWhereOperate, SelectJoinOperate, LimitOperate, OrderByOperate, GroupByOperate, SelectStatement
+data class WhereAndJoinPart<T: ColumnList>(override val data: SelectData<T>): SelectWhereOperate<T>, SelectJoinOperate<T>, LimitOperate<T>, OrderByOperate<T>, GroupByOperate<T>, SelectStatement<T>
 
-data class SelectFromPart(private val data: SelectData): Operators {
-    constructor(cs: ColumnList): this(SelectData(cs))
-    constructor(vararg cs: Column<*>): this(SelectData(Columns(cs.toList())))
-
-    fun FROM(t: Table<*, Entity<*>>) = WhereAndJoinPart(data.copy(table = t))
+interface SelectFromOperate<T: ColumnList> {
+    val data: SelectData<T>
+    infix fun FROM(t: Table<*, Entity<*>>) = WhereAndJoinPart(data.copy(table = t))
 }
 
-internal typealias SelectCreator = SelectFromPart.() -> SelectStatement
+data class SelectFromPart<T: ColumnList>(override val data: SelectData<T>): SelectFromOperate<T>
 
 interface Select {
-    fun SELECT(columns: Columns, block: SelectCreator) = SelectEnd(SelectFromPart(columns).block().data)
-    fun SELECT(vararg tables: Table<*, Entity<*>>, block: SelectCreator) = SELECT(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }), block)
+    fun SELECT(columns: Columns) = SelectFromPart(SelectData(columns))
+    fun SELECT(vararg tables: Table<*, Entity<*>>) = SELECT(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }))
 }
 

@@ -10,7 +10,7 @@ data class InsertData<T>(
     val table: Table<T, Entity<T>>,
     val columns: ColumnList,
     val values: List<List<Any?>> = listOf(),
-    val query: SelectStatement? = null
+    val query: SelectStatement<*>? = null
 )
 
 interface InsertStatement<T>: Statement {
@@ -32,7 +32,7 @@ interface ExtraValues<T> {
         return InsertEnd(data.copy(values = values))
     }
 
-    infix fun FROM(q: SelectStatement): InsertEnd<T> = InsertEnd(data.copy(query = q))
+    infix fun FROM(q: SelectStatement<*>): InsertEnd<T> = InsertEnd(data.copy(query = q))
 }
 
 data class Fields<T>(val table: Table<T, Entity<T>>, val columns: ColumnList): ExtraValues<T> {
