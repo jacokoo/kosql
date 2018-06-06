@@ -10,8 +10,6 @@ import javax.annotation.PostConstruct
 
 class Demo2(private val ko: KoSQL) {
     val template = ko.template {
-        val a = ORDER.ID EQ 1
-
         SELECT(ORDER.ID, ORDER.ORDER_NUMBER, ORDER.ORDER_DATE) FROM ORDER WHERE ORDER.ID EQ 1
     }
 
@@ -25,8 +23,29 @@ class Demo2(private val ko: KoSQL) {
                 println(it)
             }
 
+            // insert into t_order(f_customer_id, f_order_number) values(?, ?)
+            val (id, rows) = execute( // returns generated id and rows effected
+                INSERT INTO ORDER(ORDER.CUSTOMER_ID, ORDER.ORDER_NUMBER) VALUES V(100, "order_number")
+            )
+
+            // update t_order set f_customer_id = ?, f_order_number = ? where f_id = ?
+            val rows1 = execute(UPDATE(ORDER) SET { // returns rows effected
+                it[ORDER.CUSTOMER_ID] = 100
+                it[ORDER.ORDER_NUMBER] = "abc"
+            } WHERE ORDER.ID EQ 1)
+
+            // delete from t_order where f_id = ?
+            val rows2 = execute(DELETE FROM ORDER WHERE ORDER.ID EQ 1) // returns rows effected
+
+            // select * from t_order where f_id = ?
+            val list: List<Order> = (
+                SELECT (ORDER) FROM ORDER WHERE ORDER.ID EQ 1
+                ).fetch(Order::class)
+
             val optionalId: Int? = 100
             val optionalAmount: BigDecimal? = null
+            // select f_id, f_total_amount from t_order where f_id = 100
+            // ORDER.TOTAL_AMOUNT GT optionalAmount is ignored because optionalAmount is null
             (SELECT (ORDER.ID, ORDER.TOTAL_AMOUNT) FROM ORDER
                 LEFT_JOIN ORDER_ITEM ON ORDER_ITEM.ORDER_ID EQ ORDER.ID
                 WHERE ORDER.ID EQ optionalId AND ORDER.TOTAL_AMOUNT GT optionalAmount
