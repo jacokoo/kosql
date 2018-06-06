@@ -13,7 +13,6 @@ import com.github.jacokoo.kosql.compose.typesafe.Value
 import com.github.jacokoo.kosql.compose.typesafe.Values
 import java.sql.ResultSet
 import kotlin.reflect.KClass
-import kotlin.reflect.full.createInstance
 
 internal class ResultIterator<T: Value>(private val t: SelectResult<T>): AbstractIterator<T>() {
     private var current = 0
@@ -42,7 +41,7 @@ class ColumnsToEntityMapper<T, R: Entity<T>>(val columns: ColumnList, val entity
         val cs = columns.columns.filter { Database[it.table as Table<T, R>] == entityClass }
         assert(cs.isNotEmpty())
         val clazz = Database[cs[0].table as Table<T, R>] ?: throw RuntimeException("no entity class found")
-        return clazz.createInstance().also {
+        return clazz.java.newInstance().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
         } as R
     }
@@ -57,7 +56,7 @@ interface SelectResult<out T: Value>: Iterable<T> {
         val cs = columns.columns.filter { Database[it.table as Table<T, Entity<T>>] == entityClass }
         if (cs.none()) return listOf()
 
-        return values.map { v -> entityClass.createInstance().also { e ->
+        return values.map { v -> entityClass.java.newInstance().also { e ->
             columns.columns.forEachIndexed {i, c -> if (cs.contains(c)) e[c.name] = v[i]}
         } }
     }
