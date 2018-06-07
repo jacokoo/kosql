@@ -28,6 +28,12 @@ class Demo2(private val ko: KoSQL) {
                 INSERT INTO ORDER(ORDER.CUSTOMER_ID, ORDER.ORDER_NUMBER) VALUES V(100, "order_number")
             )
 
+            // batch insert
+            val rs: Int = execute(
+                INSERT INTO ORDER(ORDER.CUSTOMER_ID, ORDER.ORDER_NUMBER) VALUES V(100, "order_number")
+                    AND V(200, "xxx")
+            )
+
             // update t_order set f_customer_id = ?, f_order_number = ? where f_id = ?
             val rows1 = execute(UPDATE(ORDER) SET { // returns rows effected
                 it[ORDER.CUSTOMER_ID] = 100

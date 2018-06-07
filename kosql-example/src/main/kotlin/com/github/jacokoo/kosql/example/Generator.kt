@@ -20,8 +20,8 @@ fun main(args: Array<String>) {
         addInitializers(beans {
             bean {
                 KoSQLGeneratorConfig(
-                    outputDirectory = "/Users/guyong/ws/fun/kotlin/kosql2/kosql-example/src/main/kotlin",
-                    // outputDirectory = "/tmp/kosql/oo",
+                    // outputDirectory = "/Users/guyong/ws/fun/kotlin/kosql2/kosql-example/src/main/kotlin",
+                    outputDirectory = "/tmp/kosql/oo",
                     outputPackage = "com.github.jacokoo.kosql.example",
                     useEnums = listOf(
                             UseEnum.int("t_abc", "f_color", Color::class.java, Color.RED),

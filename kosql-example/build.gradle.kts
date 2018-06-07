@@ -15,6 +15,7 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
     compile(project(":kosql-spring-jdbc"))
     compile(project(":kosql-generator"))
+    compile(kotlin("reflect"))
     compile("mysql:mysql-connector-java")
     compile("org.springframework.boot:spring-boot-starter-jdbc")
 }

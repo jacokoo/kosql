@@ -11,6 +11,9 @@ import kotlin.reflect.KClass
 typealias TemplateValue = Pair<Int, Any>
 
 class TemplateParameterHolder(val parent: ParameterHolder, val templateValues: List<TemplateValue>): ParameterHolder {
+    override fun param(v: Any?) {
+        parent.param(v)
+    }
     override fun fill(ps: PreparedStatement) {
         parent.fill(ps)
         templateValues.forEach {(index, value) -> ps.setObject(index + 1, value)}

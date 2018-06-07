@@ -3,13 +3,13 @@ package com.github.jacokoo.kosql.compose.statements
 import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import com.github.jacokoo.kosql.compose.typesafe.Columns
-import com.github.jacokoo.kosql.compose.typesafe.Value
+import com.github.jacokoo.kosql.compose.typesafe.ValueList
 import com.github.jacokoo.kosql.compose.typesafe.Values
 
 data class InsertData<T>(
     val table: Table<T, Entity<T>>,
     val columns: ColumnList,
-    val values: List<List<Any?>> = listOf(),
+    val values: List<ValueList> = listOf(),
     val query: SelectStatement<*>? = null
 )
 
@@ -17,19 +17,17 @@ interface InsertStatement<T>: Statement {
     val data: InsertData<T>
 }
 
-internal fun <T> append(data: InsertData<T>, vararg cs: Value): InsertData<T> {
-    return data.copy(values = data.values + cs.map { it.values })
-}
+interface BatchInsertStatement<T>: InsertStatement<T>
 
 data class InsertEnd<T>(override val data: InsertData<T>): InsertStatement<T>
 data class Entities<T: Entity<*>>(val entities: List<T>)
 interface ExtraValues<T> {
     val data: InsertData<T>
 
-    infix fun VALUES(e: Entities<Entity<T>>): InsertEnd<T> {
+    infix fun VALUES(e: Entities<Entity<T>>): BatchInsertEnd<T> {
         assert(e.entities.all { Database[it::class] == data.table });
-        val values = e.entities.map { ee -> data.columns.columns.map { it.type.toDb(ee[it.name]) } }
-        return InsertEnd(data.copy(values = values))
+        val values = e.entities.map { ee -> Values(data.columns.columns.map { it.type.toDb(ee[it.name]) }) }
+        return BatchInsertEnd(data.copy(values = values))
     }
 
     infix fun FROM(q: SelectStatement<*>): InsertEnd<T> = InsertEnd(data.copy(query = q))
@@ -37,24 +35,29 @@ interface ExtraValues<T> {
 
 data class Fields<T>(val table: Table<T, Entity<T>>, val columns: ColumnList): ExtraValues<T> {
     override val data: InsertData<T> = InsertData(table, columns, listOf())
-    infix fun VALUES(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, v))
+    infix fun VALUES(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(data.copy(values = data.values + v))
 }
 
 data class ValuesRepeatPart<T>(override val data: InsertData<T>): InsertStatement<T> {
-    infix fun AND(v: Values): ValuesRepeatPart<T> = ValuesRepeatPart(append(data, v))
+    infix fun AND(v: Values): BatchValuesRepeatPart<T> = BatchValuesRepeatPart(data.copy(values = data.values + v))
 }
+
+data class BatchValuesRepeatPart<T>(override val data: InsertData<T>): BatchInsertStatement<T> {
+    infix fun AND(v: Values): BatchValuesRepeatPart<T> = BatchValuesRepeatPart(data.copy(values = data.values + v))
+}
+data class BatchInsertEnd<T>(override val data: InsertData<T>): BatchInsertStatement<T>
 
 interface Insert {
     object INSERT {
         infix fun <T> INTO(t: T): T = t
-        operator fun <T, E: Entity<T>> invoke(vararg entities: E): InsertEnd<T> {
+        operator fun <T, E: Entity<T>> invoke(vararg entities: E): BatchInsertEnd<T> {
             assert(entities.isNotEmpty());
             assert(entities.all { it::class == entities[0]::class })
 
             val table = Database[entities[0]::class]!!
             val columns = table.columns
-            val values = entities.map { e -> columns.map { it.type.toDb(e[it.name]) } }
-            return InsertEnd(InsertData(table, Columns(columns), values))
+            val values = entities.map { e -> Values(columns.map { it.type.toDb(e[it.name]) }) }
+            return BatchInsertEnd(InsertData(table, Columns(columns), values))
         }
     }
 

@@ -63,6 +63,7 @@ data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = 
     } ?: left.toSQL(ctx)
 
     override fun refer(): LogicPartial<T> = this
+    override fun getParams() = left.getParams() + (right?.getParams() ?: emptyList())
 }
 
 interface LogicOperators {

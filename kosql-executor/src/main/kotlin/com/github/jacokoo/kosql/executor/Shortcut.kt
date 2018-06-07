@@ -4,13 +4,14 @@ import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.Column1
 import com.github.jacokoo.kosql.compose.typesafe.Columns
+import com.github.jacokoo.kosql.compose.typesafe.Values
 import com.github.jacokoo.kosql.executor.typesafe.SelectResultMapper1
 import kotlin.reflect.KClass
 
 interface Shortcut: Query, Operators {
     fun <T> Entity<T>.save(): T? {
         val table = Database[this::class]!!
-        val values = table.columns.map { it.type.toDb(this[it.name]) }
+        val values = Values(table.columns.map { it.type.toDb(this[it.name]) })
         val part = InsertEnd(InsertData(table, Columns(table.columns), listOf(values)))
         val (id, rows) = execute(part)
         if (rows != 1) return null

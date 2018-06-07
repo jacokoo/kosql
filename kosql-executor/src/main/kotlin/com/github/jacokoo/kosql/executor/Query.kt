@@ -4,17 +4,14 @@ import com.github.jacokoo.kosql.compose.Column
 import com.github.jacokoo.kosql.compose.Database
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Table
-import com.github.jacokoo.kosql.compose.statements.DeleteStatement
-import com.github.jacokoo.kosql.compose.statements.InsertStatement
-import com.github.jacokoo.kosql.compose.statements.SelectStatement
-import com.github.jacokoo.kosql.compose.statements.UpdateStatement
+import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.ColumnList
-import com.github.jacokoo.kosql.compose.typesafe.Value
+import com.github.jacokoo.kosql.compose.typesafe.ValueList
 import com.github.jacokoo.kosql.compose.typesafe.Values
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 
-internal class ResultIterator<T: Value>(private val t: SelectResult<T>): AbstractIterator<T>() {
+internal class ResultIterator<T: ValueList>(private val t: SelectResult<T>): AbstractIterator<T>() {
     private var current = 0
 
     override fun computeNext() {
@@ -47,7 +44,7 @@ class ColumnsToEntityMapper<T, R: Entity<T>>(val columns: ColumnList, val entity
     }
 }
 
-interface SelectResult<out T: Value>: Iterable<T> {
+interface SelectResult<out T: ValueList>: Iterable<T> {
     val columns: ColumnList
     val values: List<T>
 
@@ -80,7 +77,7 @@ interface Query {
     fun execute(update: UpdateStatement): Int
     fun execute(delete: DeleteStatement): Int
     fun <T> execute(insert: InsertStatement<T>): Pair<T, Int>
-    fun <T> executeBatch(insert: InsertStatement<T>): Pair<List<T>, Int>
+    fun <T> execute(insert: BatchInsertStatement<T>): Int
 
     fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: (ResultSetRow) -> T): List<T> = execute(select, object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)

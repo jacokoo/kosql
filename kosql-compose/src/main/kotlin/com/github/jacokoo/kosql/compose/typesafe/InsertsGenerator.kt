@@ -11,10 +11,7 @@ fun main(args: Array<String>) {
         |import com.github.jacokoo.kosql.compose.Column
         |import com.github.jacokoo.kosql.compose.Table
         |import com.github.jacokoo.kosql.compose.Entity
-        |import com.github.jacokoo.kosql.compose.statements.ExtraValues
-        |import com.github.jacokoo.kosql.compose.statements.InsertData
-        |import com.github.jacokoo.kosql.compose.statements.InsertStatement
-        |import com.github.jacokoo.kosql.compose.statements.append
+        |import com.github.jacokoo.kosql.compose.statements.*
         |
         |
     """.trimMargin()
@@ -22,10 +19,13 @@ fun main(args: Array<String>) {
     fun classPart(it: Int) = """
         |data class Field$it<T, ${times(it) { "T$it" }}>(val table: Table<T, Entity<T>>, val c: Column$it<${times(it) { "T$it" }}>): ExtraValues<T> {
         |   override val data: InsertData<T> = InsertData(table, c, listOf())
-        |   infix fun VALUES(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
+        |   infix fun VALUES(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(data.copy(values = data.values + v))
         |}
         |data class Repeat$it<T, ${times(it) { "T$it" }}>(override val data: InsertData<T>): InsertStatement<T> {
-        |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): Repeat$it<T, ${times(it) { "T$it" }}> = Repeat$it(append(data, v))
+        |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): BatchRepeat$it<T, ${times(it) { "T$it" }}> = BatchRepeat$it(data.copy(values = data.values + v))
+        |}
+        |data class BatchRepeat$it<T, ${times(it) { "T$it" }}>(override val data: InsertData<T>): BatchInsertStatement<T> {
+        |    infix fun AND(v: Value$it<${times(it) { "T$it" }}>): BatchRepeat$it<T, ${times(it) { "T$it" }}> = BatchRepeat$it(data.copy(values = data.values + v))
         |}
         |
     """.trimMargin()

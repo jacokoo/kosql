@@ -5,6 +5,7 @@ import com.github.jacokoo.kosql.compose.SQLBuilderContext
 import com.github.jacokoo.kosql.compose.SQLPart
 
 interface Expression<T>: SQLPart {
+    fun getParams(): List<Any?> = emptyList()
     companion object {
         val TRUE = object: Expression<Any> {
             override fun toSQL(ctx: SQLBuilderContext): String = "1 = 1"
@@ -17,44 +18,47 @@ data class SingleColumnExpression<T> (private val op: String, private val column
 }
 
 data class ColumnToColumnExpression<T> (
-    private val op: String,
-    private val left: Column<T>,
-    private val right: Column<T>
+    val op: String,
+    val left: Column<T>,
+    val right: Column<T>
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
 }
 
 data class ColumnToValueExpression<T> (
-    private val op: String,
-    private val left: Column<T>,
-    private val right: T
+    val op: String,
+    val left: Column<T>,
+    val right: T
 ): Expression<T> {
-    override fun toSQL(ctx: SQLBuilderContext): String {
-        ctx.argument(left.type.toDb(right))
-        return "${left.toSQL(ctx)} $op ?"
-    }
+    override fun toSQL(ctx: SQLBuilderContext) = "${left.toSQL(ctx)} $op ?"
+    override fun getParams(): List<Any?> = listOf(right)
 }
 
 data class ColumnToExpressionExpression<T> (
-    private val op: String,
-    private val left: Column<T>,
-    private val right: Expression<T>
+    val op: String,
+    val left: Column<T>,
+    val right: Expression<T>
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
+    override fun getParams(): List<Any?> = right.getParams()
 }
 
 data class BetweenExpression<T> (
-    private val left: Column<T>,
-    private val small: T,
-    private val big: T
+    val left: Column<T>,
+    val small: T,
+    val big: T
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "BETWEEN ? AND ?"
+    override fun getParams(): List<Any?> = listOf(small, big)
 }
 
 data class MultipleValueExpression<T> (
-    private val op: String,
-    private val left: Column<T>,
-    private val values: List<T>
+    val op: String,
+    val left: Column<T>,
+    val values: List<T>
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${values.map { "?" }.joinToString(prefix = "(", postfix = ")")}"
+    override fun getParams(): List<Any?> = values
 }
+
+fun <T> Expression<T>?.params() = this?.getParams() ?: emptyList()

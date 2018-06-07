@@ -127,12 +127,12 @@ interface Database {
         private var entityToTable: MutableMap<in KClass<out Entity<*>>, Table<out Any, Entity<out Any>>> = mutableMapOf()
         private var tableToEntity: MutableMap<in Table<out Any, Entity<out Any>>, KClass<out Entity<out Any>>> = mutableMapOf()
 
-        fun <T: Any> register(table: Table<out T, out Entity<T>>, entity: KClass<out Entity<T>>) {
+        fun <T: Any> register(table: Table<out T, Entity<T>>, entity: KClass<out Entity<T>>) {
             tableToEntity[table] = entity
             entityToTable[entity] = table
         }
 
-        operator fun <T> get(table: Table<out T, out Entity<T>>): KClass<out Entity<T>>? = tableToEntity[table]?.let { it as KClass<out Entity<T>> }
-        operator fun <T> get(entity: KClass<out Entity<T>>): Table<T, out Entity<T>>? = entityToTable[entity] as Table<T, Entity<T>>
+        operator fun <T> get(table: Table<out T, Entity<T>>): KClass<out Entity<T>>? = tableToEntity[table]?.let { it as KClass<out Entity<T>> }
+        operator fun <T> get(entity: KClass<out Entity<T>>): Table<T, Entity<T>>? = entityToTable[entity] as Table<T, Entity<T>>
     }
 }

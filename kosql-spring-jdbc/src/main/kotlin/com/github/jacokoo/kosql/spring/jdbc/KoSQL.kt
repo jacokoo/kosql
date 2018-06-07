@@ -1,28 +1,23 @@
 package com.github.jacokoo.kosql.spring.jdbc
 
-import com.github.jacokoo.kosql.compose.Composer
-import com.github.jacokoo.kosql.compose.Database
-import com.github.jacokoo.kosql.compose.ParameterHolder
-import com.github.jacokoo.kosql.compose.SQLBuilder
-import com.github.jacokoo.kosql.compose.statements.DeleteStatement
-import com.github.jacokoo.kosql.compose.statements.InsertStatement
-import com.github.jacokoo.kosql.compose.statements.SelectStatement
-import com.github.jacokoo.kosql.compose.statements.UpdateStatement
+import com.github.jacokoo.kosql.compose.*
+import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import com.github.jacokoo.kosql.executor.ResultSetMapper
 import com.github.jacokoo.kosql.executor.ResultSetRow
 import com.github.jacokoo.kosql.executor.Shortcut
 import com.github.jacokoo.kosql.executor.typesafe.Queries
 import com.github.jacokoo.kosql.executor.typesafe.SelectTemplateSupports
+import org.springframework.jdbc.core.BatchPreparedStatementSetter
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
-import org.springframework.jdbc.support.KeyHolder
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
 import org.springframework.transaction.support.TransactionTemplate
 import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.Statement
 
@@ -50,7 +45,7 @@ open class KoSQL(
 
     fun <T> compose(block: KoSQL.() -> T): T = block()
 
-    fun <T: ColumnList, R: SelectStatement<T>> template(block: KoSQL.() -> R) = block().template()
+    fun <T: ColumnList, R: SelectStatement<out T>> template(block: KoSQL.() -> R) = block().template()
 
     override fun execute(update: UpdateStatement): Int = builder.build(update).let { (sql, params) ->
         jdbc.update { it.prepareStatement(sql).also { params.fill(it) } }
@@ -63,19 +58,22 @@ open class KoSQL(
     override fun <T> execute(insert: InsertStatement<T>): Pair<T, Int> = builder.build(insert).let { (sql, context) ->
         val pk = insert.data.table.primaryKey()
         if (pk.autoIncrement)
-            executeInsertWithKey(sql, context).let { (key, rows) ->
+            GeneratedKeyHolder().let { it to jdbc.update({
+                it.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).also {
+                    context.fill(it)
+                }
+            }, it) }.let { (key, rows) ->
                 key.keyList.first().let { pk.type.fromDb(it.values.first()) } to rows
             }
-        else pk.type.nullValue to executeInsert(sql, context)
+        else pk.type.nullValue to jdbc.update { it.prepareStatement(sql).also { context.fill(it) } }
     }
 
-    override fun <T> executeBatch(insert: InsertStatement<T>): Pair<List<T>, Int> = builder.build(insert).let { (sql, context) ->
-        val pk = insert.data.table.primaryKey()
-        if (pk.autoIncrement)
-            executeInsertWithKey(sql, context).let { (key, rows) ->
-                key.keyList.map { pk.type.fromDb(it.values.first()) } to rows
-            }
-        else listOf<T>() to executeInsert(sql, context)
+    override fun <T> execute(insert: BatchInsertStatement<T>): Int = builder.build(insert).let { (sql, context) ->
+        val params = context as BatchParameterHolder
+        jdbc.batchUpdate(sql, object: BatchPreparedStatementSetter {
+            override fun getBatchSize() = params.size()
+            override fun setValues(ps: PreparedStatement, i: Int) = params.fill(ps, i)
+        }).fold(0) {acc, item -> acc + item}
     }
 
     override fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: ResultSetMapper<T>): List<T> = builder.build(select).let { (sql, context) ->
@@ -97,13 +95,4 @@ open class KoSQL(
         }!!
 
 
-    private fun executeInsertWithKey(sql: String, params: ParameterHolder): Pair<KeyHolder, Int> =
-        GeneratedKeyHolder().let { it to jdbc.update({
-            it.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS).also {
-                params.fill(it)
-            }
-        }, it) }
-
-    private fun executeInsert(sql: String, params: ParameterHolder): Int =
-        jdbc.update { it.prepareStatement(sql).also { params.fill(it) } }
 }
