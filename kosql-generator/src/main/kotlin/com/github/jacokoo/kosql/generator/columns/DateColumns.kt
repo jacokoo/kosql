@@ -1,16 +1,18 @@
 package com.github.jacokoo.kosql.generator.columns
 
-import com.github.jacokoo.kosql.compose.*
+import com.github.jacokoo.kosql.compose.DataType
+import com.github.jacokoo.kosql.compose.DateTimeLongType
+import com.github.jacokoo.kosql.compose.DateTimeType
+import com.github.jacokoo.kosql.compose.DateType
 import com.github.jacokoo.kosql.generator.AbstractColumnGenerator
 import com.github.jacokoo.kosql.generator.ColumnDefinition
 import java.sql.Types
 import java.time.LocalDate
 import java.time.LocalDateTime
-import kotlin.reflect.KClass
 
 class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
     override val type: DataType<LocalDate> = DateType()
-    override fun kotlinType(): KClass<*> = LocalDate::class
+    override fun kotlinType(): Class<*> = LocalDate::class.java
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDate.MIN"
         else "LocalDate.parse(\"${v.toString()}\")"
@@ -21,7 +23,7 @@ class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
 
 class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeType()
-    override fun kotlinType(): KClass<*> = LocalDateTime::class
+    override fun kotlinType(): Class<*> = LocalDateTime::class.java
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDateTime.MIN"
         else "LocalDateTime.parse(\"${v.toString()}\")"
@@ -32,7 +34,7 @@ class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
 
 class DateTimeLongColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeLongType()
-    override fun kotlinType(): KClass<*> = LocalDateTime::class
+    override fun kotlinType(): Class<*> = LocalDateTime::class.java
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDateTime.MIN"
         else "LocalDateTime.parse(\"${v.toString()}\")"

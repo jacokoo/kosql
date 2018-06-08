@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 
 class Imports(private val imports: MutableSet<String> = mutableSetOf()) {
 
-    fun add(vararg kc: KClass<*>) = this.also { it.imports.addAll(kc.map { it.qualifiedName!! }) }
+    fun add(vararg kc: KClass<*>) = this.also { it.imports.addAll(kc.map { it.java.name }) }
     fun add(vararg c: Class<*>) = this.also { it.imports.addAll(c.map { it.name!! }) }
     fun add(vararg s: String) = this.also { it.imports.addAll(s) }
 

@@ -3,7 +3,6 @@ package com.github.jacokoo.kosql.generator
 import com.github.jacokoo.kosql.compose.DataType
 import java.sql.ResultSet
 import java.sql.Types
-import kotlin.reflect.KClass
 
 data class ColumnDefinition(
     val name: String,
@@ -44,7 +43,7 @@ data class ColumnDefinition(
 data class ColumnInfo(
         val name: String,
         val type: String, // the Datatype class for import
-        val typeClass: KClass<*>,  // the kotlin class for field declaration
+        val typeClass: Class<*>,  // the kotlin class for field declaration
         val defaultValue: String,
         val define: String,
         val def: ColumnDefinition
@@ -73,14 +72,14 @@ interface ColumnGenerator {
 
 abstract class AbstractColumnGenerator<T>: ColumnGenerator {
     abstract val type: DataType<T>
-    abstract fun kotlinType(): KClass<*>
+    abstract fun kotlinType(): Class<*>
     override fun generete(tableName: String, def: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {
         val (define, dv) = createColumn(def)
         return ColumnInfo(config.namingStrategy.tableFieldName(def.name), type::class.qualifiedName!!, kotlinType(), dv, define, def)
     }
 
     protected fun createColumn(def: ColumnDefinition): Pair<String, String> {
-        val typeName = type::class.simpleName
+        val typeName = type::class.java.simpleName
         val defaultValue: Any? = if (def.defaultValue == null) {
             if (def.nullable) null else type.nullValue
         } else def.defaultValue

@@ -46,7 +46,7 @@ class Demo2(private val ko: KoSQL) {
             // select * from t_order where f_id = ?
             val list: List<Order> = (
                 SELECT (ORDER) FROM ORDER WHERE ORDER.ID EQ 1
-                ).fetch(Order::class)
+            ).fetch(Order::class)
 
             val optionalId: Int? = 100
             val optionalAmount: BigDecimal? = null
@@ -76,7 +76,7 @@ class Demo2(private val ko: KoSQL) {
                 LEFT_JOIN b ON b.ORDER_ID EQ a.ID AND b.PRODUCT_ID EQ 10
                 WHERE a.ID EQ 1
                 GROUP_BY a.ID HAVING count(a.ID) EQ 1 AND a.ORDER_NUMBER LIKE "%a" AND a.ID EQ 1
-                )
+            )
 
             println(SQLBuilder().build(sql).sql)
 
