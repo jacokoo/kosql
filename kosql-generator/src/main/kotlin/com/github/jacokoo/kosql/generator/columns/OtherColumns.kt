@@ -10,7 +10,7 @@ import java.sql.Types
 
 class BooleanColumnGenerator: AbstractColumnGenerator<Boolean>() {
     override val type: DataType<Boolean> = BooleanType()
-    override fun kotlinType(): Class<*> = Boolean::class.java
+    override fun kotlinType() = Boolean::class
     override fun support(tableName: String, def: ColumnDefinition) =
         Types.BOOLEAN == def.dataType ||
                 (Types.BIT == def.dataType && def.columnSize < 2) ||  // mysql tinyint(1) got BIT(null) here
@@ -21,7 +21,7 @@ class BooleanColumnGenerator: AbstractColumnGenerator<Boolean>() {
 
 class ByteArrayColumnGenerator: AbstractColumnGenerator<ByteArray>() {
     override val type: DataType<ByteArray> = ByteArrayType()
-    override fun kotlinType(): Class<*> = ByteArray::class.java
+    override fun kotlinType() = ByteArray::class
     override fun support(tableName: String, def: ColumnDefinition): Boolean =
         (ColumnGenerator.bits.contains(def.dataType) && def.columnSize >= 64) ||
                 Types.BLOB == def.dataType

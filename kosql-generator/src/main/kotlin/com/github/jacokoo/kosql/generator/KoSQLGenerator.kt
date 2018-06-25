@@ -50,8 +50,8 @@ data class KoSQLGeneratorConfig(
 
 open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
     private val config = cfg.copy(columnGenerators = cfg.useEnums.map { EnumColumnGenerator(it) } + cfg.columnGenerators)
-    fun doGenerate() {
 
+    fun doGenerate() {
         val (name, list) = jdbc.execute { conn: Connection ->
             val meta = conn.metaData
             conn.catalog!! to tableNames(meta).associate { it to primaryKey(it, meta) }.map { (k, v) ->
@@ -64,40 +64,16 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
             if (it.exists()) it.deleteRecursively()
             it.mkdirs()
         }
-        if (config.useEnums.isNotEmpty()) writeEnums("Enums")
         writeDatabase(config.namingStrategy.databaseClassName(name), list)
         writeFiles(list)
-    }
-
-    fun writeEnums(name: String) {
-        var imports = Imports().add(IntEnumType::class, StringEnumType::class)
-        config.useEnums.forEach { imports.add(it.enumType) }
-
-        File(config.dir(), "$name.kt").also {
-            if (it.exists()) it.delete()
-            it.createNewFile()
-
-            it.writer().use {
-                it.write("""
-                    |package ${config.outputPackage}.kosql
-                    |
-                    |${imports.map { "import $it" }.joinToString("\n")}
-                    |
-                """.trimMargin())
-
-                val writer = EnumWriter()
-                config.useEnums.forEach { ue -> writer.write(it, ue, config.namingStrategy) }
-            }
-        }
     }
 
     fun writeDatabase(name: String, ts: List<TableInfo>) {
         var imports = Imports().add(Database::class)
         ts.forEach {
-            imports = imports.add("${config.outputPackage}.kosql.table.${it.objectName}")
             it.entitySub?.let {
                 imports.add("${config.outputPackage}.entity.${it.name}")
-            } ?: imports.add("${config.outputPackage}.kosql.entity.${it.entity.name}")
+            }
         }
         File(config.dir(), "$name.kt").also {
             if (it.exists()) it.delete()
@@ -121,25 +97,32 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
 
     fun writeFiles(ts: List<TableInfo>) {
         val dir = config.dir()
-        val tableDir = File(dir, "table").also { if (!it.exists()) it.mkdirs() }
-        val entityDir = File(dir, "entity").also { if (!it.exists()) it.mkdirs() }
 
-        ts.forEach {
-            File(tableDir, "${it.tableName}.kt").also {
+        ts.forEach { table ->
+            File(dir, "${table.tableName}.kt").also {
                 if (it.exists()) it.delete()
                 it.createNewFile()
             }.writer().use { writer ->
-                config.tableWriterFactory.create(writer, config, it).doWrite()
+                val enums = config.useEnums.filter { it.tableName == table.def.name && table.columns.any { col -> col.def.name == it.columnName } }
+                val imports = table.imports
+                enums.forEach { imports.add(if (it.dbType == Int::class) IntEnumType::class else StringEnumType::class) }
+
+                val pkg = "${config.outputPackage}.kosql"
+                writer.appendln("package $pkg")
+                writer.appendln()
+                imports.forEach {
+                    if (it.substring(0, it.lastIndexOf(".")) != pkg) writer.appendln("import ${it}")
+                }
+
+                enums.forEach {
+                    EnumWriter().write(writer, it, config.namingStrategy)
+                }
+
+                config.entityWriterFactory.create(writer, config, table).doWrite()
+                config.tableWriterFactory.create(writer, config, table).doWrite()
             }
 
-            File(entityDir, "${it.entity.name}.kt").also {
-                if (it.exists()) it.delete()
-                it.createNewFile()
-            }.writer().use { writer ->
-                config.entityWriterFactory.create(writer, config, it).doWrite()
-            }
-
-            it.entitySub?.also { info -> writeEntitySub(it, info)}
+            table.entitySub?.also { info -> writeEntitySub(table, info)}
         }
     }
 

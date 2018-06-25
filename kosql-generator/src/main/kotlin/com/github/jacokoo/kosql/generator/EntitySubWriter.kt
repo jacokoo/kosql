@@ -14,16 +14,25 @@ open class EntitySubWriter(writer: Writer, val config: KoSQLGeneratorConfig, val
     }
 
     override fun writeImports() {
-        writer.write("import ${config.outputPackage}.kosql.entity.${table.entity.name}\n")
+        writer.write("import ${config.outputPackage}.kosql.${table.entity.name}\n")
     }
 
     override fun writeSignature() {
-        writer.write("class ${config.namingStrategy.entitySubClassName(table.def.name)}: ${table.entity.name}()")
+        writer.write("class ${config.namingStrategy.entitySubClassName(table.def.name)}: ${table.entity.name}")
     }
 
     override fun writeFields() {
     }
 
     override fun writeMethods() {
+        val name = config.namingStrategy.entitySubClassName(table.def.name)
+        writer.write("""
+            |    constructor(): super()
+            |    constructor(other: $name): super(other)
+            |
+            |    fun copy(block: ($name) -> Unit): $name = $name(this).also(block)
+            |
+            |
+        """.trimMargin())
     }
 }

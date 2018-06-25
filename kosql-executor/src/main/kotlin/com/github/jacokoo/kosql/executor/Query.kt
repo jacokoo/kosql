@@ -38,7 +38,7 @@ class ColumnsToEntityMapper<T, R: Entity<T>>(val columns: ColumnList, val entity
         val cs = columns.columns.filter { Database[it.table as Table<T, R>] == entityClass }
         assert(cs.isNotEmpty())
         val clazz = Database[cs[0].table as Table<T, R>] ?: throw RuntimeException("no entity class found")
-        return clazz.java.newInstance().also {
+        return clazz.java.getDeclaredConstructor().newInstance().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
         } as R
     }
@@ -53,7 +53,7 @@ interface SelectResult<out T: ValueList>: Iterable<T> {
         val cs = columns.columns.filter { Database[it.table as Table<T, Entity<T>>] == entityClass }
         if (cs.none()) return listOf()
 
-        return values.map { v -> entityClass.java.newInstance().also { e ->
+        return values.map { v -> entityClass.java.getDeclaredConstructor().newInstance().also { e ->
             columns.columns.forEachIndexed {i, c -> if (cs.contains(c)) e[c.name] = v[i]}
         } }
     }

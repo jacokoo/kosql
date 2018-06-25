@@ -9,7 +9,7 @@ import java.sql.Types
 
 class IntColumnGenerator: AbstractColumnGenerator<Int>() {
     override val type: DataType<Int> = IntType()
-    override fun kotlinType(): Class<*> = Int::class.java
+    override fun kotlinType() = Int::class
 
     override fun support(tableName: String, def: ColumnDefinition): Boolean =
         ColumnGenerator.ints.contains(def.dataType) ||
@@ -23,7 +23,7 @@ class IntColumnGenerator: AbstractColumnGenerator<Int>() {
 
 class LongColumnGenerator: AbstractColumnGenerator<Long>() {
     override val type: DataType<Long> = LongType()
-    override fun kotlinType(): Class<*> = Long::class.java
+    override fun kotlinType() = Long::class
     override fun support(tableName: String, def: ColumnDefinition) =
         def.dataType == Types.BIGINT ||
                 (ColumnGenerator.bits.contains(def.dataType) && (def.columnSize in (32 until 64)))
@@ -36,19 +36,19 @@ class LongColumnGenerator: AbstractColumnGenerator<Long>() {
 
 class FloatColumnGenerator: AbstractColumnGenerator<Float>() {
     override val type: DataType<Float> = FloatType()
-    override fun kotlinType(): Class<*> = Float::class.java
+    override fun kotlinType() = Float::class
     override fun support(tableName: String, def: ColumnDefinition) = def.dataType == Types.FLOAT
 }
 
 class DoubleColumnGenerator: AbstractColumnGenerator<Double>() {
     override val type: DataType<Double> = DoubleType()
-    override fun kotlinType(): Class<*> = Double::class.java
+    override fun kotlinType() = Double::class
     override fun support(tableName: String, def: ColumnDefinition) = def.dataType == Types.DOUBLE
 }
 
 class DecimalColumnGenerator: AbstractColumnGenerator<BigDecimal>() {
     override val type: DataType<BigDecimal> = DecimalType()
-    override fun kotlinType(): Class<*> = BigDecimal::class.java
+    override fun kotlinType() = BigDecimal::class
     override fun parseDefaultValue(v: Any?) = v?.let { "BigDecimal(\"$it\")" } ?: "null"
     override fun support(tableName: String, def: ColumnDefinition) =
             def.dataType == Types.DECIMAL || def.dataType == Types.NUMERIC

@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 
 class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
     override val type: DataType<LocalDate> = DateType()
-    override fun kotlinType(): Class<*> = LocalDate::class.java
+    override fun kotlinType() = LocalDate::class
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDate.MIN"
         else "LocalDate.parse(\"${v.toString()}\")"
@@ -23,7 +23,7 @@ class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
 
 class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeType()
-    override fun kotlinType(): Class<*> = LocalDateTime::class.java
+    override fun kotlinType() = LocalDateTime::class
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDateTime.MIN"
         else "LocalDateTime.parse(\"${v.toString()}\")"
@@ -34,7 +34,7 @@ class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
 
 class DateTimeLongColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeLongType()
-    override fun kotlinType(): Class<*> = LocalDateTime::class.java
+    override fun kotlinType() = LocalDateTime::class
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDateTime.MIN"
         else "LocalDateTime.parse(\"${v.toString()}\")"

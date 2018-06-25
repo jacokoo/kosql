@@ -18,7 +18,6 @@ data class FieldInfo(
 
 data class EntityInfo(
     val name: String,
-    val imports: Imports,
     val fields: List<FieldInfo>
 )
 
@@ -44,21 +43,18 @@ interface TableGenerator {
 class DefaultTableGenerator: TableGenerator {
     override fun generate(table: TableDefinition, config: KoSQLGeneratorConfig): TableInfo {
         val imports = Imports()
-            .add(Table::class)
+            .add(Table::class, Entity::class)
             .add(
-                if (table.columns.size > 22) Columns::class.qualifiedName!!
+                if (table.columns.size > 22) Columns::class.java.name
                 else "com.github.jacokoo.kosql.compose.typesafe.Column${table.columns.size}"
             )
-        val entityImports = Imports()
-                .add(Entity::class)
-
 
         val columns = table.columns.map { generateColumn(table.name, it, config) }
         columns.forEach { imports.add(it.typeClass).add(it.type) }
 
         val pk = table.columns.indexOf(table.columns.find { it.name == table.primaryKey }!!)
         val fields = columns.map {
-            entityImports.add(it.typeClass)
+            imports.add(it.typeClass)
             val type = if (it.def.nullable) it.typeClass.simpleName + "?" else it.typeClass.simpleName
             FieldInfo(config.namingStrategy.entityFieldName(it.def.name), type!!, it.defaultValue)
         }
@@ -71,11 +67,8 @@ class DefaultTableGenerator: TableGenerator {
         if (config.needEntitySubClass) {
             entitySub = EntitySubInfo(config.namingStrategy.entitySubClassName(table.name))
             imports.add("${config.outputPackage}.entity.${entitySub.name}")
-        } else {
-            imports.add("${config.outputPackage}.kosql.entity.$entityName")
         }
-        entityImports.add("${config.outputPackage}.kosql.table.$objectName")
-        return TableInfo(tableName, columns[pk], objectName, imports, columns, EntityInfo(entityName, entityImports, fields), entitySub, table)
+        return TableInfo(tableName, columns[pk], objectName, imports, columns, EntityInfo(entityName, fields), entitySub, table)
     }
 
     fun generateColumn(name: String, col: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {

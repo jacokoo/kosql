@@ -8,7 +8,7 @@ import com.github.jacokoo.kosql.generator.ColumnGenerator
 
 class StringColumnGenerator: AbstractColumnGenerator<String>() {
     override val type: DataType<String> = StringType()
-    override fun kotlinType(): Class<*> = String::class.java
+    override fun kotlinType() = String::class
     override fun parseDefaultValue(v: Any?): String = v?.let { "\"${it.toString()}\"" } ?: "null"
     override fun support(tableName: String, def: ColumnDefinition) = ColumnGenerator.strs.contains(def.dataType)
 }

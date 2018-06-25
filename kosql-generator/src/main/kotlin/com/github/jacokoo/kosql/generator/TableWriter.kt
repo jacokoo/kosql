@@ -10,11 +10,9 @@ class TableWriterFactory: ClassWriterFactory {
 
 open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val table: TableInfo): AbstractClassWriter(writer) {
     override fun writePackage() {
-        writer.write("package ${config.outputPackage}.kosql.table\n")
     }
 
     override fun writeImports() {
-        table.imports.forEach { writer.write("import $it\n") }
     }
 
     override fun writeSignature() {
