@@ -1,11 +1,12 @@
 package com.github.jacokoo.kosql.example.entity
 
-import com.github.jacokoo.kosql.example.kosql.entity.OrderBase
+import com.github.jacokoo.kosql.example.kosql.OrderBase
 
 class Order: OrderBase {
 
     constructor(): super()
     constructor(other: Order): super(other)
 
-    fun cp(block: (Order) -> Unit) = Order(this).also(block)
+    fun copy(block: (Order) -> Unit): Order = Order(this).also(block)
+
 }

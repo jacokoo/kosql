@@ -1,9 +1,16 @@
-package com.github.jacokoo.kosql.example.kosql.entity
+package com.github.jacokoo.kosql.example.kosql
 
+import com.github.jacokoo.kosql.compose.DateTimeType
+import com.github.jacokoo.kosql.compose.DecimalType
 import com.github.jacokoo.kosql.compose.Entity
-import com.github.jacokoo.kosql.example.kosql.table.ORDER
+import com.github.jacokoo.kosql.compose.IntType
+import com.github.jacokoo.kosql.compose.StringType
+import com.github.jacokoo.kosql.compose.Table
+import com.github.jacokoo.kosql.compose.typesafe.Column5
+import com.github.jacokoo.kosql.example.entity.Order
 import java.math.BigDecimal
 import java.time.LocalDateTime
+
 
 open class OrderBase(): Entity<Int> {
     var id: Int = 0
@@ -15,6 +22,7 @@ open class OrderBase(): Entity<Int> {
     constructor(other: OrderBase): this() {
         this.id = other.id
         this.orderDate = other.orderDate
+        this.orderNumber = other.orderNumber
         this.customerId = other.customerId
         this.totalAmount = other.totalAmount
     }
@@ -38,18 +46,25 @@ open class OrderBase(): Entity<Int> {
         }
     }
 
-    fun copy(block: (OrderBase) -> Unit): OrderBase = OrderBase().also {
-        it.id = id
-        it.orderDate = orderDate
-        it.orderNumber = orderNumber
-        it.customerId = customerId
-        it.totalAmount = totalAmount
-        block(it)
-    }
-
     override fun toString(): String = buildString {
         append("OrderBase (")
         append("id = $id, orderDate = $orderDate, orderNumber = $orderNumber, customerId = $customerId, totalAmount = $totalAmount")
         append(")")
     }
+
 }
+
+
+open class OrderTable protected constructor(alias: String = ""): Table<Int, Order>("t_order", alias, "") {
+    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
+    val ORDER_DATE = createColumn("f_order_date", DateTimeType(), false, LocalDateTime.MIN)
+    val ORDER_NUMBER = createColumn("f_order_number", StringType(), true, null)
+    val CUSTOMER_ID = createColumn("f_customer_id", IntType(), false, 0)
+    val TOTAL_AMOUNT = createColumn("f_total_amount", DecimalType(), true, BigDecimal("0.00"))
+
+    override fun AS(alias: String) = OrderTable(alias)
+    override fun primaryKey() = ID
+    operator fun unaryMinus() = Column5(ID, ORDER_DATE, ORDER_NUMBER, CUSTOMER_ID, TOTAL_AMOUNT)
+}
+
+object ORDER: OrderTable()

@@ -1,6 +1,13 @@
 package com.github.jacokoo.kosql.example.kosql
 
-import com.github.jacokoo.kosql.compose.*
+import com.github.jacokoo.kosql.compose.BooleanType
+import com.github.jacokoo.kosql.compose.Entity
+import com.github.jacokoo.kosql.compose.IntEnumType
+import com.github.jacokoo.kosql.compose.IntType
+import com.github.jacokoo.kosql.compose.LongType
+import com.github.jacokoo.kosql.compose.StringEnumType
+import com.github.jacokoo.kosql.compose.StringType
+import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.typesafe.Column8
 import com.github.jacokoo.kosql.example.Color
 import com.github.jacokoo.kosql.example.State
@@ -17,8 +24,8 @@ class AbcTableStateEnumType: StringEnumType<State>() {
 }
 
 
-open class AbcBase(): Entity<Long> {
-    var id: Long = 0L
+open class AbcBase(): Entity<Int> {
+    var id: Int = 0
     var a: Int? = null
     var color: Color = Color.RED
     var state: State = State.INIT
@@ -52,7 +59,7 @@ open class AbcBase(): Entity<Long> {
 
     override fun set(name: String, value: Any?) {
         when (name) {
-            ABC.ID.name -> this.id = value as Long
+            ABC.ID.name -> this.id = value as Int
             ABC.A.name -> this.a = value as Int
             ABC.COLOR.name -> this.color = value as Color
             ABC.STATE.name -> this.state = value as State
@@ -72,8 +79,8 @@ open class AbcBase(): Entity<Long> {
 }
 
 
-open class AbcTable protected constructor(alias: String = ""): Table<Long, Abc>("t_abc", alias, "") {
-    val ID = createColumn("f_id", LongType(), false, 0L).autoIncrement()
+open class AbcTable protected constructor(alias: String = ""): Table<Int, Abc>("t_abc", alias, "") {
+    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
     val A = createColumn("f_a", IntType(), true, null)
     val COLOR = createColumn("f_color", AbcTableColorEnumType(), false, Color.RED)
     val STATE = createColumn("f_state", AbcTableStateEnumType(), false, State.INIT)

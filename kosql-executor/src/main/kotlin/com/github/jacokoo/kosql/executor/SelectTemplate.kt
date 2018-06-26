@@ -35,15 +35,26 @@ interface SelectTemplateSupport {
 
     fun <T> execute(sql: String, params: ParameterHolder, mapper: ResultSetMapper<T>): List<T>
 
-    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, vararg values: TemplateValue) =
+    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, vararg values: Any) =
+        execute(sql, TemplateParameterHolder(params, values.mapIndexed { idx, v -> idx to v}), mapper)
+
+    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, v1: TemplateValue, vararg values: TemplateValue) =
         execute(sql, TemplateParameterHolder(params, values.toList()), mapper)
 
-    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, vararg values: TemplateValue) =
+    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, vararg values: Any) =
         fetch(ColumnsToEntityMapper(statement.data.columns, entityClass), *values)
 
-    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, vararg values: TemplateValue): List<T> = fetch(object: ResultSetMapper<T> {
+    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, v1: TemplateValue, vararg values: TemplateValue) =
+        fetch(ColumnsToEntityMapper(statement.data.columns, entityClass), v1, *values)
+
+    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, vararg values: Any) = fetch(object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)
     }, *values)
 
-    fun <T: ColumnList> SelectTemplate<T>.fetch(vararg values: TemplateValue) = fetch(SelectResultsMapper(statement.data.columns), *values)
+    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, v1: TemplateValue, vararg values: TemplateValue) = fetch(object: ResultSetMapper<T> {
+        override fun map(rs: ResultSetRow): T = mapper(rs)
+    }, v1, *values)
+
+    fun <T: ColumnList> SelectTemplate<T>.fetch(vararg values: Any) = fetch(SelectResultsMapper(statement.data.columns), *values)
+    fun <T: ColumnList> SelectTemplate<T>.fetch(v1: TemplateValue, vararg values: TemplateValue) = fetch(SelectResultsMapper(statement.data.columns), v1, *values)
 }
