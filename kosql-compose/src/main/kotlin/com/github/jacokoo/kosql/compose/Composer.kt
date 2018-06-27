@@ -3,6 +3,10 @@ package com.github.jacokoo.kosql.compose
 import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.Inserts
 import com.github.jacokoo.kosql.compose.typesafe.Selects
+import org.slf4j.LoggerFactory
+import kotlin.reflect.KClass
+
+fun createLogger(clz: KClass<*>) = LoggerFactory.getLogger(clz.java.name.substringBefore("\$Companion"))
 
 open class Composer: Operators, Selects, Inserts, Update, Delete {
     val TRUE = Expression.TRUE

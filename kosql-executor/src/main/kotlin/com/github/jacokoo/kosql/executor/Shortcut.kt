@@ -38,7 +38,7 @@ interface Shortcut: Query, Operators {
 
     fun <T, R: Table<T, Entity<T>>> R.count(): Int = count(null)
 
-    fun <T, R: Table<T, Entity<T>>> R.count(exp: Expression<Any>?): Int {
+    fun <T, R: Table<T, Entity<T>>> R.count(exp: Expression<*>?): Int {
         val col = Column1(Count<Any>())
         return execute(SelectEnd(SelectData(col, this, expression = exp)), SelectResultMapper1(col)).firstOrNull()!!.v1;
     }

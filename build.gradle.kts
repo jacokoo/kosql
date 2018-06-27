@@ -14,6 +14,7 @@ allprojects {
 
     ext {
         this["spring-version"] = "5.0.6.RELEASE"
+        this["slf4j-version"] = "1.7.25"
     }
 
     repositories { jcenter() }

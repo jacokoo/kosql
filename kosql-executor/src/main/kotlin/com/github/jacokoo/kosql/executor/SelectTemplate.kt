@@ -3,12 +3,13 @@ package com.github.jacokoo.kosql.executor
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.ParameterHolder
 import com.github.jacokoo.kosql.compose.SQLBuilder
+import com.github.jacokoo.kosql.compose.createLogger
 import com.github.jacokoo.kosql.compose.statements.SelectStatement
 import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import java.sql.PreparedStatement
 import kotlin.reflect.KClass
 
-typealias TemplateValue = Pair<Int, Any>
+typealias TemplateValue = Pair<Int, Any?>
 
 class TemplateParameterHolder(val parent: ParameterHolder, val templateValues: List<TemplateValue>): ParameterHolder {
     override fun param(v: Any?) {
@@ -16,7 +17,22 @@ class TemplateParameterHolder(val parent: ParameterHolder, val templateValues: L
     }
     override fun fill(ps: PreparedStatement) {
         parent.fill(ps)
-        templateValues.forEach {(index, value) -> ps.setObject(index + 1, value)}
+        if (LOG.isDebugEnabled) {
+            if (templateValues.isNotEmpty()) {
+                LOG.debug("override template params: {}", templateValues.map { "${it.first} - ${it.second}" }.joinToString())
+            }
+
+            val nv = templateValues.filter { it.second == null }
+            if (nv.isNotEmpty()) {
+                LOG.debug("override ignored: {}", nv.map { "${it.first} - ${it.second}" }.joinToString())
+            }
+
+        }
+        templateValues.filter { it.second != null }.forEach {(index, value) -> ps.setObject(index + 1, value)}
+    }
+
+    companion object {
+        private val LOG = createLogger(this::class)
     }
 }
 
@@ -31,30 +47,19 @@ data class DefaultSelectTemplate<T: ColumnList>(override val statement: SelectSt
 interface SelectTemplateSupport {
     val builder: SQLBuilder
 
-    fun <T: ColumnList> SelectStatement<T>.template() = builder.build(this).let { DefaultSelectTemplate(this, it.sql, it.params) }
+    fun <T: ColumnList> SelectStatement<T>.template(): SelectTemplate<T> = builder.build(this).let { DefaultSelectTemplate(this, it.sql, it.params) }
 
     fun <T> execute(sql: String, params: ParameterHolder, mapper: ResultSetMapper<T>): List<T>
 
-    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, vararg values: Any) =
-        execute(sql, TemplateParameterHolder(params, values.mapIndexed { idx, v -> idx to v}), mapper)
-
-    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, v1: TemplateValue, vararg values: TemplateValue) =
+    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, vararg values: TemplateValue) =
         execute(sql, TemplateParameterHolder(params, values.toList()), mapper)
 
-    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, vararg values: Any) =
+    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, vararg values: TemplateValue) =
         fetch(ColumnsToEntityMapper(statement.data.columns, entityClass), *values)
 
-    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, v1: TemplateValue, vararg values: TemplateValue) =
-        fetch(ColumnsToEntityMapper(statement.data.columns, entityClass), v1, *values)
-
-    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, vararg values: Any) = fetch(object: ResultSetMapper<T> {
+    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, vararg values: TemplateValue) = fetch(object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)
     }, *values)
 
-    fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, v1: TemplateValue, vararg values: TemplateValue) = fetch(object: ResultSetMapper<T> {
-        override fun map(rs: ResultSetRow): T = mapper(rs)
-    }, v1, *values)
-
-    fun <T: ColumnList> SelectTemplate<T>.fetch(vararg values: Any) = fetch(SelectResultsMapper(statement.data.columns), *values)
-    fun <T: ColumnList> SelectTemplate<T>.fetch(v1: TemplateValue, vararg values: TemplateValue) = fetch(SelectResultsMapper(statement.data.columns), v1, *values)
+    fun <T: ColumnList> SelectTemplate<T>.fetch(vararg values: TemplateValue) = fetch(SelectResultsMapper(statement.data.columns), *values)
 }

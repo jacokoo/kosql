@@ -144,7 +144,16 @@ class DefaultParameterHolder: ParameterHolder {
     private val params = mutableListOf<Any?>()
 
     override fun param(v: Any?) { params.add(v) }
-    override fun fill(ps: PreparedStatement) { params.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)} }
+    override fun fill(ps: PreparedStatement) {
+        if (LOG.isDebugEnabled) {
+            LOG.debug("execute with params: {}", params.joinToString(prefix = "(", postfix = ")"))
+        }
+        params.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)}
+    }
+
+    companion object {
+        private val LOG = createLogger(this::class)
+    }
 }
 
 class DefaultBatchParameterHolder: BatchParameterHolder {
@@ -162,9 +171,16 @@ class DefaultBatchParameterHolder: BatchParameterHolder {
     }
 
     override fun fill(ps: PreparedStatement, index: Int) {
+        if (LOG.isDebugEnabled) {
+            LOG.debug("batch {}. execute with params: {}", index, params.joinToString(prefix = "(", postfix = ")"))
+        }
         params[index].also {
             it.values.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)}
         }
+    }
+
+    companion object {
+        private val LOG = createLogger(this::class)
     }
 }
 
@@ -182,8 +198,6 @@ open class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) 
     private val prefix = "a_"
     private var aliasIndex = 0
     private var aliasMap: MutableMap<Nameable<*>, String> = mutableMapOf()
-
-    internal var arguments: MutableList<Any?> = mutableListOf()
 
     fun alias(target: Nameable<*>): String? {
         if (aliasMap.contains(target)) return aliasMap[target]

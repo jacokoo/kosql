@@ -14,7 +14,7 @@ open class Main
 val config = beans {
     bean {OrderDatabase}
     bean<KoSQL>()
-    bean<Demo2>()
+    bean<Demo>()
 }
 
 fun main(args: Array<String>) {

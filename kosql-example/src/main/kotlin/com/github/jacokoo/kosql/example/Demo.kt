@@ -2,32 +2,25 @@ package com.github.jacokoo.kosql.example
 
 import com.github.jacokoo.kosql.example.entity.Order
 import com.github.jacokoo.kosql.example.kosql.ORDER
-import com.github.jacokoo.kosql.example.kosql.ORDER_ITEM
 import com.github.jacokoo.kosql.spring.jdbc.KoSQL
-import java.time.LocalDateTime
 import javax.annotation.PostConstruct
 
 class Demo(private val ko: KoSQL) {
+    val template = ko.template {
+        SELECT(-ORDER) FROM ORDER WHERE ORDER.ID LT 10 AND ORDER.CUSTOMER_ID LT 100
+    }
 
     @PostConstruct
     fun demo() = ko.run {
-        SELECT(ORDER.ORDER_NUMBER, ORDER.ID) FROM ORDER WHERE ORDER.ID EQ 1
+        val a: Int? = null
+        println(ORDER.byId(1))
+        println(ORDER.count())
+        println(ORDER.count(ORDER.ID EQ a))
+        println(template.fetch(Order::class, 0 to 10, 1 to a))
 
-        (SELECT(ORDER.ID) FROM(ORDER) JOIN ORDER_ITEM ON ORDER.ID EQ ORDER_ITEM.ORDER_ID WHERE ORDER.ID EQ 1)
-            .fetch(Order::class).forEach { println(it.id) }
-
-        UPDATE(ORDER) SET {
-            it[ORDER.ID] = 1
-            it[ORDER.ORDER_DATE] = LocalDateTime.now()
-        } WHERE ORDER.ID EQ 1
-
-        UPDATE(ORDER) LEFT_JOIN ORDER_ITEM ON ORDER.ID EQ ORDER_ITEM.ORDER_ID SET {
-            it[ORDER.ORDER_NUMBER] = "abcdef"
+        template.fetch(1 to 40).forEach {
+            println(it)
         }
-
-        DELETE FROM ORDER WHERE ORDER.ID EQ 1
-
-        println()
     }
 }
 
