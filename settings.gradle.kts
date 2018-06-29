@@ -3,6 +3,6 @@ include(
     "kosql-compose",
     "kosql-executor",
     "kosql-spring-jdbc",
-    "kosql-example",
+    "kosql-test",
     "kosql-generator"
 )

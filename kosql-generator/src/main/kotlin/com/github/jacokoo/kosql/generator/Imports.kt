@@ -15,7 +15,6 @@ class Imports(private val imports: MutableSet<String> = mutableSetOf()) {
     fun map(block: (String) -> String): List<String> = filter().map(block)
 
     private fun filter() = imports
-        .also { println(it) }
         .filter { !it.startsWith("java.lang") }
         .filter { it.substring(0, it.lastIndexOf(".")) != "kotlin" }.sorted()
 }

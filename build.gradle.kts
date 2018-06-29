@@ -42,6 +42,10 @@ subprojects {
     }
 }
 
+tasks.withType<Wrapper> {
+    version = "4.8"
+}
+
 buildScan {
     setTermsOfServiceUrl("https://gradle.com/terms-of-service")
     setTermsOfServiceAgree("yes")

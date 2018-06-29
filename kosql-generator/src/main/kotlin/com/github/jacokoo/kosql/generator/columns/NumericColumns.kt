@@ -37,7 +37,7 @@ class LongColumnGenerator: AbstractColumnGenerator<Long>() {
 class FloatColumnGenerator: AbstractColumnGenerator<Float>() {
     override val type: DataType<Float> = FloatType()
     override fun kotlinType() = Float::class
-    override fun support(tableName: String, def: ColumnDefinition) = def.dataType == Types.FLOAT
+    override fun support(tableName: String, def: ColumnDefinition) = def.dataType == Types.FLOAT || def.dataType == Types.REAL
 }
 
 class DoubleColumnGenerator: AbstractColumnGenerator<Double>() {
