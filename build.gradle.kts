@@ -5,12 +5,12 @@ plugins {
     `build-scan`
     `maven-publish`
     java
-    kotlin("jvm") version "1.2.41" apply false
+    kotlin("jvm") version "1.2.50" apply false
 }
 
 allprojects {
     group = "com.github.jacokoo"
-    version = "0.0.1-SNAPSHOT"
+    version = "0.0.1"
 
     ext {
         this["spring-version"] = "5.0.6.RELEASE"
@@ -31,12 +31,17 @@ subprojects {
         compile(kotlin("stdlib-jdk8"))
     }
 
-    apply(plugin = "maven-publish")
-    publishing {
-        repositories { maven { url = uri("${rootProject.buildDir}/repo") } }
-        (publications) {
-            "java"(MavenPublication::class) {
-                from(components["java"])
+    if (name != "kosql-test") {
+        apply(plugin = "maven-publish")
+        publishing {
+            repositories {
+                maven { url = uri("${rootProject.buildDir}/repo") }
+                maven { url = uri("${System.getProperty("user.home")}/.m2/repository") }
+            }
+            (publications) {
+                "java"(MavenPublication::class) {
+                    from(components["java"])
+                }
             }
         }
     }

@@ -6,7 +6,6 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    isScanForTestClasses = true
 
     kotlin {
         experimental {
@@ -30,9 +29,9 @@ apply(plugin = "io.spring.dependency-management")
 dependencies {
     compile(project(":kosql-spring-jdbc"))
     compile(project(":kosql-generator"))
-    compile(kotlin("reflect"))
     compile("mysql:mysql-connector-java")
     compile("org.springframework.boot:spring-boot-starter-jdbc")
+    testCompile("com.nhaarman:mockito-kotlin:1.6.0")
     testCompile("io.kotlintest:kotlintest-runner-junit5:3.1.6")
     testCompile("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }

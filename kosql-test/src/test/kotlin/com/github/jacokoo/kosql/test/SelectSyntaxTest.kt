@@ -10,7 +10,7 @@ import io.kotlintest.should
 import io.kotlintest.shouldFail
 import io.kotlintest.specs.FreeSpec
 
-class SelectTest: Selects, FreeSpec() { init {
+class SelectSyntaxTest: Selects, FreeSpec() { init {
     "Select Syntax" - {
         "FROM after SELECT" {
             val query = SELECT(SUPPORT_TYPE.ID)
