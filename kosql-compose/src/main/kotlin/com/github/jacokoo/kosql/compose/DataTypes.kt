@@ -1,6 +1,7 @@
 package com.github.jacokoo.kosql.compose
 
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.sql.Blob
 import java.sql.Date
 import java.sql.Timestamp
@@ -28,6 +29,7 @@ class LongType: DataType<Long> {
     override val nullValue: Long = 0L
     override fun fromDb(o: Any?): Long = o?.let { when (it) {
         is ByteArray -> it.fold(0L) {acc, i -> (acc shl 8) or (i.toLong() and 0xff)}
+        is BigInteger -> it.toLong()
         else -> o as Long
     } } ?: 0L
 }
@@ -65,13 +67,13 @@ class DateType: DataType<LocalDate> {
         is Timestamp -> it.toLocalDateTime().toLocalDate()
         else -> nullValue
     }} ?: nullValue
-    override fun toDb(t: Any?): Any? = t?.let { Timestamp.valueOf((it as LocalDate).atStartOfDay()) }
+    override fun toDb(t: Any?): Any? = t?.let { it.toString() }
 }
 
 class DateTimeType: DataType<LocalDateTime> {
     override val nullValue = LocalDateTime.MIN
     override fun fromDb(o: Any?) = o?.let { (it as Timestamp).toLocalDateTime() } ?: nullValue
-    override fun toDb(t: Any?): Any? = t?.let { Timestamp.valueOf(it as LocalDateTime) }
+    override fun toDb(t: Any?): Any? = t?.let { it.toString() }
 }
 
 class DateTimeLongType: DataType<LocalDateTime> {

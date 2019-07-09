@@ -5,7 +5,7 @@ import com.github.jacokoo.kosql.compose.SQLBuilderContext
 import com.github.jacokoo.kosql.compose.SQLPart
 
 interface Expression<T>: SQLPart {
-    fun getParams(): List<Any?> = emptyList()
+    fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = emptyList()
     companion object {
         val TRUE = object: Expression<Any> {
             override fun toSQL(ctx: SQLBuilderContext): String = "1 = 1"
@@ -31,7 +31,7 @@ data class ColumnToValueExpression<T> (
     val right: T
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext) = "${left.toSQL(ctx)} $op ?"
-    override fun getParams(): List<Any?> = listOf(right)
+    override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = listOf(right to left.type::toDb)
 }
 
 data class ColumnToExpressionExpression<T> (
@@ -40,7 +40,7 @@ data class ColumnToExpressionExpression<T> (
     val right: Expression<T>
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
-    override fun getParams(): List<Any?> = right.getParams()
+    override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = right.getParams()
 }
 
 data class BetweenExpression<T> (
@@ -49,7 +49,7 @@ data class BetweenExpression<T> (
     val big: T
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "BETWEEN ? AND ?"
-    override fun getParams(): List<Any?> = listOf(small, big)
+    override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = listOf(small to left.type::toDb, big to left.type::toDb)
 }
 
 data class MultipleValueExpression<T> (
@@ -58,7 +58,7 @@ data class MultipleValueExpression<T> (
     val values: List<T>
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${values.map { "?" }.joinToString(prefix = "(", postfix = ")")}"
-    override fun getParams(): List<Any?> = values
+    override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = values.map { it to left.type::toDb}
 }
 
 fun <T> Expression<T>?.params() = this?.getParams() ?: emptyList()

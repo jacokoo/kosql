@@ -1,9 +1,6 @@
 package com.github.jacokoo.kosql.executor
 
-import com.github.jacokoo.kosql.compose.Entity
-import com.github.jacokoo.kosql.compose.ParameterHolder
-import com.github.jacokoo.kosql.compose.SQLBuilder
-import com.github.jacokoo.kosql.compose.createLogger
+import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.compose.statements.SelectStatement
 import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import java.sql.PreparedStatement
@@ -12,7 +9,7 @@ import kotlin.reflect.KClass
 typealias TemplateValue = Pair<Int, Any?>
 
 class TemplateParameterHolder(val parent: ParameterHolder, val templateValues: List<TemplateValue>): ParameterHolder {
-    override fun param(v: Any?) {
+    override fun param(v: Pair<Any?, (Any?) -> Any?>) {
         parent.param(v)
     }
     override fun fill(ps: PreparedStatement) {
@@ -28,7 +25,8 @@ class TemplateParameterHolder(val parent: ParameterHolder, val templateValues: L
             }
 
         }
-        templateValues.filter { it.second != null }.forEach {(index, value) -> ps.setObject(index + 1, value)}
+        val params = parent as DefaultParameterHolder
+        templateValues.filter { it.second != null }.forEach {(index, value) -> ps.setObject(index + 1, params.getToDb(index)(value))}
     }
 
     companion object {

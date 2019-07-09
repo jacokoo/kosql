@@ -5,6 +5,8 @@ import com.github.jacokoo.kosql.compose.typesafe.ColumnList
 import com.github.jacokoo.kosql.compose.typesafe.ValueList
 import java.sql.PreparedStatement
 
+private fun fnId(t: Any?): Any? = t
+
 class SQLBuilder {
     fun <T: ColumnList> build(part: SelectStatement<T>): BuildResult = build(part.data, SQLBuilderContext(this, part))
     fun <T: ColumnList> build(data: SelectData<T>, ctx: SQLBuilderContext): BuildResult {
@@ -28,10 +30,10 @@ class SQLBuilder {
             data.orderBy.map { (col, order) -> "${col.toSQL(ctx)} $order" }.joinTo(this)
 
             if (data.rowCount != null && data.offset != null) {
-                it.param(listOf(data.offset, data.rowCount))
+                it.param(listOf(data.offset to ::fnId, data.rowCount to ::fnId))
                 append(" LIMIT ?, ?")
             } else if (data.rowCount != null) {
-                it.param(data.rowCount)
+                it.param(data.rowCount to ::fnId)
                 append(" LIMIT ?")
             }
         }
@@ -54,7 +56,7 @@ class SQLBuilder {
                     value.toSQL(ctx)
                 }
                 else -> {
-                    it.param(value)
+                    it.param(value to column.type::toDb)
                     "?"
                 }
             }
@@ -83,13 +85,12 @@ class SQLBuilder {
     fun <T> build(insert: BatchInsertStatement<T>) = buildBatch(insert.data, SQLBuilderContext(this, insert))
     fun <T> buildBatch(data: InsertData<T>, ctx: SQLBuilderContext): BuildResult {
         assert(data.values.size > 1)
-        return BuildResult.build(DefaultBatchParameterHolder()) {
+        return BuildResult.build(DefaultBatchParameterHolder(data.columns)) {
             val params = it as DefaultParameterHolder
             append("INSERT INTO ").append(data.table.name)
             data.columns.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
-            params.param(data.values)
+            params.param(data.values.map { v -> v to ::fnId })
             append(data.values.first().values.map {
-                params.param(it)
                 "?"
             }.joinToString(prefix = "(", postfix = ")"))
         }
@@ -103,8 +104,8 @@ class SQLBuilder {
             data.columns.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
             if (data.query == null) {
                 append(" VALUES ")
-                append(data.values.first().values.map {
-                    params.param(it)
+                append(data.values.first().values.mapIndexed { index, any ->
+                    params.param(any to data.columns.columns[index].type::toDb)
                     "?"
                 }.joinToString(prefix = "(", postfix = ")"))
             } else {
@@ -130,8 +131,8 @@ class SQLBuilder {
 }
 
 interface ParameterHolder {
-    fun param(v: Any?)
-    fun param(v: List<Any?>) {v.forEach { param(it) }}
+    fun param(v: Pair<Any?, (Any?) -> Any?>)
+    fun param(v: List<Pair<Any?, (Any?) -> Any?>>) {v.forEach { param(it) }}
     fun fill(ps: PreparedStatement)
 }
 
@@ -141,14 +142,16 @@ interface BatchParameterHolder: ParameterHolder {
 }
 
 class DefaultParameterHolder: ParameterHolder {
-    private val params = mutableListOf<Any?>()
+    private val params = mutableListOf<Pair<Any?, (Any?) -> Any?>>()
 
-    override fun param(v: Any?) { params.add(v) }
+    fun getToDb(idx: Int) = params[idx].second
+
+    override fun param(v: Pair<Any?, (Any?) -> Any?>) { params.add(v) }
     override fun fill(ps: PreparedStatement) {
         if (LOG.isDebugEnabled) {
-            LOG.debug("execute with params: {}", params.joinToString(prefix = "(", postfix = ")"))
+            LOG.debug("execute with params: {}", params.map { it.first }.joinToString(prefix = "(", postfix = ")"))
         }
-        params.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)}
+        params.forEachIndexed {idx, value -> ps.setObject(idx + 1, value.second(value.first))}
     }
 
     companion object {
@@ -156,14 +159,18 @@ class DefaultParameterHolder: ParameterHolder {
     }
 }
 
-class DefaultBatchParameterHolder: BatchParameterHolder {
+class DefaultBatchParameterHolder(val columns: ColumnList): BatchParameterHolder {
     private val params = mutableListOf<ValueList>()
 
     override fun size(): Int = params.size
 
-    override fun param(v: Any?) {
-        assert(v != null && v is ValueList)
-        params.add(v as ValueList)
+    override fun param(v: Pair<Any?, (Any?) -> Any?>) {
+        assert(v.first != null && v.first is ValueList)
+        params.add(v.first as ValueList)
+    }
+
+    override fun param(v: List<Pair<Any?, (Any?) -> Any?>>) {
+        v.forEach { param(it) }
     }
 
     override fun fill(ps: PreparedStatement) {
@@ -175,7 +182,7 @@ class DefaultBatchParameterHolder: BatchParameterHolder {
             LOG.debug("batch {}. execute with params: {}", index, params.joinToString(prefix = "(", postfix = ")"))
         }
         params[index].also {
-            it.values.forEachIndexed {idx, value -> ps.setObject(idx + 1, value)}
+            it.values.forEachIndexed {idx, value -> ps.setObject(idx + 1, columns.columns[idx].type.toDb(value))}
         }
     }
 

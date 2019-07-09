@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformJvmPlugin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -23,6 +22,12 @@ allprojects {
 subprojects {
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    task("source", Jar::class) {
+        from(java.sourceSets["main"].allSource)
+        classifier = "sources"
+    }
+
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
     }
@@ -33,14 +38,25 @@ subprojects {
 
     if (name != "kosql-test") {
         apply(plugin = "maven-publish")
+
         publishing {
             repositories {
-                maven { url = uri("${rootProject.buildDir}/repo") }
-                maven { url = uri("${System.getProperty("user.home")}/.m2/repository") }
+                // maven { url = uri("${rootProject.buildDir}/repo") }
+                // maven { url = uri("${System.getProperty("user.home")}/.m2/repository") }
+
+                maven {
+                    url = uri("https://m2.zhixueyun.com/content/repositories/releases")
+                    credentials {
+                        username = "deployment"
+                        password = "zxydepnexus"
+                    }
+                }
+
             }
             (publications) {
                 "java"(MavenPublication::class) {
                     from(components["java"])
+                    artifact(tasks["source"])
                 }
             }
         }

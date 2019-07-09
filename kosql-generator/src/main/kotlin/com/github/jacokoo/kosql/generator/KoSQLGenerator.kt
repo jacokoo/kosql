@@ -54,9 +54,9 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
     fun doGenerate() {
         val (name, list) = jdbc.execute { conn: Connection ->
             val meta = conn.metaData
-            conn.catalog!! to tableNames(meta).associate { it to primaryKey(it, meta) }.map { (k, v) ->
+            conn.catalog!! to tableNames(conn.catalog, meta).associate { it to primaryKey(conn.catalog, it, meta) }.map { (k, v) ->
                 if (v == null) throw RuntimeException("table $k have no primary key")
-                TableDefinition(k, v, columns(k, meta))
+                TableDefinition(k, v, columns(conn.catalog, k, meta))
             }.map { config.tableGenerator.generate(it, config) }
         }!!
 
@@ -142,9 +142,8 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
 
     }
 
-
-    fun primaryKey(name: String, meta: DatabaseMetaData): String? {
-        val rs = meta.getPrimaryKeys(null, null, name)
+    fun primaryKey(catalog: String, name: String, meta: DatabaseMetaData): String? {
+        val rs = meta.getPrimaryKeys(catalog, null, name)
         if (!rs.next()) {
             rs.close()
             return null
@@ -153,17 +152,17 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
         return rs.getString("COLUMN_NAME")
     }
 
-    fun columns(name: String, meta: DatabaseMetaData): List<ColumnDefinition> {
+    fun columns(catalog: String, name: String, meta: DatabaseMetaData): List<ColumnDefinition> {
         var list = mutableListOf<ColumnDefinition>()
-        val rs = meta.getColumns(null, null, name, null)
+        val rs = meta.getColumns(catalog, null, name, null)
         while (rs.next()) list.add(ColumnDefinition.fromResultSet(rs))
         rs.close()
         return list
     }
 
-    fun tableNames(meta: DatabaseMetaData): List<String> {
+    fun tableNames(catalog: String, meta: DatabaseMetaData): List<String> {
         var list = mutableListOf<String>()
-        val rs = meta.getTables(null, null, null, arrayOf("TABLE"))
+        val rs = meta.getTables(catalog, null, null, arrayOf("TABLE"))
         while (rs.next()) {
             list.add(rs.getString("TABLE_NAME"))
         }

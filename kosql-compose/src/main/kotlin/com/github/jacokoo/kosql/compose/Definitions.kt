@@ -124,15 +124,21 @@ interface Database {
 
     @Suppress("UNCHECKED_CAST")
     companion object {
-        private var entityToTable: MutableMap<in KClass<out Entity<*>>, Table<out Any, Entity<out Any>>> = mutableMapOf()
-        private var tableToEntity: MutableMap<in Table<out Any, Entity<out Any>>, KClass<out Entity<out Any>>> = mutableMapOf()
+        var entityToTableClass: MutableMap<in KClass<out Entity<*>>, KClass<out Table<out Any, Entity<out Any>>>> = mutableMapOf()
+        var entityToTable: MutableMap<in KClass<out Entity<*>>, Table<out Any, Entity<out Any>>> = mutableMapOf()
+        var tableToEntity: MutableMap<in KClass<out Table<out Any, Entity<out Any>>>, KClass<out Entity<out Any>>> = mutableMapOf()
+
 
         fun <T: Any> register(table: Table<out T, Entity<T>>, entity: KClass<out Entity<T>>) {
-            tableToEntity[table] = entity
+            val tc = table::class.java.superclass as Class<Table<out T, Entity<T>>>
+            tableToEntity[table::class] = entity
+            tableToEntity[tc.kotlin] = entity
+            entityToTableClass[entity] = table::class
             entityToTable[entity] = table
         }
 
-        operator fun <T> get(table: Table<out T, Entity<T>>): KClass<out Entity<T>>? = tableToEntity[table]?.let { it as KClass<out Entity<T>> }
-        operator fun <T> get(entity: KClass<out Entity<T>>): Table<T, Entity<T>>? = entityToTable[entity] as Table<T, Entity<T>>
+        fun <T> getEntity(table: KClass<out Table<out T, Entity<T>>>): KClass<out Entity<T>>? = tableToEntity[table]?.let { it as KClass<out Entity<T>> }
+        fun <T> getTableClass(entity: KClass<out Entity<T>>): KClass<out Table<T, Entity<T>>>? = entityToTableClass[entity] as KClass<out Table<T, Entity<T>>>
+        fun <T> getTable(entity: KClass<out Entity<T>>): Table<T, Entity<T>>? = entityToTable[entity] as Table<T, Entity<T>>
     }
 }

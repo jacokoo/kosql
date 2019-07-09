@@ -35,9 +35,9 @@ interface ResultSetMapper<out R> {
 class ColumnsToEntityMapper<T, R: Entity<T>>(val columns: ColumnList, val entityClass: KClass<R>): ResultSetMapper<R> {
     @Suppress("UNCHECKED_CAST")
     override fun map(rs: ResultSetRow): R {
-        val cs = columns.columns.filter { Database[it.table as Table<T, R>] == entityClass }
+        val cs = columns.columns.filter { Database.getEntity((it.table as Table<T, R>)::class) == entityClass }
         assert(cs.isNotEmpty())
-        val clazz = Database[cs[0].table as Table<T, R>] ?: throw RuntimeException("no entity class found")
+        val clazz = Database.getEntity((cs[0].table as Table<T, R>)::class) ?: throw RuntimeException("no entity class found")
         return clazz.java.getDeclaredConstructor().newInstance().also {
             columns.columns.forEach {c -> if (cs.contains(c)) it[c.name] = rs[c]}
         } as R
@@ -50,7 +50,7 @@ interface SelectResult<out T: ValueList>: Iterable<T> {
 
     @Suppress("UNCHECKED_CAST")
     fun <T> into(entityClass: KClass<Entity<T>>): List<Entity<T>> {
-        val cs = columns.columns.filter { Database[it.table as Table<T, Entity<T>>] == entityClass }
+        val cs = columns.columns.filter { Database.getEntity((it.table as Table<T, Entity<T>>)::class) == entityClass }
         if (cs.none()) return listOf()
 
         return values.map { v -> entityClass.java.getDeclaredConstructor().newInstance().also { e ->

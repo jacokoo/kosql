@@ -10,8 +10,8 @@ import kotlin.reflect.KClass
 
 interface Shortcut: Query, Operators {
     fun <T> Entity<T>.save(): T? {
-        val table = Database[this::class]!!
-        val values = Values(table.columns.map { it.type.toDb(this[it.name]) })
+        val table = Database.getTable(this::class)!!
+        val values = Values(table.columns.map { this[it.name] })
         val part = InsertEnd(InsertData(table, Columns(table.columns), listOf(values)))
         val (id, rows) = execute(part)
         if (rows != 1) return null
@@ -22,7 +22,7 @@ interface Shortcut: Query, Operators {
 
     @Suppress("UNCHECKED_CAST")
     fun <T> Entity<T>.update(): Int {
-        val table = Database[this::class]!!
+        val table = Database.getTable(this::class)!!
         val exp = table.primaryKey() EQ this[table.primaryKey().name]!! as T;
         val values = table.columns.filter { it != table.primaryKey() }.associate { it to this[it.name] }
         return execute(UpdateEnd(UpdateData(table, pairs = values, expression = exp)));
@@ -30,7 +30,7 @@ interface Shortcut: Query, Operators {
 
     @Suppress("UNCHECKED_CAST")
     fun <T, E: Entity<T>, R: Table<T, E>> R.byId(t: T): E? {
-        val entity = Database[this]!! as KClass<E>
+        val entity = Database.getEntity(this::class)!! as KClass<E>
         val exp = this.primaryKey() EQ t
         val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp))
         return execute(part, ColumnsToEntityMapper(part.data.columns, entity)).firstOrNull()
@@ -45,7 +45,7 @@ interface Shortcut: Query, Operators {
 
     @Suppress("UNCHECKED_CAST")
     fun <T, E: Entity<T>, R: Table<T, E>> R.fetch(exp: Expression<*>?, vararg orders: Pair<Column<*>, Order>): List<E> {
-        val entity = Database[this]!! as KClass<E>
+        val entity = Database.getEntity(this::class)!! as KClass<E>
         val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp, orderBy = orders.toList()))
         return execute(part, ColumnsToEntityMapper(part.data.columns, entity));
     }

@@ -25,8 +25,8 @@ interface ExtraValues<T> {
     val data: InsertData<T>
 
     infix fun VALUES(e: Entities<Entity<T>>): BatchInsertEnd<T> {
-        assert(e.entities.all { Database[it::class] == data.table });
-        val values = e.entities.map { ee -> Values(data.columns.columns.map { it.type.toDb(ee[it.name]) }) }
+        assert(e.entities.all { Database.getTableClass(it::class) == data.table::class });
+        val values = e.entities.map { ee -> Values(data.columns.columns.map { ee[it.name] }) }
         return BatchInsertEnd(data.copy(values = values))
     }
 
@@ -54,9 +54,9 @@ interface Insert {
             assert(entities.isNotEmpty());
             assert(entities.all { it::class == entities[0]::class })
 
-            val table = Database[entities[0]::class]!!
+            val table = Database.getTable(entities[0]::class)!!
             val columns = table.columns
-            val values = entities.map { e -> Values(columns.map { it.type.toDb(e[it.name]) }) }
+            val values = entities.map { e -> Values(columns.map { e[it.name] }) }
             return BatchInsertEnd(InsertData(table, Columns(columns), values))
         }
     }
