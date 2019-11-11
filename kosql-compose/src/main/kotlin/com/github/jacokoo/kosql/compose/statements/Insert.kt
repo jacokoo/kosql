@@ -55,7 +55,9 @@ interface Insert {
             assert(entities.all { it::class == entities[0]::class })
 
             val table = Database.getTable(entities[0]::class)!!
-            val columns = table.columns
+            var columns = table.columns
+            val id = table.primaryKey()
+            if (id.autoIncrement) columns = columns.filter { it != id }
             val values = entities.map { e -> Values(columns.map { e[it.name] }) }
             return BatchInsertEnd(InsertData(table, Columns(columns), values))
         }

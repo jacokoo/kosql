@@ -11,8 +11,14 @@ import kotlin.reflect.KClass
 interface Shortcut: Query, Operators {
     fun <T> Entity<T>.save(): T? {
         val table = Database.getTable(this::class)!!
-        val values = Values(table.columns.map { this[it.name] })
-        val part = InsertEnd(InsertData(table, Columns(table.columns), listOf(values)))
+        val cid = table.primaryKey()
+        var columns = table.columns
+        if (cid.autoIncrement && this[cid.name] == cid.type.nullValue) {
+            columns = columns.filter { it != cid }
+        }
+
+        val values = Values(columns.map { this[it.name] })
+        val part = InsertEnd(InsertData(table, Columns(columns), listOf(values)))
         val (id, rows) = execute(part)
         if (rows != 1) return null
 
@@ -51,9 +57,9 @@ interface Shortcut: Query, Operators {
     }
 
     fun <T, R: Table<T, Entity<T>>> R.delete(t: T): Boolean =
-        execute(DeleteEnd(DeleteData(table = this, expression = this.primaryKey() EQ t))) == 1
+        execute(DeleteEnd(DeleteData(deletes = listOf(this), expression = this.primaryKey() EQ t))) == 1
 
     fun <T, R: Table<T, Entity<T>>> R.delete(exp: Expression<*>?): Boolean =
-        execute(DeleteEnd(DeleteData(table = this, expression = exp))) == 1
+        execute(DeleteEnd(DeleteData(deletes = listOf(this), expression = exp))) == 1
 
 }

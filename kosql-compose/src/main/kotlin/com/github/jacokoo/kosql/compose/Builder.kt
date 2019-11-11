@@ -71,8 +71,9 @@ class SQLBuilder {
         return BuildResult.build {
             append("DELETE ")
             if (data.table == null) {
-                append("FROM ")
-                data.deletes.map { it.toSQL(ctx) }.joinTo(this)
+                val part = data.deletes.map { it.toSQL(ctx) }.joinToString()
+                data.deletes.map { ctx.alias(it) }.joinTo(this)
+                append(" FROM ${part}")
             } else {
                 data.deletes.map { ctx.alias(it) }.joinTo(this)
                 append(" FROM ").append(data.table.toSQL(ctx))

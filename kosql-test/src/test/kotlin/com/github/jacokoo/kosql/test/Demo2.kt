@@ -1,10 +1,11 @@
 package com.github.jacokoo.kosql.test
 
 import com.github.jacokoo.kosql.compose.SQLBuilder
+import com.github.jacokoo.kosql.spring.jdbc.KoSQL
 import com.github.jacokoo.kosql.test.entity.Order
 import com.github.jacokoo.kosql.test.kosql.ORDER
 import com.github.jacokoo.kosql.test.kosql.ORDER_ITEM
-import com.github.jacokoo.kosql.spring.jdbc.KoSQL
+import com.github.jacokoo.kosql.test.kosql.OrderDatabase
 import java.math.BigDecimal
 import javax.annotation.PostConstruct
 
@@ -27,6 +28,8 @@ class Demo2(private val ko: KoSQL) {
             val (id, rows) = execute( // returns generated id and rows effected
                 INSERT INTO ORDER(ORDER.CUSTOMER_ID, ORDER.ORDER_NUMBER) VALUES V(100, "order_number")
             )
+
+            SELECT(ORDER) FROM ORDER WHERE ORDER.CUSTOMER_ID EQ 1
 
             // batch insert
             val rs: Int = execute(
@@ -52,9 +55,11 @@ class Demo2(private val ko: KoSQL) {
             val optionalAmount: BigDecimal? = null
             // select f_id, f_total_amount from t_order where f_id = 100
             // ORDER.TOTAL_AMOUNT GT optionalAmount is ignored because optionalAmount is null
-            (SELECT (ORDER.ID, ORDER.TOTAL_AMOUNT) FROM ORDER
+            (
+                SELECT (ORDER.ID, ORDER.TOTAL_AMOUNT) FROM ORDER
                 LEFT_JOIN ORDER_ITEM ON ORDER_ITEM.ORDER_ID EQ ORDER.ID
                 WHERE ORDER.ID EQ optionalId AND ORDER.TOTAL_AMOUNT GT optionalAmount
+
             ).fetch().forEach { (id: Int, amount: BigDecimal) ->
                 println(id.inc())
                 println(amount.divide(10.toBigDecimal()))
@@ -90,4 +95,8 @@ class Demo2(private val ko: KoSQL) {
             println(ORDER.count())
         }
     }
+}
+
+fun main(args: Array<String>) {
+    println(OrderDatabase)
 }

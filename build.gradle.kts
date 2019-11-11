@@ -42,7 +42,7 @@ subprojects {
         publishing {
             repositories {
                 // maven { url = uri("${rootProject.buildDir}/repo") }
-                // maven { url = uri("${System.getProperty("user.home")}/.m2/repository") }
+                maven { url = uri("${System.getProperty("user.home")}/.m2/repository") }
 
                 maven {
                     url = uri("https://m2.zhixueyun.com/content/repositories/releases")

@@ -124,10 +124,9 @@ interface Database {
 
     @Suppress("UNCHECKED_CAST")
     companion object {
-        var entityToTableClass: MutableMap<in KClass<out Entity<*>>, KClass<out Table<out Any, Entity<out Any>>>> = mutableMapOf()
-        var entityToTable: MutableMap<in KClass<out Entity<*>>, Table<out Any, Entity<out Any>>> = mutableMapOf()
-        var tableToEntity: MutableMap<in KClass<out Table<out Any, Entity<out Any>>>, KClass<out Entity<out Any>>> = mutableMapOf()
-
+        private var entityToTableClass: MutableMap<in KClass<out Entity<*>>, KClass<out Table<out Any, Entity<out Any>>>> = mutableMapOf()
+        private var entityToTable: MutableMap<in KClass<out Entity<*>>, Table<out Any, Entity<out Any>>> = mutableMapOf()
+        private var tableToEntity: MutableMap<in KClass<out Table<out Any, Entity<out Any>>>, KClass<out Entity<out Any>>> = mutableMapOf()
 
         fun <T: Any> register(table: Table<out T, Entity<T>>, entity: KClass<out Entity<T>>) {
             val tc = table::class.java.superclass as Class<Table<out T, Entity<T>>>

@@ -49,12 +49,14 @@ interface SelectResult<out T: ValueList>: Iterable<T> {
     val values: List<T>
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> into(entityClass: KClass<Entity<T>>): List<Entity<T>> {
-        val cs = columns.columns.filter { Database.getEntity((it.table as Table<T, Entity<T>>)::class) == entityClass }
+    fun <T, R: Entity<T>, S: Table<T, R>> into(table: S): List<R> {
+        val cs = columns.columns.filter { it.table == table }
         if (cs.none()) return listOf()
+        val entityClass = Database.getEntity(table::class)!!
 
-        return values.map { v -> entityClass.java.getDeclaredConstructor().newInstance().also { e ->
+        return values.map { v -> entityClass.java.getDeclaredConstructor().newInstance().let { e ->
             columns.columns.forEachIndexed {i, c -> if (cs.contains(c)) e[c.name] = v[i]}
+            e as R
         } }
     }
 
