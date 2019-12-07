@@ -146,7 +146,7 @@ open class SupportTypeBase(): Entity<Long> {
 
 
 open class SupportTypeTable protected constructor(alias: String = ""): Table<Long, SupportType>("t_support_type", alias, "") {
-    val ID = createColumn("f_id", LongType(), false, 0L).autoIncrement()
+    val ID = createColumn("f_id", LongType(), false, 0L, autoIncrement = true)
     val INT = createColumn("f_int", IntType(), true, null)
     val TINY_INT = createColumn("f_tiny_int", IntType(), true, null)
     val SMALL_INT = createColumn("f_small_int", IntType(), true, null)

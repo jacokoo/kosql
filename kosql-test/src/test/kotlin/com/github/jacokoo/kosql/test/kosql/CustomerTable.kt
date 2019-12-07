@@ -56,7 +56,7 @@ open class CustomerBase(): Entity<Int> {
 
 
 open class CustomerTable protected constructor(alias: String = ""): Table<Int, Customer>("t_customer", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
+    val ID = createColumn("f_id", IntType(), false, 0, autoIncrement = true)
     val FIRST_NAME = createColumn("f_first_name", StringType(), false, "")
     val LAST_NAME = createColumn("f_last_name", StringType(), false, "")
     val CITY = createColumn("f_city", StringType(), true, null)

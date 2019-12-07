@@ -26,7 +26,7 @@ class Demo2(private val ko: KoSQL) {
 
             // insert into t_order(f_customer_id, f_order_number) values(?, ?)
             val (id, rows) = execute( // returns generated id and rows effected
-                INSERT INTO ORDER(ORDER.CUSTOMER_ID, ORDER.ORDER_NUMBER) VALUES V(100, "order_number")
+                INSERT INTO ORDER(ORDER.CUSTOMER_ID) VALUES V(100)
             )
 
             SELECT(ORDER) FROM ORDER WHERE ORDER.CUSTOMER_ID EQ 1
@@ -71,10 +71,11 @@ class Demo2(private val ko: KoSQL) {
 
             (SELECT(a.ID, a.ORDER_NUMBER, a.TOTAL_AMOUNT) FROM a).fetch()
 
-            (SELECT(a.ID, a.ORDER_NUMBER, a.ORDER_DATE) FROM(a)).fetch().firstOrNull()?.let {(id, number, date) ->
+            (SELECT(a.ID, a.ORDER_NUMBER, a.ORDER_DATE, a.CUSTOMER_ID) FROM(a)).fetch().firstOrNull()?.let {(id, number, date, cid) ->
                 println(id.inc()) // id is Int
-                println(number.trim()) // number is String
+                println(number?.trim()) // number is String
                 println(date.minusHours(10)) // date is LocalDateTime
+                println(cid?.inc())
             }
 
             val sql = (SELECT (a.ID) FROM a

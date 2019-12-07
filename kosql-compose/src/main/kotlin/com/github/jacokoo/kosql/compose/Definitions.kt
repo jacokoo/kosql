@@ -57,7 +57,6 @@ data class DefaultColumn<T>(
 
     fun nullable(): DefaultColumn<T> = this.copy(allowNull = true)
     fun default(t: T): DefaultColumn<T> = this.copy(defaultValue = t)
-    fun autoIncrement(auto: Boolean = true): DefaultColumn<T> = this.copy(autoIncrement = auto)
 }
 
 abstract class Table<T, out R: Entity<T>>(override val name: String, override val alias: String = "", comment: String = ""): Nameable<Table<T, R>> {
@@ -66,10 +65,11 @@ abstract class Table<T, out R: Entity<T>>(override val name: String, override va
         protected set
 
     protected fun register(col: Column<*>) { columns += col }
-    protected fun <T> createColumn(name: String, type: DataType<T>, allowNull: Boolean = false, defaultValue: T? = null) =
+    protected fun <T> createColumn(name: String, type: DataType<T>, allowNull: Boolean = false, defaultValue: T? = null, autoIncrement: Boolean = false): Column<T> =
         DefaultColumn(this, name, type,
             allowNull = allowNull,
-            defaultValue = if (defaultValue == null) type.nullValue else defaultValue
+            defaultValue = defaultValue ?: type.nullValue,
+            autoIncrement = autoIncrement
         ).also { register(it) }
 
     fun int(name: String) = createColumn(name, IntType())

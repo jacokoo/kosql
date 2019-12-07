@@ -73,20 +73,19 @@ interface ColumnGenerator {
 
 abstract class AbstractColumnGenerator<T>: ColumnGenerator {
     abstract val type: DataType<T>
+    abstract val nullType: DataType<T?>
     abstract fun kotlinType(): KClass<*>
     override fun generete(tableName: String, def: ColumnDefinition, config: KoSQLGeneratorConfig): ColumnInfo {
         val (define, dv) = createColumn(def)
-        return ColumnInfo(config.namingStrategy.tableFieldName(def.name), type::class.java.name, kotlinType(), dv, define, def)
+        val name = if (def.nullable) nullType else type
+        return ColumnInfo(config.namingStrategy.tableFieldName(def.name), name::class.java.name, kotlinType(), dv, define, def)
     }
 
     protected fun createColumn(def: ColumnDefinition): Pair<String, String> {
-        val typeName = type::class.java.simpleName
-        val defaultValue: Any? = if (def.defaultValue == null) {
-            if (def.nullable) null else type.nullValue
-        } else def.defaultValue
+        val typeName = (if (def.nullable) nullType else type)::class.java.simpleName
+        val defaultValue = def.defaultValue ?: if (def.nullable) null else type.nullValue
         val dv = parseDefaultValue(defaultValue)
-        var str = "createColumn(\"${def.name}\", $typeName(), ${def.nullable}, $dv)"
-        if (def.isAutoIncrement) str += ".autoIncrement()"
+        var str = "createColumn(\"${def.name}\", $typeName(), ${def.nullable}, $dv${if (def.isAutoIncrement) ", autoIncrement = true" else ""})"
         return  str to dv
     }
 

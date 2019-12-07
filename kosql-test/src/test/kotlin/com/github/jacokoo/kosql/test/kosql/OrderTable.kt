@@ -1,11 +1,6 @@
 package com.github.jacokoo.kosql.test.kosql
 
-import com.github.jacokoo.kosql.compose.DateTimeType
-import com.github.jacokoo.kosql.compose.DecimalType
-import com.github.jacokoo.kosql.compose.Entity
-import com.github.jacokoo.kosql.compose.IntType
-import com.github.jacokoo.kosql.compose.StringType
-import com.github.jacokoo.kosql.compose.Table
+import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.compose.typesafe.Column5
 import com.github.jacokoo.kosql.test.entity.Order
 import java.math.BigDecimal
@@ -16,7 +11,7 @@ open class OrderBase(): Entity<Int> {
     var id: Int = 0
     var orderDate: LocalDateTime = LocalDateTime.MIN
     var orderNumber: String? = null
-    var customerId: Int = 0
+    var customerId: Int? = 0
     var totalAmount: BigDecimal? = BigDecimal("0.00")
 
     constructor(other: OrderBase): this() {
@@ -56,10 +51,10 @@ open class OrderBase(): Entity<Int> {
 
 
 open class OrderTable protected constructor(alias: String = ""): Table<Int, Order>("t_order", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
+    val ID = createColumn("f_id", IntType(), false, 0, autoIncrement = true)
     val ORDER_DATE = createColumn("f_order_date", DateTimeType(), false, LocalDateTime.MIN)
-    val ORDER_NUMBER = createColumn("f_order_number", StringType(), true, null)
-    val CUSTOMER_ID = createColumn("f_customer_id", IntType(), false, 0)
+    val ORDER_NUMBER = createColumn("f_order_number", StringNullType(), true, null)
+    val CUSTOMER_ID = createColumn("f_customer_id", IntNullType(), false, 0)
     val TOTAL_AMOUNT = createColumn("f_total_amount", DecimalType(), true, BigDecimal("0.00"))
 
     override fun AS(alias: String) = OrderTable(alias)

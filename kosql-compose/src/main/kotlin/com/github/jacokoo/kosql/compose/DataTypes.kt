@@ -25,6 +25,10 @@ class IntType: DataType<Int> {
     } } ?: 0
 }
 
+class IntNullType(private val inner: IntType = IntType()): DataType<Int?> by inner {
+    override fun fromDb(o: Any?): Int? = o.let { inner.fromDb(o) }
+}
+
 class LongType: DataType<Long> {
     override val nullValue: Long = 0L
     override fun fromDb(o: Any?): Long = o?.let { when (it) {
@@ -34,14 +38,26 @@ class LongType: DataType<Long> {
     } } ?: 0L
 }
 
+class LongNullType(private val inner: LongType = LongType()): DataType<Long?> by inner {
+    override fun fromDb(o: Any?): Long? = o?.let { inner.fromDb(o) }
+}
+
 class FloatType: DataType<Float> {
     override val nullValue: Float = 0.0f
     override fun fromDb(o: Any?): Float = (o ?: 0) as Float
 }
 
+class FloatNullType(private val inner: FloatType = FloatType()): DataType<Float?> by inner {
+    override fun fromDb(o: Any?): Float? = o?.let { inner.fromDb(o) }
+}
+
 class DoubleType: DataType<Double> {
     override val nullValue: Double = 0.0
     override fun fromDb(o: Any?): Double = (o ?: 0) as Double
+}
+
+class DoubleNullType(private val inner: DoubleType = DoubleType()): DataType<Double?> by inner {
+    override fun fromDb(o: Any?): Double? = o?.let { inner.fromDb(o) }
 }
 
 class DecimalType: DataType<BigDecimal> {
@@ -55,9 +71,17 @@ class DecimalType: DataType<BigDecimal> {
     }
 }
 
+class DecimalNullType(private val inner: DecimalType = DecimalType()): DataType<BigDecimal?> by inner {
+    override fun fromDb(o: Any?): BigDecimal? = o?.let { inner.fromDb(o) }
+}
+
 class StringType: DataType<String> {
     override val nullValue: String = ""
     override fun fromDb(o: Any?): String = (o ?: "") as String
+}
+
+class StringNullType(private val inner: StringType = StringType()): DataType<String?> by inner {
+    override fun fromDb(o: Any?): String? = o?.let { inner.fromDb(o) }
 }
 
 class DateType: DataType<LocalDate> {
@@ -70,10 +94,18 @@ class DateType: DataType<LocalDate> {
     override fun toDb(t: Any?): Any? = t?.let { it.toString() }
 }
 
+class DateNullType(private val inner: DateType = DateType()): DataType<LocalDate?> by inner {
+    override fun fromDb(o: Any?): LocalDate? = o?.let { inner.fromDb(o) }
+}
+
 class DateTimeType: DataType<LocalDateTime> {
     override val nullValue = LocalDateTime.MIN
     override fun fromDb(o: Any?) = o?.let { (it as Timestamp).toLocalDateTime() } ?: nullValue
     override fun toDb(t: Any?): Any? = t?.let { it.toString() }
+}
+
+class DateTimeNullType(private val inner: DateTimeType = DateTimeType()): DataType<LocalDateTime?> by inner {
+    override fun fromDb(o: Any?): LocalDateTime? = o?.let { inner.fromDb(o) }
 }
 
 class DateTimeLongType: DataType<LocalDateTime> {
@@ -83,6 +115,10 @@ class DateTimeLongType: DataType<LocalDateTime> {
     } ?: nullValue
     override fun toDb(t: Any?) = ((t?.let { it as LocalDateTime }) ?: nullValue)
         .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+}
+
+class DateTimeLongNullType(private val inner: DateTimeLongType = DateTimeLongType()): DataType<LocalDateTime?> by inner {
+    override fun fromDb(o: Any?): LocalDateTime? = o?.let { inner.fromDb(o) }
 }
 
 class BooleanType: DataType<Boolean> {
@@ -98,12 +134,20 @@ class BooleanType: DataType<Boolean> {
     override fun toDb(t: Any?): Any? = t?.let { if (it as Boolean) 1 else 0 }
 }
 
+class BooleanNullType(private val inner: BooleanType = BooleanType()): DataType<Boolean?> by inner {
+    override fun fromDb(o: Any?): Boolean? = o?.let { inner.fromDb(o) }
+}
+
 class ByteArrayType: DataType<ByteArray> {
     override val nullValue: ByteArray = ByteArray(0)
     override fun fromDb(o: Any?): ByteArray = o?.let { when (it) {
         is Blob -> it.getBytes(1, it.length().toInt())
         else -> it as ByteArray
     } } ?: nullValue
+}
+
+class ByteArrayNullType(private val inner: ByteArrayType = ByteArrayType()): DataType<ByteArray?> by inner {
+    override fun fromDb(o: Any?): ByteArray? = o?.let { inner.fromDb(o) }
 }
 
 abstract class IntEnumType<T: Enum<*>>: DataType<T> {

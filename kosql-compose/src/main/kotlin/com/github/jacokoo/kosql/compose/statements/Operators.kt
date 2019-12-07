@@ -51,8 +51,8 @@ data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val righ
 }
 
 interface StringPartialOperators {
-    infix fun <L: ExpressionContainer<L>> PartialExpression<L, String>.LIKE(v: String): L = left.set(right.LIKE(v))
-    infix fun <L: ExpressionContainer<L>> PartialExpression<L, String>.NOT_LIKE(v: String): L = left.set(right.NOT_LIKE(v))
+    infix fun <L: ExpressionContainer<L>> PartialExpression<L, String?>.LIKE(v: String): L = left.set(right.LIKE(v))
+    infix fun <L: ExpressionContainer<L>> PartialExpression<L, String?>.NOT_LIKE(v: String): L = left.set(right.NOT_LIKE(v))
 }
 
 data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = null, val isAnd: Boolean = true): AbstractExpressionContainer<LogicPartial<T>>(), Expression<T> {
@@ -109,8 +109,8 @@ interface CompareOperators {
     fun <T> Column<T>.IS_NULL(): Expression<T>? = SingleColumnExpression("is null", this)
     fun <T> Column<T>.IS_NOT_NULL(): Expression<T>? = SingleColumnExpression("is not null", this)
 
-    infix fun Column<String>.LIKE(v: String?): Expression<String>? = v?.let { ColumnToValueExpression("like", this, v) }
-    infix fun Column<String>.NOT_LIKE(v: String?): Expression<String>? = v?.let { ColumnToValueExpression("not like", this, v) }
+    infix fun Column<String?>.LIKE(v: String?): Expression<String?>? = v?.let { ColumnToValueExpression("like", this, v) }
+    infix fun Column<String?>.NOT_LIKE(v: String?): Expression<String?>? = v?.let { ColumnToValueExpression("not like", this, v) }
 }
 
 interface ComputeOperators {

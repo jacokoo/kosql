@@ -64,7 +64,7 @@ open class SupplierBase(): Entity<Int> {
 
 
 open class SupplierTable protected constructor(alias: String = ""): Table<Int, Supplier>("t_supplier", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
+    val ID = createColumn("f_id", IntType(), false, 0, autoIncrement = true)
     val COMPANY_NAME = createColumn("f_company_name", StringType(), false, "")
     val CONTACT_NAME = createColumn("f_contact_name", StringType(), true, null)
     val CONTACT_TITLE = createColumn("f_contact_title", StringType(), true, null)

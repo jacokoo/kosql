@@ -53,7 +53,7 @@ open class OrderItemBase(): Entity<Int> {
 
 
 open class OrderItemTable protected constructor(alias: String = ""): Table<Int, OrderItem>("t_order_item", alias, "") {
-    val ID = createColumn("f_id", IntType(), false, 0).autoIncrement()
+    val ID = createColumn("f_id", IntType(), false, 0, autoIncrement = true)
     val ORDER_ID = createColumn("f_order_id", IntType(), false, 0)
     val PRODUCT_ID = createColumn("f_product_id", IntType(), false, 0)
     val UNIT_PRICE = createColumn("f_unit_price", DecimalType(), false, BigDecimal("0.00"))
