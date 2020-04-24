@@ -37,6 +37,7 @@ fun main(args: Array<String>) {
         append(title)
         (1..count).forEach { append(classPart(it)) }
         append("\n\ninterface Queries: Query {")
+        append("\n    fun <T1> SelectStatement<Column1<T1>>.fetchValue(): T1 = fetch()[0].v1\n")
         (1..count).forEach { append(methodPart(it)) }
         append("\n}")
     })

@@ -87,10 +87,11 @@ class SQLBuilder {
     fun <T> buildBatch(data: InsertData<T>, ctx: SQLBuilderContext): BuildResult {
         assert(data.values.size > 1)
         return BuildResult.build(DefaultBatchParameterHolder(data.columns)) {
-            val params = it as DefaultParameterHolder
+//            val params = it as DefaultParameterHolder
             append("INSERT INTO ").append(data.table.name)
             data.columns.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
-            params.param(data.values.map { v -> v to ::fnId })
+            append(" VALUES ")
+            it.param(data.values.map { v -> v to ::fnId })
             append(data.values.first().values.map {
                 "?"
             }.joinToString(prefix = "(", postfix = ")"))

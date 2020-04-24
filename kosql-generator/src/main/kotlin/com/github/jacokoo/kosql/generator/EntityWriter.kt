@@ -31,7 +31,8 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
             "        ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name}"
         }
         val setter: (Int, ColumnInfo) -> String = {idx, it ->
-            "            ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name} = value as ${it.typeClass.simpleName}"
+            val suffix = if (it.def.nullable) "?" else ""
+            "            ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name} = value as ${it.typeClass.simpleName}$suffix"
         }
         writer.write("""
             |    constructor(other: ${table.entity.name}): this() {
@@ -59,8 +60,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
         """.trimMargin())
 
         if (!config.needEntitySubClass) {
-            writer.appendln("    fun copy(block: (${table.entity.name}) -> Unit): ${table.entity.name} = ${table.entity.name}(this).also(block)")
-            writer.appendln()
+            writer.write("    fun copy(block: (${table.entity.name}) -> Unit): ${table.entity.name} = ${table.entity.name}(this).also(block)\n\n")
         }
     }
 }

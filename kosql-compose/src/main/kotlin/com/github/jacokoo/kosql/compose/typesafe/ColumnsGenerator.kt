@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
 
         |data class Columns(override val columns: List<Column<*>>): ColumnList {
         |    operator fun plus(table: Table<*>) = Columns(columns + table.columns)
+        |    operator fun plus(cl: ColumnList) = Columns(columns + cl.columns)
         |}
         |
     """.trimMargin()

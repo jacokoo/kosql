@@ -23,7 +23,6 @@ import java.sql.ResultSet
 import java.sql.Statement
 
 open class KoSQL(
-    private val database: Database,
     private val jdbc: JdbcTemplate,
     private val transactionManager: PlatformTransactionManager,
     override val builder: SQLBuilder = SQLBuilder()
@@ -84,10 +83,10 @@ open class KoSQL(
     }
 
     override fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: ResultSetMapper<T>): List<T> = builder.build(select).let { (sql, context) ->
-        execute(sql, context, mapper)
+        execute(sql, select.data.columns, context, mapper)
     }
 
-    override fun <T> execute(sql: String, params: ParameterHolder, mapper: ResultSetMapper<T>): List<T> {
+    override fun <T> execute(sql: String, cols: ColumnList, params: ParameterHolder, mapper: ResultSetMapper<T>): List<T> {
         LOG.debug("execute select: {}", sql)
         return jdbc.execute { conn: Connection ->
             conn.prepareStatement(sql,
@@ -96,7 +95,7 @@ open class KoSQL(
                 ResultSet.CLOSE_CURSORS_AT_COMMIT
             ).also { params.fill(it) }.executeQuery().let {
                 mutableListOf<T>().apply {
-                    val row = ResultSetRow(it)
+                    val row = ResultSetRow(it, cols)
                     while (it.next()) this.add(mapper.map(row))
                 }
             }

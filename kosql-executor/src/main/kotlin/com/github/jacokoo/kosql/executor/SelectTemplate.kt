@@ -47,13 +47,13 @@ interface SelectTemplateSupport {
 
     fun <T: ColumnList> SelectStatement<T>.template(): SelectTemplate<T> = builder.build(this).let { DefaultSelectTemplate(this, it.sql, it.params) }
 
-    fun <T> execute(sql: String, params: ParameterHolder, mapper: ResultSetMapper<T>): List<T>
+    fun <T> execute(sql: String, cols: ColumnList, params: ParameterHolder, mapper: ResultSetMapper<T>): List<T>
 
     fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: ResultSetMapper<T>, vararg values: TemplateValue) =
-        execute(sql, TemplateParameterHolder(params, values.toList()), mapper)
+        execute(sql, statement.data.columns, TemplateParameterHolder(params, values.toList()), mapper)
 
-    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(entityClass: KClass<out R>, vararg values: TemplateValue) =
-        fetch(ColumnsToEntityMapper(statement.data.columns, entityClass), *values)
+    fun <T, R: Entity<T>, L: ColumnList> SelectTemplate<L>.fetch(table: Table<T, R>, vararg values: TemplateValue) =
+        fetch({ it.into(table) }, *values)
 
     fun <T, R: ColumnList> SelectTemplate<R>.fetch(mapper: (ResultSetRow) -> T, vararg values: TemplateValue) = fetch(object: ResultSetMapper<T> {
         override fun map(rs: ResultSetRow): T = mapper(rs)

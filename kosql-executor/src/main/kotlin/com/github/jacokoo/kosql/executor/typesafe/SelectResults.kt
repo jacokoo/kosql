@@ -163,6 +163,8 @@ data class SelectResult22<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13
 }
 
 interface Queries: Query {
+    fun <T1> SelectStatement<Column1<T1>>.fetchValue(): T1 = fetch()[0].v1
+
     fun <T1> SelectStatement<Column1<T1>>.fetch() = SelectResult1(this, this@Queries)
     fun <T1, T2> SelectStatement<Column2<T1, T2>>.fetch() = SelectResult2(this, this@Queries)
     fun <T1, T2, T3> SelectStatement<Column3<T1, T2, T3>>.fetch() = SelectResult3(this, this@Queries)

@@ -30,7 +30,7 @@ abstract class AbstractWhereDataContainer<T: WhereData<T>, R: WhereDataContainer
 interface WhereOperate<T: WhereData<T>, R: AbstractWhereDataContainer<T, R>> {
     val data: T
     fun refer(data: T): R
-    infix fun WHERE(e: Expression<*>): R = refer(data.setWhere(e))
+    infix fun WHERE(e: Expression<*>?): R = refer(data.setWhere(e))
     infix fun <L> WHERE(c: Column<L>) = PartialExpression(refer(data), c)
 }
 

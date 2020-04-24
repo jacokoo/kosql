@@ -36,10 +36,9 @@ interface Shortcut: Query, Operators {
 
     @Suppress("UNCHECKED_CAST")
     fun <T, E: Entity<T>, R: Table<T, E>> R.byId(t: T): E? {
-        val entity = Database.getEntity(this::class)!! as KClass<E>
         val exp = this.primaryKey() EQ t
         val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp))
-        return execute(part, ColumnsToEntityMapper(part.data.columns, entity)).firstOrNull()
+        return execute(part) { it.into(this) }.firstOrNull()
     }
 
     fun <T, R: Table<T, Entity<T>>> R.count(): Int = count(null)
@@ -51,9 +50,8 @@ interface Shortcut: Query, Operators {
 
     @Suppress("UNCHECKED_CAST")
     fun <T, E: Entity<T>, R: Table<T, E>> R.fetch(exp: Expression<*>?, vararg orders: Pair<Column<*>, Order>): List<E> {
-        val entity = Database.getEntity(this::class)!! as KClass<E>
         val part = SelectEnd(SelectData(Columns(this.columns), this, expression = exp, orderBy = orders.toList()))
-        return execute(part, ColumnsToEntityMapper(part.data.columns, entity));
+        return execute(part) { it.into(this)}.filterNotNull();
     }
 
     fun <T, R: Table<T, Entity<T>>> R.delete(t: T): Boolean =

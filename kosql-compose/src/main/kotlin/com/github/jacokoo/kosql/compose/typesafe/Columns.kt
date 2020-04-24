@@ -15,6 +15,7 @@ interface ColumnList {
 
 data class Columns(override val columns: List<Column<*>>): ColumnList {
     operator fun plus(table: Table<*, Entity<*>>) = Columns(columns + table.columns)
+    operator fun plus(cl: ColumnList) = Columns(columns + cl.columns)
 }
 
 data class Column1<T1>(val c1: Column<T1>, override val columns: List<Column<*>> = listOf(c1)): ColumnList {

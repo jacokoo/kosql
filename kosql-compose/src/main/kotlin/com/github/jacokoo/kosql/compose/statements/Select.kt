@@ -26,11 +26,11 @@ data class SelectData<T: ColumnList> (
 interface SelectStatement<T: ColumnList>: Statement {
     val data: SelectData<T>
     fun AS(alias: String): TableLike<T> = TableLike(data, alias, data.columns.columns)
-    fun toCount(): SelectStatement1<Int> {
+    fun toCount(): SelectEnd<Column1<Int>> {
         val count = Count<Int>()
         val col = Column1(count)
         val dd = SelectData(col, data.table, data.joins, data.expression, data.groupBy, data.having)
-        return SelectStatement1(dd)
+        return SelectEnd(dd)
     }
 }
 

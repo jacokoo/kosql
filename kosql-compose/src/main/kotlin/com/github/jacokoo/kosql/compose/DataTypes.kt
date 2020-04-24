@@ -85,7 +85,7 @@ class StringNullType(private val inner: StringType = StringType()): DataType<Str
 }
 
 class DateType: DataType<LocalDate> {
-    override val nullValue = LocalDate.MIN
+    override val nullValue = LocalDate.of(1970, 1, 1)
     override fun fromDb(o: Any?) = o?.let { when (it) {
         is Date -> it.toLocalDate()
         is Timestamp -> it.toLocalDateTime().toLocalDate()
@@ -99,7 +99,7 @@ class DateNullType(private val inner: DateType = DateType()): DataType<LocalDate
 }
 
 class DateTimeType: DataType<LocalDateTime> {
-    override val nullValue = LocalDateTime.MIN
+    override val nullValue = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
     override fun fromDb(o: Any?) = o?.let { (it as Timestamp).toLocalDateTime() } ?: nullValue
     override fun toDb(t: Any?): Any? = t?.let { it.toString() }
 }
@@ -109,7 +109,7 @@ class DateTimeNullType(private val inner: DateTimeType = DateTimeType()): DataTy
 }
 
 class DateTimeLongType: DataType<LocalDateTime> {
-    override val nullValue = LocalDateTime.MIN
+    override val nullValue = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
     override fun fromDb(o: Any?) = o?.let {
         Instant.ofEpochMilli(it as Long).atZone(ZoneId.systemDefault()).toLocalDateTime()
     } ?: nullValue

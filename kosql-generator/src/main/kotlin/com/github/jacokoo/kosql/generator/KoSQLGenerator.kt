@@ -108,10 +108,9 @@ open class KoSQLGenerator(cfg: KoSQLGeneratorConfig, val jdbc: JdbcTemplate) {
                 enums.forEach { imports.add(if (it.dbType == Int::class) IntEnumType::class else StringEnumType::class) }
 
                 val pkg = "${config.outputPackage}.kosql"
-                writer.appendln("package $pkg")
-                writer.appendln()
+                writer.write("package $pkg\n\n")
                 imports.forEach {
-                    if (it.substring(0, it.lastIndexOf(".")) != pkg) writer.appendln("import ${it}")
+                    if (it.substring(0, it.lastIndexOf(".")) != pkg) writer.write("import ${it}\n")
                 }
 
                 enums.forEach {

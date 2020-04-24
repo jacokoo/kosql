@@ -12,8 +12,8 @@ class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
     override val nullType: DataType<LocalDate?> = DateNullType()
     override fun kotlinType() = LocalDate::class
     override fun parseDefaultValue(v: Any?): String = v?.let {
-        if (v == type.nullValue) "LocalDate.MIN"
-        else "LocalDate.parse(\"${v.toString()}\")"
+        if (v == type.nullValue) "LocalDate.of(1970, 1, 1)"
+        else "LocalDate.parse(\"${v}\")"
     } ?: "null"
     override fun support(tableName: String, def: ColumnDefinition) =
             Types.DATE == def.dataType
@@ -23,10 +23,12 @@ class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeType()
     override val nullType: DataType<LocalDateTime?> = DateTimeNullType()
     override fun kotlinType() = LocalDateTime::class
-    override fun parseDefaultValue(v: Any?): String = v?.let {
-        if (v == type.nullValue) "LocalDateTime.MIN"
-        else "LocalDateTime.parse(\"${v.toString()}\")"
-    } ?: "null"
+    override fun parseDefaultValue(v: Any?): String = when(v) {
+        null -> "null"
+        type.nullValue -> "LocalDateTime.of(1970, 1, 1, 0, 0, 0)"
+        "CURRENT_TIMESTAMP" -> "LocalDateTime.now()"
+        else -> "LocalDateTime.parse(\"${v}\")"
+    }
     override fun support(tableName: String, def: ColumnDefinition) =
             Types.TIMESTAMP == def.dataType
 }
@@ -35,10 +37,12 @@ class DateTimeLongColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeLongType()
     override val nullType: DataType<LocalDateTime?> = DateTimeLongNullType()
     override fun kotlinType() = LocalDateTime::class
-    override fun parseDefaultValue(v: Any?): String = v?.let {
-        if (v == type.nullValue) "LocalDateTime.MIN"
-        else "LocalDateTime.parse(\"${v.toString()}\")"
-    } ?: "null"
+    override fun parseDefaultValue(v: Any?): String = when(v) {
+        null -> "null"
+        type.nullValue -> "LocalDateTime.of(1970, 1, 1, 0, 0, 0)"
+        "CURRENT_TIMESTAMP" -> "System.currentTimeMillis()"
+        else -> "LocalDateTime.parse(\"${v}\")"
+    }
     override fun support(tableName: String, def: ColumnDefinition) =
-            Types.BIGINT == def.dataType && def.name.indexOf("time") != -1
+            Types.BIGINT == def.dataType && def.name.endsWith("time")
 }

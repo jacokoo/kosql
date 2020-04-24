@@ -7,7 +7,7 @@ interface ExpressionContainer<T> {
     fun set(exp: Expression<*>?, isAnd: Boolean = true): T
 
     fun <T> Expression<T>.and(right: Expression<*>?): Expression<T> = LogicPartial(this, right, true)
-    fun <T> Expression<T>.or(right: Expression<*>?): Expression<T> = LogicPartial(this, right, true)
+    fun <T> Expression<T>.or(right: Expression<*>?): Expression<T> = LogicPartial(this, right, false)
 }
 
 abstract class AbstractExpressionContainer<R: ExpressionContainer<R>>: ExpressionContainer<R> {
@@ -35,13 +35,13 @@ data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val righ
     infix fun GTE(v: T?): L = left.set(right.GTE(v))
     infix fun GTE(v: Expression<T>?): L = left.set(right.GTE(v))
 
-    infix fun LTE(v: Column<T>): L = left.set(right.GTE(v))
-    infix fun LTE(v: T?): L = left.set(right.GTE(v))
-    infix fun LTE(v: Expression<T>?): L = left.set(right.GTE(v))
+    infix fun LTE(v: Column<T>): L = left.set(right.LTE(v))
+    infix fun LTE(v: T?): L = left.set(right.LTE(v))
+    infix fun LTE(v: Expression<T>?): L = left.set(right.LTE(v))
 
-    infix fun NE(v: Column<T>): L = left.set(right.GTE(v))
-    infix fun NE(v: T?): L = left.set(right.GTE(v))
-    infix fun NE(v: Expression<T>?): L = left.set(right.GTE(v))
+    infix fun NE(v: Column<T>): L = left.set(right.NE(v))
+    infix fun NE(v: T?): L = left.set(right.NE(v))
+    infix fun NE(v: Expression<T>?): L = left.set(right.NE(v))
 
     fun BETWEEN(small: T?, big: T?) = left.set(right.BETWEEN(small, big))
     fun IN(vararg values: T) = left.set(right.IN(*values))
@@ -51,8 +51,8 @@ data class PartialExpression<L: ExpressionContainer<L>, T>(val left: L, val righ
 }
 
 interface StringPartialOperators {
-    infix fun <L: ExpressionContainer<L>> PartialExpression<L, String?>.LIKE(v: String): L = left.set(right.LIKE(v))
-    infix fun <L: ExpressionContainer<L>> PartialExpression<L, String?>.NOT_LIKE(v: String): L = left.set(right.NOT_LIKE(v))
+    infix fun <L: ExpressionContainer<L>, T> PartialExpression<L, T>.LIKE(v: T?): L = left.set(right.LIKE(v))
+    infix fun <L: ExpressionContainer<L>, T> PartialExpression<L, T>.NOT_LIKE(v: T?): L = left.set(right.NOT_LIKE(v))
 }
 
 data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = null, val isAnd: Boolean = true): AbstractExpressionContainer<LogicPartial<T>>(), Expression<T> {
@@ -109,20 +109,24 @@ interface CompareOperators {
     fun <T> Column<T>.IS_NULL(): Expression<T>? = SingleColumnExpression("is null", this)
     fun <T> Column<T>.IS_NOT_NULL(): Expression<T>? = SingleColumnExpression("is not null", this)
 
-    infix fun Column<String?>.LIKE(v: String?): Expression<String?>? = v?.let { ColumnToValueExpression("like", this, v) }
-    infix fun Column<String?>.NOT_LIKE(v: String?): Expression<String?>? = v?.let { ColumnToValueExpression("not like", this, v) }
+    infix fun <T> Column<T>.LIKE(v: T?): Expression<T>? = v?.let { ColumnToValueExpression("like", this, v) }
+    infix fun <T> Column<T>.NOT_LIKE(v: T?): Expression<T>? = v?.let { ColumnToValueExpression("not like", this, v) }
+
+    fun String?.LEFT() = this?.let { "$it%" }
+    fun String?.RIGHT() = this?.let { "%$it" }
+    fun String?.ALL() = this?.let { "%$it%" }
 }
 
 interface ComputeOperators {
-    operator fun <T : Number> Column<T>.plus(v: T?): Expression<T>? = v?.let { ColumnToValueExpression("+", this, v) }
-    operator fun <T : Number> Column<T>.minus(v: T?): Expression<T>? = v?.let { ColumnToValueExpression("-", this, v) }
-    operator fun <T : Number> Column<T>.times(v: T?): Expression<T>? = v?.let { ColumnToValueExpression("*", this, v) }
-    operator fun <T : Number> Column<T>.div(v: T?): Expression<T>? = v?.let { ColumnToValueExpression("/", this, v) }
+    operator fun <T : Number> Column<T>.plus(v: T) = ColumnToValueExpression("+", this, v)
+    operator fun <T : Number> Column<T>.minus(v: T) = ColumnToValueExpression("-", this, v)
+    operator fun <T : Number> Column<T>.times(v: T) = ColumnToValueExpression("*", this, v)
+    operator fun <T : Number> Column<T>.div(v: T) = ColumnToValueExpression("/", this, v)
 
-    operator fun <T : Number> Column<T>.plus(v: Column<T>): Expression<T>? = ColumnToColumnExpression("+", this, v)
-    operator fun <T : Number> Column<T>.minus(v: Column<T>): Expression<T>? = ColumnToColumnExpression("-", this, v)
-    operator fun <T : Number> Column<T>.times(v: Column<T>): Expression<T>? = ColumnToColumnExpression("*", this, v)
-    operator fun <T : Number> Column<T>.div(v: Column<T>): Expression<T>? = ColumnToColumnExpression("/", this, v)
+    operator fun <T : Number> Column<T>.plus(v: Column<T>) = ColumnToColumnExpression("+", this, v)
+    operator fun <T : Number> Column<T>.minus(v: Column<T>) = ColumnToColumnExpression("-", this, v)
+    operator fun <T : Number> Column<T>.times(v: Column<T>) = ColumnToColumnExpression("*", this, v)
+    operator fun <T : Number> Column<T>.div(v: Column<T>) = ColumnToColumnExpression("/", this, v)
 }
 
 interface Operators: CompareOperators, ComputeOperators, LogicOperators, StringPartialOperators

@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.test
 import com.github.jacokoo.kosql.compose.SQLBuilder
 import com.github.jacokoo.kosql.spring.jdbc.KoSQL
 import com.github.jacokoo.kosql.test.entity.Order
+import com.github.jacokoo.kosql.test.kosql.CUSTOMER
 import com.github.jacokoo.kosql.test.kosql.ORDER
 import com.github.jacokoo.kosql.test.kosql.ORDER_ITEM
 import com.github.jacokoo.kosql.test.kosql.OrderDatabase
@@ -49,7 +50,7 @@ class Demo2(private val ko: KoSQL) {
             // select * from t_order where f_id = ?
             val list: List<Order> = (
                 SELECT (ORDER) FROM ORDER WHERE ORDER.ID EQ 1
-            ).fetch(Order::class)
+            ).fetch(ORDER)
 
             val optionalId: Int? = 100
             val optionalAmount: BigDecimal? = null
@@ -59,7 +60,6 @@ class Demo2(private val ko: KoSQL) {
                 SELECT (ORDER.ID, ORDER.TOTAL_AMOUNT) FROM ORDER
                 LEFT_JOIN ORDER_ITEM ON ORDER_ITEM.ORDER_ID EQ ORDER.ID
                 WHERE ORDER.ID EQ optionalId AND ORDER.TOTAL_AMOUNT GT optionalAmount
-
             ).fetch().forEach { (id: Int, amount: BigDecimal) ->
                 println(id.inc())
                 println(amount.divide(10.toBigDecimal()))
