@@ -76,7 +76,7 @@ data class SelectResults<T: ColumnList>(override val columns: ColumnList, overri
 }
 
 interface Query {
-    fun execute(update: UpdateStatement): Int
+    fun <K, T: Table<K, Entity<K>>>execute(update: UpdateStatement<K, T>): Int
     fun execute(delete: DeleteStatement): Int
     fun <T> execute(insert: InsertStatement<T>): Pair<T, Int>
     fun <T> execute(insert: BatchInsertStatement<T>): Int

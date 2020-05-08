@@ -2,8 +2,37 @@ package com.github.jacokoo.kosql.compose.statements
 
 import com.github.jacokoo.kosql.compose.*
 
-open class Function<T>(private val fn: String, val column: Column<T>): Column<T> by column{
+open class Function<T>(private val fn: String, val column: Column<T>): Column<T> {
+    private var innerAlias = ""
     override fun sqlName(ctx: SQLBuilderContext): String = "$fn(${column.toSQL(ctx)})"
+    override val alias: String
+        get() = if (innerAlias.isBlank()) column.alias else innerAlias
+
+    override val aliasRequired: Boolean
+        get() = column.aliasRequired
+
+    override val allowNull: Boolean
+        get() = column.allowNull
+
+    override val autoIncrement: Boolean
+        get() = column.autoIncrement
+
+    override val defaultValue: T
+        get() = column.defaultValue
+
+    override val name: String
+        get() = column.name
+
+    override val table: Table<*, Entity<*>>
+        get() = column.table
+
+    override val type: DataType<T>
+        get() = column.type
+
+    override fun AS(alias: String): Column<T> {
+        this.innerAlias = alias
+        return this
+    }
 }
 
 class Sum<T: Number>(col: Column<T>): Function<T>("SUM", col)

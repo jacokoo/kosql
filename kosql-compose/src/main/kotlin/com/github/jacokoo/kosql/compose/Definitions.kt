@@ -80,7 +80,7 @@ abstract class Table<T, out R: Entity<T>>(override val name: String, override va
     abstract fun primaryKey(): Column<T>
 }
 
-open class EmptyTable(alias: String = ""): Table<Any, Entity<Any>>(alias) {
+open class EmptyTable(alias: String = ""): Table<Any, Entity<Any>>(alias, alias) {
     override fun AS(alias: String): EmptyTable {
         throw RuntimeException("never call this method")
     }
@@ -104,10 +104,6 @@ class TableLike<T: ColumnList>(private val data: SelectData<T>, alias: String, p
         return map[c] as Column<T>
     }
 
-    @Suppress("UNCHECKED_CAST")
-    inline operator fun <reified T> get(name: String): Column<T> {
-        return columns.find { it.name == name }!! as Column<T>
-    }
 }
 
 interface Entity<T> {

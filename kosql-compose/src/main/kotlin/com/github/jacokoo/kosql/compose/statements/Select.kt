@@ -27,7 +27,7 @@ interface SelectStatement<T: ColumnList>: Statement {
     val data: SelectData<T>
     fun AS(alias: String): TableLike<T> = TableLike(data, alias, data.columns.columns)
     fun toCount(): SelectEnd<Column1<Int>> {
-        val count = Count<Int>()
+        val count = Count(data.columns.columns[0])
         val col = Column1(count)
         val dd = SelectData(col, data.table, data.joins, data.expression, data.groupBy, data.having)
         return SelectEnd(dd)

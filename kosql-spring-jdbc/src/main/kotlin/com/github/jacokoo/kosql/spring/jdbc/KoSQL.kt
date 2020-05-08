@@ -49,7 +49,7 @@ open class KoSQL(
 
     fun <T: ColumnList, R: SelectStatement<T>> template(block: KoSQL.() -> R): SelectTemplate<T> = this.block().template()
 
-    override fun execute(update: UpdateStatement): Int = builder.build(update).let { (sql, params) ->
+    override fun <K, T: Table<K, Entity<K>>> execute(update: UpdateStatement<K, T>): Int = builder.build(update).let { (sql, params) ->
         LOG.debug("execute update: {}", sql)
         jdbc.update { it.prepareStatement(sql).also { params.fill(it) } }
     }

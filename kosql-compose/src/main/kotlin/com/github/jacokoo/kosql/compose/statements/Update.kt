@@ -5,23 +5,23 @@ import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Statement
 import com.github.jacokoo.kosql.compose.Table
 
-data class UpdateData (
-    val table: Table<*, Entity<*>>,
+data class UpdateData<K, T: Table<K, Entity<K>>> (
+    val table: T,
     val joins: List<Join> = listOf(),
     val pairs: Map<Column<*>, Any?> = mapOf(),
     val expression: Expression<*>? = null
-): WhereData<UpdateData>, JoinData<UpdateData> {
+): WhereData<UpdateData<K, T>>, JoinData<UpdateData<K, T>> {
     override fun getWhere() = expression
     override fun setWhere(e: Expression<*>?) = copy(expression = e)
     override fun addJoin(join: Join) = copy(joins = joins + join)
     override fun removeJoin(join: Join) = copy(joins = joins - join)
 }
 
-interface UpdateStatement: Statement {
-    val data: UpdateData
+interface UpdateStatement<K, T: Table<K, Entity<K>>>: Statement {
+    val data: UpdateData<K, T>
 }
 
-data class UpdateEnd(override val data: UpdateData): UpdateStatement
+data class UpdateEnd<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>): UpdateStatement<K, T>
 
 class SetBlock {
     var data: MutableMap<Column<*>, Any?> = mutableMapOf()
@@ -31,37 +31,40 @@ class SetBlock {
     operator fun <T> set(col: Column<T>, v: ColumnToValueExpression<T>) { data[col] = v }
 }
 
-data class UpdateWhereDataContainer(override val data: UpdateData):
-    AbstractWhereDataContainer<UpdateData, UpdateWhereDataContainer>(), UpdateStatement {
-    override fun refer(data: UpdateData) = UpdateWhereDataContainer(data)
+data class UpdateWhereDataContainer<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>):
+    AbstractWhereDataContainer<UpdateData<K, T>, UpdateWhereDataContainer<K, T>>(), UpdateStatement<K, T> {
+    override fun refer(data: UpdateData<K, T>) = UpdateWhereDataContainer(data)
 }
 
-interface UpdateWhereOperate: WhereOperate<UpdateData, UpdateWhereDataContainer> {
-    override fun refer(data: UpdateData) = UpdateWhereDataContainer(data)
+interface UpdateWhereOperate<K, T: Table<K, Entity<K>>>: WhereOperate<UpdateData<K, T>, UpdateWhereDataContainer<K, T>> {
+    override fun refer(data: UpdateData<K, T>) = UpdateWhereDataContainer(data)
 }
 
-data class UpdateWherePart(override val data: UpdateData): UpdateWhereOperate
+data class UpdateWherePart<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>): UpdateWhereOperate<K, T>
 
-data class UpdateJoinDataContainer(override val data: UpdateData, override val join: Join):
-    AbstractJoinDataContainer<UpdateData, UpdateJoinDataContainer>(), SetOperate, UpdateStatement {
+data class UpdateJoinDataContainer<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>, override val join: Join):
+    AbstractJoinDataContainer<UpdateData<K, T>, UpdateJoinDataContainer<K, T>>(), SetOperate<K, T>, UpdateStatement<K, T> {
     override fun refer() = this
-    override fun refer(data: UpdateData, join: Join) = UpdateJoinDataContainer(data, join)
+    override fun refer(data: UpdateData<K, T>, join: Join) = UpdateJoinDataContainer(data, join)
 }
 
-data class UpdateJoinOnPart(override val data: UpdateData, override val join: Join): JoinOnPart<UpdateData, UpdateJoinDataContainer> {
-    override fun refer(data: UpdateData, join: Join) = UpdateJoinDataContainer(data, join)
+data class UpdateJoinOnPart<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>, override val join: Join):
+    JoinOnPart<UpdateData<K, T>, UpdateJoinDataContainer<K, T>> {
+    override fun refer(data: UpdateData<K, T>, join: Join) = UpdateJoinDataContainer(data, join)
 }
 
-interface UpdateJoinOperate: JoinOperate<UpdateData, UpdateJoinDataContainer, UpdateJoinOnPart> {
-    override fun referJoinOn(data: UpdateData, join: Join) = UpdateJoinOnPart(data, join)
+interface UpdateJoinOperate<K, T: Table<K, Entity<K>>>: JoinOperate<UpdateData<K, T>, UpdateJoinDataContainer<K, T>, UpdateJoinOnPart<K, T>> {
+    override fun referJoinOn(data: UpdateData<K, T>, join: Join) = UpdateJoinOnPart(data, join)
 }
 
-interface SetOperate: UpdateStatement {
-    infix fun SET(block: (SetBlock) -> Unit) = SetBlock().also(block).let {UpdateWherePart(data.copy(pairs = it.data))}
+interface SetOperate<K, T: Table<K, Entity<K>>>: UpdateStatement<K, T> {
+    infix fun SET(block: T.(SetBlock) -> Unit) = SetBlock().also {
+        data.table.block(it)
+    }.let {UpdateWherePart(data.copy(pairs = it.data))}
 }
 
-data class SetPart(override val data: UpdateData): SetOperate, UpdateJoinOperate, UpdateStatement
+data class SetPart<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>): SetOperate<K, T>, UpdateJoinOperate<K, T>, UpdateStatement<K, T>
 
 interface Update {
-    fun UPDATE(table: Table<*, Entity<*>>): SetPart = SetPart(UpdateData(table))
+    fun <K, T: Table<K, Entity<K>>> UPDATE(table: T): SetPart<K, T> = SetPart(UpdateData(table))
 }

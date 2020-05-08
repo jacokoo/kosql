@@ -6,7 +6,6 @@ import com.github.jacokoo.kosql.compose.typesafe.Column1
 import com.github.jacokoo.kosql.compose.typesafe.Columns
 import com.github.jacokoo.kosql.compose.typesafe.Values
 import com.github.jacokoo.kosql.executor.typesafe.SelectResultMapper1
-import kotlin.reflect.KClass
 
 interface Shortcut: Query, Operators {
     fun <T> Entity<T>.save(): T? {
@@ -29,9 +28,9 @@ interface Shortcut: Query, Operators {
     @Suppress("UNCHECKED_CAST")
     fun <T> Entity<T>.update(): Int {
         val table = Database.getTable(this::class)!!
-        val exp = table.primaryKey() EQ this[table.primaryKey().name]!! as T;
+        val exp = table.primaryKey() EQ this[table.primaryKey().name]!! as T
         val values = table.columns.filter { it != table.primaryKey() }.associate { it to this[it.name] }
-        return execute(UpdateEnd(UpdateData(table, pairs = values, expression = exp)));
+        return execute(UpdateEnd(UpdateData(table, pairs = values, expression = exp)))
     }
 
     @Suppress("UNCHECKED_CAST")

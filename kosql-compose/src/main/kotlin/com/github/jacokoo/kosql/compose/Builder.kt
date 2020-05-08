@@ -39,8 +39,8 @@ class SQLBuilder {
         }
     }
 
-    fun build(update: UpdateStatement): BuildResult = build(update.data, SQLBuilderContext(this, update))
-    fun build(data: UpdateData, ctx: SQLBuilderContext): BuildResult = BuildResult.build {
+    fun <K, T: Table<K, Entity<K>>> build(update: UpdateStatement<K, T>): BuildResult = build(update.data, SQLBuilderContext(this, update))
+    fun <K, T: Table<K, Entity<K>>> build(data: UpdateData<K, T>, ctx: SQLBuilderContext): BuildResult = BuildResult.build {
         if (data.pairs.none()) throw RuntimeException("no column to update")
 
         append("UPDATE ").append(data.table.toSQL(ctx))
@@ -209,6 +209,7 @@ open class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) 
     private var aliasMap: MutableMap<Nameable<*>, String> = mutableMapOf()
 
     fun alias(target: Nameable<*>): String? {
+        if (target.alias.isNotBlank()) return target.alias
         if (aliasMap.contains(target)) return aliasMap[target]
         if (!target.aliasRequired) return target.let {
             if (it.alias == "") return null
