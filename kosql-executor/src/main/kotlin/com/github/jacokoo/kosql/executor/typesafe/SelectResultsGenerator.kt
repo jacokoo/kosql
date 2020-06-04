@@ -3,7 +3,7 @@ package com.github.jacokoo.kosql.executor.typesafe
 fun times(n: Int, b: (Int) -> String): String = (1..n).map { b(it) }.joinToString()
 
 fun main(args: Array<String>) {
-    val count = 22
+    val count = 10
 
     val title = """
         |package com.github.jacokoo.kosql.executor.typesafe

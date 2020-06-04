@@ -1,7 +1,7 @@
 package com.github.jacokoo.kosql.compose.typesafe
 
 fun main(args: Array<String>) {
-    val count = 22
+    val count = 10
 
     val title = """
         |package com.github.jacokoo.kosql.compose.typesafe

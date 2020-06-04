@@ -104,6 +104,10 @@ class TableLike<T: ColumnList>(private val data: SelectData<T>, alias: String, p
         return map[c] as Column<T>
     }
 
+    @Suppress("UNCHECKED_CAST")
+    inline operator fun <reified T> get(name: String): Column<T> {
+        return columns.find { it.name == name }!! as Column<T>
+    }
 }
 
 interface Entity<T> {

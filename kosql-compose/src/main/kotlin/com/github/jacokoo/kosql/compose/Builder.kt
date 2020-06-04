@@ -11,7 +11,7 @@ class SQLBuilder {
     fun <T: ColumnList> build(part: SelectStatement<T>): BuildResult = build(part.data, SQLBuilderContext(this, part))
     fun <T: ColumnList> build(data: SelectData<T>, ctx: SQLBuilderContext): BuildResult {
         if (data.table == null) throw RuntimeException("no table specified")
-        return BuildResult.build {
+        return BuildResult.build(ctx) {
             append("SELECT ")
             append(data.columns.columns.map { it.toSQL(ctx) }.joinToString())
 
@@ -40,7 +40,7 @@ class SQLBuilder {
     }
 
     fun <K, T: Table<K, Entity<K>>> build(update: UpdateStatement<K, T>): BuildResult = build(update.data, SQLBuilderContext(this, update))
-    fun <K, T: Table<K, Entity<K>>> build(data: UpdateData<K, T>, ctx: SQLBuilderContext): BuildResult = BuildResult.build {
+    fun <K, T: Table<K, Entity<K>>> build(data: UpdateData<K, T>, ctx: SQLBuilderContext): BuildResult = BuildResult.build(ctx) {
         if (data.pairs.none()) throw RuntimeException("no column to update")
 
         append("UPDATE ").append(data.table.toSQL(ctx))
@@ -68,7 +68,7 @@ class SQLBuilder {
     fun build(delete: DeleteStatement): BuildResult = build(delete.data, SQLBuilderContext(this, delete))
     fun build(data: DeleteData, ctx: SQLBuilderContext): BuildResult {
         if (data.deletes.none()) throw RuntimeException("no table specified for delete")
-        return BuildResult.build {
+        return BuildResult.build(ctx) {
             append("DELETE ")
             if (data.table == null) {
                 val part = data.deletes.map { it.toSQL(ctx) }.joinToString()
@@ -83,10 +83,10 @@ class SQLBuilder {
         }
     }
 
-    fun <T> build(insert: BatchInsertStatement<T>) = buildBatch(insert.data, SQLBuilderContext(this, insert))
+    fun <T> build(insert: BatchInsertStatement<T>) = buildBatch(insert.data, SQLBuilderContext(this, insert, DefaultBatchParameterHolder(insert.data.columns)))
     fun <T> buildBatch(data: InsertData<T>, ctx: SQLBuilderContext): BuildResult {
         assert(data.values.size > 1)
-        return BuildResult.build(DefaultBatchParameterHolder(data.columns)) {
+        return BuildResult.build(ctx) {
 //            val params = it as DefaultParameterHolder
             append("INSERT INTO ").append(data.table.name)
             data.columns.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
@@ -101,7 +101,7 @@ class SQLBuilder {
     fun <T> build(insert: InsertStatement<T>) = build(insert.data, SQLBuilderContext(this, insert))
     fun <T> build(data: InsertData<T>, ctx: SQLBuilderContext): BuildResult {
         assert(data.query != null || data.values.isNotEmpty())
-        return BuildResult.build { params ->
+        return BuildResult.build(ctx) { params ->
             append("INSERT INTO ").append(data.table.name)
             data.columns.columns.map { it.name }.joinTo(this, prefix = "(", postfix = ")")
             if (data.query == null) {
@@ -195,15 +195,12 @@ class DefaultBatchParameterHolder(val columns: ColumnList): BatchParameterHolder
 
 data class BuildResult(val sql: String, val params: ParameterHolder) {
     companion object {
-        internal fun build(params: ParameterHolder = DefaultParameterHolder(), block: StringBuilder.(ParameterHolder) -> Unit): BuildResult {
-            var str = StringBuilder()
-            str.block(params)
-            return BuildResult(str.toString(), params)
-        }
+        internal fun build(ctx: SQLBuilderContext, block: StringBuilder.(ParameterHolder) -> Unit) =
+            BuildResult(StringBuilder().also { it.block(ctx.params) }.toString(), ctx.params)
     }
 }
 
-open class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement) {
+open class SQLBuilderContext(val builder: SQLBuilder, val statement: Statement, val params: ParameterHolder = DefaultParameterHolder()) {
     private val prefix = "a_"
     private var aliasIndex = 0
     private var aliasMap: MutableMap<Nameable<*>, String> = mutableMapOf()

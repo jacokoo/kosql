@@ -1,13 +1,14 @@
 package com.github.jacokoo.kosql.compose.typesafe
 
 fun main(args: Array<String>) {
-    val count = 22
+    val count = 10
 
     val title = """
-        |package com.github.jacokoo.kosql.typesafe
+        |package com.github.jacokoo.kosql.compose.typesafe
         |
-        |import com.github.jacokoo.kosql.Column
-        |import com.github.jacokoo.kosql.Table
+        |import com.github.jacokoo.kosql.compose.Column
+        |import com.github.jacokoo.kosql.compose.Entity
+        |import com.github.jacokoo.kosql.compose.Table
         |
         |interface ColumnList {
         |val columns: List<Column<*>>
@@ -17,9 +18,10 @@ fun main(args: Array<String>) {
         |
         |    operator fun plus(cs: Columns) = Columns(columns + cs.columns)
         |}
-
+        |
         |data class Columns(override val columns: List<Column<*>>): ColumnList {
-        |    operator fun plus(table: Table<*>) = Columns(columns + table.columns)
+        |    constructor(vararg cs: Column<*>): this(cs.toList())
+        |    operator fun plus(table: Table<*, Entity<*>>) = Columns(columns + table.columns)
         |    operator fun plus(cl: ColumnList) = Columns(columns + cl.columns)
         |}
         |

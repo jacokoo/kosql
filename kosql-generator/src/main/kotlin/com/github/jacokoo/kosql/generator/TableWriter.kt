@@ -32,7 +32,7 @@ open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val tab
         writer.write("    override fun AS(alias: String) = ${table.tableName}(alias)\n")
         writer.write("    override fun primaryKey() = ${table.primaryKey.name}\n")
         writer.write("    operator fun unaryMinus() = Column")
-        writer.write(if (table.columns.size > 22) "s" else "${table.columns.size}(")
+        writer.write(if (table.columns.size > 10) "s(" else "${table.columns.size}(")
         writer.write(table.columns.map { it.name }.joinToString())
         writer.write(")\n")
     }

@@ -45,7 +45,7 @@ class DefaultTableGenerator: TableGenerator {
         val imports = Imports()
             .add(Table::class, Entity::class)
             .add(
-                if (table.columns.size > 22) Columns::class.java.name
+                if (table.columns.size > 10) Columns::class.java.name
                 else "com.github.jacokoo.kosql.compose.typesafe.Column${table.columns.size}"
             )
 

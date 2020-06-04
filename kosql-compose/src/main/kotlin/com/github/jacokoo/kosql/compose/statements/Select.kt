@@ -111,6 +111,6 @@ data class SelectFromPart<T: ColumnList>(override val data: SelectData<T>): Sele
 
 interface Select {
     fun SELECT(columns: Columns) = SelectFromPart(SelectData(columns))
-    fun SELECT(vararg tables: Table<*, Entity<*>>) = SELECT(Columns(tables.fold(listOf()) { acc, i -> acc + i.columns }))
+    fun SELECT(vararg tables: Table<*, Entity<*>>) = SELECT(Columns(tables.fold(listOf<Column<*>>()) { acc, i -> acc + i.columns }))
 }
 

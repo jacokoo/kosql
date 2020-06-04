@@ -66,6 +66,11 @@ class DecimalType: DataType<BigDecimal> {
         if (o == null) return BigDecimal.ZERO
         return when (o) {
             is BigDecimal -> o
+            is Int -> o.toBigDecimal()
+            is Long -> o.toBigDecimal()
+            is Double -> o.toBigDecimal()
+            is Float -> o.toBigDecimal()
+            is Number -> BigDecimal(o.toString())
             else -> BigDecimal.ZERO
         }
     }
