@@ -50,7 +50,7 @@ interface JoinOnPart<T: JoinData<T>, R: AbstractJoinDataContainer<T, R>> {
     val data: T
     val join: Join
 
-    abstract fun refer(data: T, join: Join): R
+    fun refer(data: T, join: Join): R
 
     infix fun ON(e: Expression<*>): R = join.copy(expression = e).let { refer(data.addJoin(it), it) }
     infix fun <T> ON(c: Column<T>) = PartialExpression(refer(data, join), c)

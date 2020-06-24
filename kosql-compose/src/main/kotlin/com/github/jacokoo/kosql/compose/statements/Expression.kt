@@ -48,7 +48,7 @@ data class BetweenExpression<T> (
     val small: T,
     val big: T
 ): Expression<T> {
-    override fun toSQL(ctx: SQLBuilderContext): String = "BETWEEN ? AND ?"
+    override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} BETWEEN ? AND ?"
     override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = listOf(small to left.type::toDb, big to left.type::toDb)
 }
 
