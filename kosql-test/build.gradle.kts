@@ -31,9 +31,9 @@ dependencies {
     compile(project(":kosql-generator"))
     compile("mysql:mysql-connector-java")
     compile("org.springframework.boot:spring-boot-starter-jdbc")
-    testCompile("com.nhaarman:mockito-kotlin:1.6.0")
-    testCompile("io.kotlintest:kotlintest-runner-junit5:3.1.6")
-    testCompile("org.junit.jupiter:junit-jupiter-engine:5.2.0")
+    // testCompile("com.nhaarman:mockito-kotlin:1.6.0")
+    // testCompile("io.kotlintest:kotlintest-runner-junit5:3.1.6")
+    // testCompile("org.junit.jupiter:junit-jupiter-engine:5.2.0")
 }
 
 tasks.withType<BootJar> {

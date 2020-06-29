@@ -31,8 +31,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
             "        ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name}"
         }
         val setter: (Int, ColumnInfo) -> String = {idx, it ->
-            val suffix = if (it.def.nullable) "?" else ""
-            "            ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name} = value as ${it.typeClass.simpleName}$suffix"
+            "            ${table.objectName}.${it.name}.name -> this.${table.entity.fields[idx].name} = value as ${it.typeClass.simpleName}"
         }
         writer.write("""
             |    constructor(other: ${table.entity.name}): this() {

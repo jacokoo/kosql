@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 
 class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
     override val type: DataType<LocalDate> = DateType()
-    override val nullType: DataType<LocalDate?> = DateNullType()
+    override val nullType: DataType<LocalDate> = DateNullType()
     override fun kotlinType() = LocalDate::class
     override fun parseDefaultValue(v: Any?): String = v?.let {
         if (v == type.nullValue) "LocalDate.of(1970, 1, 1)"
@@ -21,7 +21,7 @@ class DateColumnGenerator: AbstractColumnGenerator<LocalDate>() {
 
 class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeType()
-    override val nullType: DataType<LocalDateTime?> = DateTimeNullType()
+    override val nullType: DataType<LocalDateTime> = DateTimeNullType()
     override fun kotlinType() = LocalDateTime::class
     override fun parseDefaultValue(v: Any?): String = when(v) {
         null -> "null"
@@ -35,7 +35,7 @@ class DateTimeColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
 
 class DateTimeLongColumnGenerator: AbstractColumnGenerator<LocalDateTime>() {
     override val type: DataType<LocalDateTime> = DateTimeLongType()
-    override val nullType: DataType<LocalDateTime?> = DateTimeLongNullType()
+    override val nullType: DataType<LocalDateTime> = DateTimeLongNullType()
     override fun kotlinType() = LocalDateTime::class
     override fun parseDefaultValue(v: Any?): String = when(v) {
         null -> "null"

@@ -1,27 +1,29 @@
 package com.github.jacokoo.kosql.test
 
-import com.github.jacokoo.kosql.test.entity.Order
-import com.github.jacokoo.kosql.test.kosql.ORDER
 import com.github.jacokoo.kosql.spring.jdbc.KoSQL
-import com.github.jacokoo.kosql.test.kosql.CUSTOMER
+import com.github.jacokoo.kosql.test.kosql.*
+import com.github.jacokoo.kosql.test.entity.*
 import javax.annotation.PostConstruct
+import java.time.LocalDate
 
-class Demo(private val ko: KoSQL) {
-    val template = ko.template {
-        SELECT(-ORDER) FROM ORDER WHERE ORDER.ID LT 10 AND ORDER.CUSTOMER_ID LT 100
-    }
+class Demo(val ko: KoSQL) {
 
     @PostConstruct
     fun demo() = ko.run {
-        val a: Int? = null
-        println(ORDER.byId(1))
-        println(ORDER.count())
-        println(ORDER.count(ORDER.ID EQ a))
-        println(template.fetch(ORDER, 0 to 10, 1 to a))
-
-        template.fetch(1 to 40).forEach {
+        (SELECT(ORDER) FROM ORDER).fetch(ORDER).forEach {
             println(it)
         }
     }
-}
 
+    @PostConstruct
+    fun insert() = ko.tx {
+        Order().also {
+            it.date = LocalDate.now()
+            it.requiredDate = LocalDate.now()
+            it.status = "Shipped"
+            it.customerId = 128
+
+            it.save()
+        }
+    }
+}

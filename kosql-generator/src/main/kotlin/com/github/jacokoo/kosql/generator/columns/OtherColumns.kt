@@ -8,7 +8,7 @@ import java.sql.Types
 
 class BooleanColumnGenerator: AbstractColumnGenerator<Boolean>() {
     override val type: DataType<Boolean> = BooleanType()
-    override val nullType: DataType<Boolean?> = BooleanNullType()
+    override val nullType: DataType<Boolean> = BooleanNullType()
     override fun kotlinType() = Boolean::class
     override fun support(tableName: String, def: ColumnDefinition) =
         Types.BOOLEAN == def.dataType ||
@@ -20,7 +20,7 @@ class BooleanColumnGenerator: AbstractColumnGenerator<Boolean>() {
 
 class ByteArrayColumnGenerator: AbstractColumnGenerator<ByteArray>() {
     override val type: DataType<ByteArray> = ByteArrayType()
-    override val nullType: DataType<ByteArray?> = ByteArrayNullType()
+    override val nullType: DataType<ByteArray> = ByteArrayNullType()
 
     override fun kotlinType() = ByteArray::class
     override fun support(tableName: String, def: ColumnDefinition): Boolean =

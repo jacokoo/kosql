@@ -1,5 +1,5 @@
 package com.github.jacokoo.kosql.test
-
+/*
 import com.github.jacokoo.kosql.compose.statements.BatchInsertStatement
 import com.github.jacokoo.kosql.compose.statements.Insert
 import com.github.jacokoo.kosql.compose.statements.InsertStatement
@@ -32,3 +32,4 @@ class InsertSyntaxTest: Inserts, Selects, FreeSpec() {
         }
     }
 }}
+*/

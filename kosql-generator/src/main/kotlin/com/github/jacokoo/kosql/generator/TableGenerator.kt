@@ -55,7 +55,7 @@ class DefaultTableGenerator: TableGenerator {
         val pk = table.columns.indexOf(table.columns.find { it.name == table.primaryKey }!!)
         val fields = columns.map {
             imports.add(it.typeClass)
-            val type = if (it.def.nullable) it.typeClass.simpleName + "?" else it.typeClass.simpleName
+            val type = it.typeClass.simpleName
             FieldInfo(config.namingStrategy.entityFieldName(it.def.name), type!!, it.defaultValue)
         }
 

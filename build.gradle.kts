@@ -16,7 +16,11 @@ allprojects {
         this["slf4j-version"] = "1.7.25"
     }
 
-    repositories { jcenter() }
+    repositories {
+        maven {
+            url = uri("http://m2.sparktimes.cn/repository/maven-public/")
+        }
+    }
 }
 
 subprojects {

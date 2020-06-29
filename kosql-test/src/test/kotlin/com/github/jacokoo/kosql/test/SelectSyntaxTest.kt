@@ -1,10 +1,9 @@
 package com.github.jacokoo.kosql.test
-
+/*
 import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.Selects
 import com.github.jacokoo.kosql.test.kosql.ORDER
-import com.github.jacokoo.kosql.test.kosql.ORDER_ITEM
-import com.github.jacokoo.kosql.test.kosql.SUPPORT_TYPE
+import com.github.jacokoo.kosql.test.kosql.ORDER_DETAIL
 import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.should
 import io.kotlintest.shouldFail
@@ -13,13 +12,13 @@ import io.kotlintest.specs.FreeSpec
 class SelectSyntaxTest: Selects, FreeSpec() { init {
     "Select Syntax" - {
         "FROM after SELECT" {
-            val query = SELECT(SUPPORT_TYPE.ID)
+            val query = SELECT(ORDER.ID)
             query should beInstanceOf<SelectFromOperate<*>>()
             shouldFail { query should beInstanceOf(SelectStatement::class) }
         }
 
         "JOIN, WHERE, GROUP BY, ORDER BY, LIMIT after FROM" {
-            val from = SELECT(-SUPPORT_TYPE) FROM SUPPORT_TYPE
+            val from = SELECT(-ORDER) FROM ORDER
             from should beInstanceOf<SelectStatement<*>>()
             from should beInstanceOf<SelectJoinOperate<*>>()
             from should beInstanceOf<SelectWhereOperate<*>>()
@@ -29,14 +28,14 @@ class SelectSyntaxTest: Selects, FreeSpec() { init {
         }
 
         "ON is required after JOIN" {
-            val s = SELECT(-ORDER) FROM ORDER LEFT_JOIN ORDER_ITEM
+            val s = SELECT(-ORDER) FROM ORDER LEFT_JOIN ORDER_DETAIL
             s should beInstanceOf<JoinOnPart<*, *>>()
             shouldFail { s should beInstanceOf(SelectWhereOperate::class) }
             shouldFail { s should beInstanceOf(SelectStatement::class) }
         }
 
         "JOIN, WHERE, GROUP BY, ORDER BY, LIMIT after JOIN ON" {
-            val query = SELECT(-ORDER) FROM ORDER LEFT_JOIN ORDER_ITEM ON ORDER.ID EQ ORDER_ITEM.ORDER_ID
+            val query = SELECT(-ORDER) FROM ORDER LEFT_JOIN ORDER_DETAIL ON ORDER.ID EQ ORDER_ITEM.ORDER_ID
             query should beInstanceOf<SelectStatement<*>>()
             query should beInstanceOf<SelectJoinOperate<*>>()
             query should beInstanceOf<SelectWhereOperate<*>>()
@@ -81,3 +80,4 @@ class SelectSyntaxTest: Selects, FreeSpec() { init {
         }
     }
 }}
+*/

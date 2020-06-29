@@ -18,11 +18,9 @@ enum class State { INIT, STARTED, ENDED }
 val beanConfig = beans {
     bean {
         KoSQLGeneratorConfig(
-            outputDirectory = "/tmp/kosql",
+            outputDirectory = "/Users/guyong/ws/fun/kotlin/kosql/kosql-test/src/test/kotlin",
             outputPackage = "com.github.jacokoo.kosql.test",
             useEnums = listOf(
-                UseEnum.int("t_support_type", "f_int_enum", Color::class.java, Color.RED),
-                UseEnum.str("t_support_type", "f_string_enum", State::class.java, State.INIT)
             ),
             needEntitySubClass = true
         )
@@ -35,3 +33,4 @@ fun main(args: Array<String>) {
         addInitializers(beanConfig)
     }.getBean(KoSQLGenerator::class.java).doGenerate()
 }
+

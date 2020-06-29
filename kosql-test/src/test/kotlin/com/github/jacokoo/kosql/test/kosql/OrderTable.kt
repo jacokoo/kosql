@@ -1,49 +1,62 @@
 package com.github.jacokoo.kosql.test.kosql
 
-import com.github.jacokoo.kosql.compose.*
-import com.github.jacokoo.kosql.compose.typesafe.Column5
+import com.github.jacokoo.kosql.compose.DateNullType
+import com.github.jacokoo.kosql.compose.DateType
+import com.github.jacokoo.kosql.compose.Entity
+import com.github.jacokoo.kosql.compose.IntType
+import com.github.jacokoo.kosql.compose.StringNullType
+import com.github.jacokoo.kosql.compose.StringType
+import com.github.jacokoo.kosql.compose.Table
+import com.github.jacokoo.kosql.compose.typesafe.Column7
 import com.github.jacokoo.kosql.test.entity.Order
-import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.LocalDate
 
 
 open class OrderBase(): Entity<Int> {
     var id: Int = 0
-    var orderDate: LocalDateTime = LocalDateTime.MIN
-    var orderNumber: String? = null
-    var customerId: Int? = 0
-    var totalAmount: BigDecimal? = BigDecimal("0.00")
+    var date: LocalDate = LocalDate.of(1970, 1, 1)
+    var requiredDate: LocalDate = LocalDate.of(1970, 1, 1)
+    var shippedDate: LocalDate = LocalDate.of(1970, 1, 1)
+    var status: String = ""
+    var comments: String = ""
+    var customerId: Int = 0
 
     constructor(other: OrderBase): this() {
         this.id = other.id
-        this.orderDate = other.orderDate
-        this.orderNumber = other.orderNumber
+        this.date = other.date
+        this.requiredDate = other.requiredDate
+        this.shippedDate = other.shippedDate
+        this.status = other.status
+        this.comments = other.comments
         this.customerId = other.customerId
-        this.totalAmount = other.totalAmount
     }
 
     override fun get(name: String): Any? = when(name) {
         ORDER.ID.name -> this.id
-        ORDER.ORDER_DATE.name -> this.orderDate
-        ORDER.ORDER_NUMBER.name -> this.orderNumber
+        ORDER.DATE.name -> this.date
+        ORDER.REQUIRED_DATE.name -> this.requiredDate
+        ORDER.SHIPPED_DATE.name -> this.shippedDate
+        ORDER.STATUS.name -> this.status
+        ORDER.COMMENTS.name -> this.comments
         ORDER.CUSTOMER_ID.name -> this.customerId
-        ORDER.TOTAL_AMOUNT.name -> this.totalAmount
         else -> null
     }
 
     override fun set(name: String, value: Any?) {
         when (name) {
             ORDER.ID.name -> this.id = value as Int
-            ORDER.ORDER_DATE.name -> this.orderDate = value as LocalDateTime
-            ORDER.ORDER_NUMBER.name -> this.orderNumber = value as String
+            ORDER.DATE.name -> this.date = value as LocalDate
+            ORDER.REQUIRED_DATE.name -> this.requiredDate = value as LocalDate
+            ORDER.SHIPPED_DATE.name -> this.shippedDate = value as LocalDate
+            ORDER.STATUS.name -> this.status = value as String
+            ORDER.COMMENTS.name -> this.comments = value as String
             ORDER.CUSTOMER_ID.name -> this.customerId = value as Int
-            ORDER.TOTAL_AMOUNT.name -> this.totalAmount = value as BigDecimal
         }
     }
 
     override fun toString(): String = buildString {
         append("OrderBase (")
-        append("id = $id, orderDate = $orderDate, orderNumber = $orderNumber, customerId = $customerId, totalAmount = $totalAmount")
+        append("id = $id, date = $date, requiredDate = $requiredDate, shippedDate = $shippedDate, status = $status, comments = $comments, customerId = $customerId")
         append(")")
     }
 
@@ -52,14 +65,16 @@ open class OrderBase(): Entity<Int> {
 
 open class OrderTable protected constructor(alias: String = ""): Table<Int, Order>("t_order", alias, "") {
     val ID = createColumn("f_id", IntType(), false, 0, autoIncrement = true)
-    val ORDER_DATE = createColumn("f_order_date", DateTimeType(), false, LocalDateTime.MIN)
-    val ORDER_NUMBER = createColumn("f_order_number", StringNullType(), true, null)
-    val CUSTOMER_ID = createColumn("f_customer_id", IntNullType(), false, 0)
-    val TOTAL_AMOUNT = createColumn("f_total_amount", DecimalType(), true, BigDecimal("0.00"))
+    val DATE = createColumn("f_date", DateType(), false, LocalDate.of(1970, 1, 1))
+    val REQUIRED_DATE = createColumn("f_required_date", DateType(), false, LocalDate.of(1970, 1, 1))
+    val SHIPPED_DATE = createColumn("f_shipped_date", DateNullType(), true, LocalDate.of(1970, 1, 1))
+    val STATUS = createColumn("f_status", StringType(), false, "")
+    val COMMENTS = createColumn("f_comments", StringNullType(), true, "")
+    val CUSTOMER_ID = createColumn("f_customer_id", IntType(), false, 0)
 
     override fun AS(alias: String) = OrderTable(alias)
     override fun primaryKey() = ID
-    operator fun unaryMinus() = Column5(ID, ORDER_DATE, ORDER_NUMBER, CUSTOMER_ID, TOTAL_AMOUNT)
+    operator fun unaryMinus() = Column7(ID, DATE, REQUIRED_DATE, SHIPPED_DATE, STATUS, COMMENTS, CUSTOMER_ID)
 }
 
 object ORDER: OrderTable()
