@@ -55,6 +55,10 @@ class SQLBuilder {
                     it.param(value.params())
                     value.toSQL(ctx)
                 }
+                is Expression<*>  -> {
+                    it.param(value.params())
+                    value.toSQL(ctx)
+                }
                 else -> {
                     it.param(value to column.type::toDb)
                     "?"

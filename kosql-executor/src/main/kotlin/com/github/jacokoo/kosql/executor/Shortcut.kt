@@ -7,6 +7,7 @@ import com.github.jacokoo.kosql.compose.typesafe.Columns
 import com.github.jacokoo.kosql.compose.typesafe.Values
 import com.github.jacokoo.kosql.executor.typesafe.SelectResultMapper1
 
+
 interface Shortcut: Query, Operators {
     fun <T> Entity<T>.save(): T? {
         val table = Database.getTable(this::class)!!

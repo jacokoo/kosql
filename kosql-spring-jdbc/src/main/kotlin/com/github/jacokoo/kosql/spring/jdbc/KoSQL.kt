@@ -3,10 +3,7 @@ package com.github.jacokoo.kosql.spring.jdbc
 import com.github.jacokoo.kosql.compose.*
 import com.github.jacokoo.kosql.compose.statements.*
 import com.github.jacokoo.kosql.compose.typesafe.ColumnList
-import com.github.jacokoo.kosql.executor.ResultSetMapper
-import com.github.jacokoo.kosql.executor.ResultSetRow
-import com.github.jacokoo.kosql.executor.SelectTemplate
-import com.github.jacokoo.kosql.executor.Shortcut
+import com.github.jacokoo.kosql.executor.*
 import com.github.jacokoo.kosql.executor.typesafe.Queries
 import com.github.jacokoo.kosql.executor.typesafe.SelectTemplateSupports
 import org.springframework.jdbc.core.BatchPreparedStatementSetter
@@ -26,7 +23,7 @@ open class KoSQL(
     private val jdbc: JdbcTemplate,
     private val transactionManager: PlatformTransactionManager,
     override val builder: SQLBuilder = SQLBuilder()
-): Composer(), Queries, Shortcut, SelectTemplateSupports {
+): Composer(), Queries, Shortcut, SelectTemplateSupports, Use {
 
     companion object {
         private val LOG = createLogger(this::class)

@@ -72,11 +72,6 @@ abstract class Table<T, out R: Entity<T>>(override val name: String, override va
             autoIncrement = autoIncrement
         ).also { register(it) }
 
-    fun int(name: String) = createColumn(name, IntType())
-    fun float(name: String) = createColumn(name, FloatType())
-    fun decimal(name: String) = createColumn(name, DecimalType())
-    fun string(name: String) = createColumn(name, StringType())
-
     abstract fun primaryKey(): Column<T>
 }
 

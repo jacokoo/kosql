@@ -114,3 +114,4 @@ interface Select {
     fun SELECT(vararg tables: Table<*, Entity<*>>) = SELECT(Columns(tables.fold(listOf<Column<*>>()) { acc, i -> acc + i.columns }))
 }
 
+

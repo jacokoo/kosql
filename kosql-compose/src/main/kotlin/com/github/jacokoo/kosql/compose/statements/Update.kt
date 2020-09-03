@@ -29,8 +29,8 @@ class SetBlock {
     operator fun <T> set(col: Column<T>, v: Column<T>) { data[col] = v }
     operator fun <T> set(col: Column<T>, v: ColumnToColumnExpression<T>) { data[col] = v }
     operator fun <T> set(col: Column<T>, v: ColumnToValueExpression<T>) { data[col] = v }
+    operator fun <T> set(col: Column<T>, v: ComputeExpression<T>) { data[col] = v }
 }
-
 data class UpdateWhereDataContainer<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>):
     AbstractWhereDataContainer<UpdateData<K, T>, UpdateWhereDataContainer<K, T>>(), UpdateStatement<K, T> {
     override fun refer(data: UpdateData<K, T>) = UpdateWhereDataContainer(data)

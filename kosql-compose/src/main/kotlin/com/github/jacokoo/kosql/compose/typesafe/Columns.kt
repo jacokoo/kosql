@@ -17,6 +17,7 @@ data class Columns(override val columns: List<Column<*>>): ColumnList {
     constructor(vararg cs: Column<*>): this(cs.toList())
     operator fun plus(table: Table<*, Entity<*>>) = Columns(columns + table.columns)
     operator fun plus(cl: ColumnList) = Columns(columns + cl.columns)
+    operator fun plus(c: Column<*>) = Columns(columns + c)
 }
 
 

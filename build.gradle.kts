@@ -9,7 +9,7 @@ plugins {
 
 allprojects {
     group = "com.github.jacokoo"
-    version = "0.0.1"
+    version = "0.0.3"
 
     ext {
         this["spring-version"] = "5.0.6.RELEASE"
@@ -45,17 +45,8 @@ subprojects {
 
         publishing {
             repositories {
-                // maven { url = uri("${rootProject.buildDir}/repo") }
+                maven { url = uri("${rootProject.buildDir}/repo") }
                 maven { url = uri("${System.getProperty("user.home")}/.m2/repository") }
-
-                maven {
-                    url = uri("https://m2.zhixueyun.com/content/repositories/releases")
-                    credentials {
-                        username = "deployment"
-                        password = "zxydepnexus"
-                    }
-                }
-
             }
             (publications) {
                 "java"(MavenPublication::class) {

@@ -59,7 +59,7 @@ data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = 
     override fun set(exp: Expression<*>?, isAnd: Boolean) = LogicPartial(left, exp, isAnd)
     override fun toSQL(ctx: SQLBuilderContext) = right?.let {
         if (isAnd) "${left.toSQL(ctx)} AND ${right.toSQL(ctx)}"
-        else "(${left.toSQL(ctx)}) OR (${right.toSQL(ctx)})"
+        else "((${left.toSQL(ctx)}) OR (${right.toSQL(ctx)}))"
     } ?: left.toSQL(ctx)
 
     override fun refer(): LogicPartial<T> = this
@@ -67,8 +67,8 @@ data class LogicPartial<T>(val left: Expression<T>, val right: Expression<*>? = 
 }
 
 interface LogicOperators {
-    infix fun <T> Expression<T>?.AND(other: Expression<out Any>?): Expression<T>? = this?.let { LogicPartial(this, other) }
-    infix fun <T> Expression<T>?.OR(other: Expression<out Any>?): Expression<T>? = this?.let { LogicPartial(this, other, false) }
+    infix fun <T> Expression<T>?.AND(other: Expression<out Any>?): LogicPartial<T>? = this?.let { LogicPartial(this, other) }
+    infix fun <T> Expression<T>?.OR(other: Expression<out Any>?): LogicPartial<T>? = this?.let { LogicPartial(this, other, false) }
 }
 
 interface CompareOperators {
@@ -123,10 +123,23 @@ interface ComputeOperators {
     operator fun <T : Number> Column<T>.times(v: T) = ColumnToValueExpression("*", this, v)
     operator fun <T : Number> Column<T>.div(v: T) = ColumnToValueExpression("/", this, v)
 
-    operator fun <T : Number> Column<T>.plus(v: Column<T>) = ColumnToColumnExpression("+", this, v)
-    operator fun <T : Number> Column<T>.minus(v: Column<T>) = ColumnToColumnExpression("-", this, v)
-    operator fun <T : Number> Column<T>.times(v: Column<T>) = ColumnToColumnExpression("*", this, v)
-    operator fun <T : Number> Column<T>.div(v: Column<T>) = ColumnToColumnExpression("/", this, v)
+    operator fun <T : Number> Column<T>.plus(v: Column<T>) =
+        ComputeExpression(ColumnToColumnExpression("+", this, v))
+    operator fun <T : Number> Column<T>.minus(v: Column<T>) =
+        ComputeExpression(ColumnToColumnExpression("-", this, v))
+    operator fun <T : Number> Column<T>.times(v: Column<T>) =
+        ComputeExpression(ColumnToColumnExpression("*", this, v))
+    operator fun <T : Number> Column<T>.div(v: Column<T>) =
+        ComputeExpression(ColumnToColumnExpression("/", this, v))
+
+    operator fun <T: Number> ComputeExpression<T>.plus(v: Column<T>) =
+        ComputeExpression(ExpressionToColumnExpression("+", this.exp, v))
+    operator fun <T: Number> ComputeExpression<T>.minus(v: Column<T>) =
+        ComputeExpression(ExpressionToColumnExpression("-", this.exp, v))
+    operator fun <T: Number> ComputeExpression<T>.times(v: Column<T>) =
+        ComputeExpression(ExpressionToColumnExpression("*", this.exp, v))
+    operator fun <T: Number> ComputeExpression<T>.div(v: Column<T>) =
+        ComputeExpression(ExpressionToColumnExpression("/", this.exp, v))
 }
 
 interface Operators: CompareOperators, ComputeOperators, LogicOperators, StringPartialOperators

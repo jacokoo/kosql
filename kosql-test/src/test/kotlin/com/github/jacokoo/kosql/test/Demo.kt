@@ -13,6 +13,10 @@ class Demo(val ko: KoSQL) {
         (SELECT(ORDER) FROM ORDER).fetch(ORDER).forEach {
             println(it)
         }
+
+        (SELECT(ORDER) FROM ORDER
+            WHERE ORDER.ID EQ 1 AND (ORDER.ID EQ 2 AND (ORDER.ID EQ 3)) AND ORDER.ID EQ 4
+        ).fetch(ORDER)
     }
 
     @PostConstruct

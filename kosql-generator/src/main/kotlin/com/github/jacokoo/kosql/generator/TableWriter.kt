@@ -29,12 +29,12 @@ open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val tab
     }
 
     override fun writeMethods() {
-        writer.write("    override fun AS(alias: String) = ${table.tableName}(alias)\n")
-        writer.write("    override fun primaryKey() = ${table.primaryKey.name}\n")
-        writer.write("    operator fun unaryMinus() = Column")
+        writer.write("    val o get() = Column")
         writer.write(if (table.columns.size > 10) "s(" else "${table.columns.size}(")
         writer.write(table.columns.map { it.name }.joinToString())
-        writer.write(")\n")
+        writer.write(")\n\n")
+        writer.write("    override fun AS(alias: String) = ${table.tableName}(alias)\n")
+        writer.write("    override fun primaryKey() = ${table.primaryKey.name}\n")
     }
 
     override fun writeTail() {

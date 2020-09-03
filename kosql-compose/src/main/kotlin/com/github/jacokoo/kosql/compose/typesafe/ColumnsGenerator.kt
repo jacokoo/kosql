@@ -11,7 +11,7 @@ fun main(args: Array<String>) {
         |import com.github.jacokoo.kosql.compose.Table
         |
         |interface ColumnList {
-        |val columns: List<Column<*>>
+        |    val columns: List<Column<*>>
         |
         |    operator fun minus(cl: ColumnList) = Columns(columns - cl.columns)
         |    operator fun minus(c: Column<*>) = Columns(columns - c)
@@ -23,6 +23,7 @@ fun main(args: Array<String>) {
         |    constructor(vararg cs: Column<*>): this(cs.toList())
         |    operator fun plus(table: Table<*, Entity<*>>) = Columns(columns + table.columns)
         |    operator fun plus(cl: ColumnList) = Columns(columns + cl.columns)
+        |    operator fun plus(c: Column<*>) = Columns(columns + c)
         |}
         |
     """.trimMargin()

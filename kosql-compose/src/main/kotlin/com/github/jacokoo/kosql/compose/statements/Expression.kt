@@ -13,6 +13,16 @@ interface Expression<T>: SQLPart {
     }
 }
 
+data class ComposeExpression<T> (
+    private val op: String,
+    private val left: Expression<T>,
+    private val right: Expression<*>?
+): Expression<T> {
+    override fun toSQL(ctx: SQLBuilderContext): String =
+        right?.let { "(${left.toSQL(ctx)} $op ${it.toSQL(ctx)})" } ?: "(${left.toSQL(ctx)})"
+}
+
+
 data class SingleColumnExpression<T> (private val op: String, private val column: Column<T>): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${column.toSQL(ctx)} $op"
 }
@@ -41,6 +51,22 @@ data class ColumnToExpressionExpression<T> (
 ): Expression<T> {
     override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
     override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = right.getParams()
+}
+
+data class ExpressionToColumnExpression<T>(
+    val op: String,
+    val left: Expression<T>,
+    val right: Column<T>
+): Expression<T> {
+    override fun toSQL(ctx: SQLBuilderContext): String = "${left.toSQL(ctx)} $op ${right.toSQL(ctx)}"
+    override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = left.getParams()
+}
+
+data class ComputeExpression<T>(
+    val exp: Expression<T>
+): Expression<T> {
+    override fun toSQL(ctx: SQLBuilderContext): String = exp.toSQL(ctx)
+    override fun getParams(): List<Pair<Any?, (Any?) -> Any?>> = exp.getParams()
 }
 
 data class BetweenExpression<T> (
