@@ -53,7 +53,7 @@ interface Insert {
             assert(entities.isNotEmpty());
             assert(entities.all { it::class == entities[0]::class })
 
-            val table = entities[0].INNER_TABLE
+            val table = entities[0].innerTable()
             var columns = table.columns
             val id = table.primaryKey()
             if (id.autoIncrement) columns = columns.filter { it != id }

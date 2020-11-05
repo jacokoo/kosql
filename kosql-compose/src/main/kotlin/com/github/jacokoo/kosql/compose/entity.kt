@@ -6,8 +6,6 @@ import kotlin.reflect.KClass
  * T is the type of primary key
  */
 interface Entity<T> {
-    val INNER_TABLE: InnerTable<T, Entity<T>>
-
     /**
      * set entity field value by column name
      */
@@ -18,7 +16,8 @@ interface Entity<T> {
      */
     operator fun get(name: String): Any?
 
-    fun isEntityOf(c: KClass<*>): Boolean = c == INNER_TABLE::class
+    fun innerTable(): InnerTable<T, Entity<T>>
+    fun isEntityOf(c: KClass<*>): Boolean = c == innerTable()::class
 }
 
 enum class EnumType { INT, STRING }

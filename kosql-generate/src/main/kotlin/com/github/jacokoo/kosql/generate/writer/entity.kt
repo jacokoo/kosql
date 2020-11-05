@@ -26,7 +26,6 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
     }
 
     override fun writeFields() {
-        writer.write("    override val INNER_TABLE: InnerTable<$pkType, Entity<$pkType>> = ${config.namingStrategy.innerTableObjectName(table.def.name)}\n")
         table.entity.fields.forEach {
             writer.write("    var ${ename(it.columnName)}: ${it.type} = ${it.value}\n")
         }
@@ -61,6 +60,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
             |        append(")")
             |    }
             |
+            |    override fun innerTable(): InnerTable<$pkType, Entity<$pkType>> = ${config.namingStrategy.innerTableObjectName(table.def.name)}
             |
         """.trimMargin())
     }

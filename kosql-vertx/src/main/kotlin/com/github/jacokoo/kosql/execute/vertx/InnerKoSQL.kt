@@ -4,7 +4,6 @@ import com.github.jacokoo.kosql.build.*
 import com.github.jacokoo.kosql.compose.Compose
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Table
-import com.github.jacokoo.kosql.execute.async.Use
 import com.github.jacokoo.kosql.compose.result.Mapper
 import com.github.jacokoo.kosql.compose.statement.*
 import com.github.jacokoo.kosql.execute.async.Dao
@@ -12,20 +11,23 @@ import com.github.jacokoo.kosql.compose.result.Row as Row2
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.sqlclient.SqlClient
 import io.vertx.sqlclient.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
-import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.*
 
-class KoSQL<B: Builder> internal constructor(
-    private val kf: KoSQLFactory<B>,
+class InnerKoSQL internal constructor(
+    private val kf: KoSQL,
     private val conn: SqlConnection
-): Compose(), Use, Dao {
+): Compose(), Dao {
     private var started: Boolean = false
 
     companion object {
-        private val LOG = LoggerFactory.getLogger(KoSQL::class.java.name.substringBefore("\$Companion"))
+        private val LOG = LoggerFactory.getLogger(InnerKoSQL::class.java.name.substringBefore("\$Companion"))
     }
 
-    suspend fun <T> tx(fn: suspend KoSQL<B>.() -> T): T {
+    suspend fun <T> tx(fn: suspend InnerKoSQL.() -> T): T {
         if (started) {
             return fn()
         }
@@ -79,6 +81,8 @@ class KoSQL<B: Builder> internal constructor(
                     list.add(mapper.map(Row2({ i -> it.getValue(i) }, select.data.columns)))
                 }.endHandler {
                     cont.resumeWith(Result.success(list))
+                }.exceptionHandler {
+                    cont.resumeWith(Result.failure(it))
                 }
             }
         }
@@ -99,29 +103,41 @@ class KoSQL<B: Builder> internal constructor(
 
 }
 
-abstract class KoSQLFactory<B: Builder>(
+abstract class KoSQL(
     private val client: SqlClient,
-    internal val builder: B,
-    internal val contextFactory: (B) -> Context = { DefaultContext(it) }
+    internal val builder: Builder,
+    internal val contextFactory: (Builder) -> Context = { DefaultContext(it) }
 ) {
 
-    suspend fun <T> tx(fn: suspend KoSQL<B>.() -> T): T {
-        val conn = openConnection(client)
-        try {
-            return KoSQL(this, conn).tx { fn() }
-        } finally {
-            conn.close()
+    suspend fun <T> tx(fn: suspend InnerKoSQL.() -> T): T = withConnection { conn ->
+        InnerKoSQL(this, conn).tx { fn() }
+    }
+
+    suspend fun <T> run(fn: suspend InnerKoSQL.() -> T): T = withConnection { conn ->
+        InnerKoSQL(this, conn).fn()
+    }
+
+    private suspend fun <T> withConnection(fn: suspend (SqlConnection) -> T): T = coroutineScope {
+        suspendCoroutine<T> { cont ->
+            launch {
+                val conn = openConnection(client)
+                conn.exceptionHandler {
+                    cont.resumeWithException(it)
+                }
+
+                try {
+                    cont.resume(fn(conn))
+                } catch (e: Throwable) {
+                    // This will throw Already resumed exception when some exception threw in connection.
+                    // How to check if the cont is already resumed?
+                    cont.resumeWithException(e)
+                } finally {
+                    conn.close()
+                }
+            }
         }
     }
 
-    suspend fun <T> run(fn: suspend KoSQL<B>.() -> T): T {
-        val conn = openConnection(client)
-        try {
-            return KoSQL(this, conn).fn()
-        } finally {
-            conn.close()
-        }
-    }
 
     abstract suspend fun openConnection(client: SqlClient): SqlConnection
     abstract fun getGeneratedKey(row: RowSet<Row>): Any

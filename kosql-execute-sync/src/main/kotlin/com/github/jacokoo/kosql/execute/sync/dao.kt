@@ -12,14 +12,15 @@ import com.github.jacokoo.kosql.compose.typesafe.Column1
 
 interface Dao: Executor, Operator {
     fun <T> Entity<T>.save(): T? {
-        val key = INNER_TABLE.primaryKey()
-        var columns = INNER_TABLE.columns
+        val table = innerTable()
+        val key = table.primaryKey()
+        var columns = table.columns
         if (key.autoIncrement && this[key.name] == key.type.nullValue) {
             columns = columns.filter { it != key }
         }
 
         val values = Values(columns.map { this[it.name] })
-        val (id, rows) = execute(InsertEnd(InsertData(INNER_TABLE, Columns(columns), listOf(values))))
+        val (id, rows) = execute(InsertEnd(InsertData(table, Columns(columns), listOf(values))))
         if (rows != 1) return null
 
         if (key.autoIncrement) this[key.name] = id

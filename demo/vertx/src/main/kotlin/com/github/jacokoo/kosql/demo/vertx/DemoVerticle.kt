@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.demo.vertx
 import com.github.jacokoo.kosql.demo.vertx.entity.Demo
 import com.github.jacokoo.kosql.demo.vertx.entity.DemoType
 import com.github.jacokoo.kosql.demo.vertx.kosql.DEMO
+import com.github.jacokoo.kosql.execute.vertx.KoSQL
 import com.github.jacokoo.kosql.mysql.vertx.MySQLKoSQL
 import io.vertx.core.buffer.Buffer
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -13,7 +14,7 @@ import io.vertx.sqlclient.*
 suspend fun <T, U> use(t: T, fn: suspend (T) -> U): U = fn(t)
 
 class DemoVerticle: CoroutineVerticle() {
-    lateinit var ko: MySQLKoSQL
+    lateinit var ko: KoSQL
 
     override suspend fun start() {
         val pool = MySQLPool.pool(vertx, MySQLConnectOptions().apply {

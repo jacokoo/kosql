@@ -30,11 +30,11 @@ interface CompareOperator {
         else -> BetweenExp(this, small, big)
     }
 
-    fun <T> Column<T>.IN(vararg values: T): Exp<T>? =
+    infix fun <T> Column<T>.IN(values: List<T>): Exp<T>? =
         if (values.isEmpty()) null
-        else MultiValueExp("in", this, values.toList())
+        else MultiValueExp("in", this, values)
 
-    fun <T> Column<T>.NOT_IN(vararg values: T): Exp<T>? =
+    infix fun <T> Column<T>.NOT_IN(values: List<T>): Exp<T>? =
         if (values.isEmpty()) null
         else MultiValueExp("not in", this, values.toList())
 

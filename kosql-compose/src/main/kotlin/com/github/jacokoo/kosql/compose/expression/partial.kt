@@ -11,6 +11,10 @@ interface Partial<T> {
 
 abstract class AbstractPartial<R: Partial<R>>: Partial<R> {
     abstract fun refer(): R
+
+    infix fun <T> AND(column: Column<T>) = PartialExp(refer(), column)
+    infix fun <T> AND(e: Exp<T>?) = set(e)
+    infix fun <T> OR(e: Exp<T>?) = set(e, false)
 }
 
 data class LogicalPartial<T>(
@@ -48,8 +52,8 @@ data class PartialExp<L: Partial<L>, T>(val left: L, val right: Column<T>): Comp
     infix fun NE(v: Exp<T>?): L = left.set(right.NE(v))
 
     fun BETWEEN(small: T?, big: T?) = left.set(right.BETWEEN(small, big))
-    fun IN(vararg values: T) = left.set(right.IN(*values))
-    fun NOT_IN(vararg values: T) = left.set(right.NOT_IN(*values))
+    infix fun IN(values: List<T>) = left.set(right.IN(values))
+    infix fun NOT_IN(values: List<T>) = left.set(right.NOT_IN(values))
     fun IS_NULL() = left.set(right.IS_NULL())
     fun IS_NOT_NULL() = left.set(right.IS_NOT_NULL())
 }
