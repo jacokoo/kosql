@@ -29,7 +29,6 @@ import java.time.LocalDateTime
 
 
 open class DemoBase(): Entity<Long> {
-    override val INNER_TABLE: InnerTable<Long, Entity<Long>> = INNER_DEMO
     var id: Long = 0L
     var int: Int = 0
     var uint: Long = 0L
@@ -206,6 +205,8 @@ open class DemoBase(): Entity<Long> {
             DEMO.TIME.name -> this.time = value as Duration
         }
     }
+
+    override fun innerTable(): InnerTable<Long, Entity<Long>> = INNER_DEMO
 
     override fun toString(): String = buildString {
         append("DemoBase (")
