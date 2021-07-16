@@ -13,6 +13,5 @@ target/
 *.iml
 *.ipr
 
-build
 out
 .gradle
