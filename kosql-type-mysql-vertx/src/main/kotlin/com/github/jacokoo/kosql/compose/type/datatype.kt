@@ -114,6 +114,7 @@ class BooleanType: DataType<Boolean> {
     override fun convert(o: Any): Boolean = when (o) {
         is Boolean -> o
         is Int -> o == 1
+        is Byte -> o.toInt() == 1
         else -> nullValue
     }
 

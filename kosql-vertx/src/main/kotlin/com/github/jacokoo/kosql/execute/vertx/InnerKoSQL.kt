@@ -7,13 +7,13 @@ import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.result.Mapper
 import com.github.jacokoo.kosql.compose.statement.*
 import com.github.jacokoo.kosql.execute.async.Dao
+import io.vertx.kotlin.coroutines.await
 import com.github.jacokoo.kosql.compose.result.Row as Row2
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.sqlclient.SqlClient
 import io.vertx.sqlclient.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.*
 
@@ -66,22 +66,31 @@ class InnerKoSQL internal constructor(
     override suspend fun <T> execute(insert: BatchInsertStatement<T>): Int
             = kf.builder.build(insert, context()).let { result ->
         val st = prepare(result)
-        val rs = awaitResult<RowSet<Row>> { st.query().executeBatch(result.params.map {p ->
-            Tuple.tuple(p as List<*>)
-        }, it)}
-        rs.rowCount()
+        try {
+            val rs = awaitResult<RowSet<Row>> {
+                st.query().executeBatch(result.params.map { p ->
+                    Tuple.tuple(p as List<*>)
+                }, it)
+            }
+            rs.rowCount()
+        } finally {
+            st.close()
+        }
     }
 
     override suspend fun <T, R : ColumnList> execute(select: SelectStatement<R>, mapper: Mapper<T>): List<T> =
         kf.builder.build(select, context()).let { result ->
-            val stream = prepare(result).createStream(20, result.tuple())
+            val st = prepare(result)
+            val stream = st.createStream(20, result.tuple())
             suspendCoroutine { cont ->
                 val list = mutableListOf<T>()
                 stream.handler {
                     list.add(mapper.map(Row2({ i -> it.getValue(i) }, select.data.columns)))
                 }.endHandler {
+                    st.close()
                     cont.resumeWith(Result.success(list))
                 }.exceptionHandler {
+                    st.close()
                     cont.resumeWith(Result.failure(it))
                 }
             }
@@ -98,7 +107,11 @@ class InnerKoSQL internal constructor(
     }
     private suspend fun execute(result: BuildResult): RowSet<Row> {
         val st = prepare(result)
-        return awaitResult { st.query().execute(result.tuple(), it) }
+        try {
+            return awaitResult { st.query().execute(result.tuple(), it) }
+        } finally {
+            st.close()
+        }
     }
 
 }
