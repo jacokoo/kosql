@@ -21,9 +21,9 @@ interface Executor {
     })
     fun <T, R: Entity<T>, L: ColumnList> execute(select: SelectStatement<L>, table: Table<T, R>): List<R> = execute(select) {
         it.into(table) ?: throw RuntimeException("""
-            |Can not fetch into the table, because:
-            |1. no column of the table is mentioned in select list
-            |2. there is a row in which all selected columns of the table are with a null value
+            | Can not fetch into the table, because:
+            | 1. no column of the table is mentioned in select list
+            | 2. there is a row in which all selected columns of the table are with a null value
         """.trimMargin())
     }
 

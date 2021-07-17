@@ -104,8 +104,8 @@ interface Part {
 
     fun build(part: ColumnToValueExp<*>, ctx: Context) {
         build(part.left, ctx)
-        ctx.append(" ${part.op} ?")
-        ctx.paramIt(part.value, part.left.type)
+        val p = ctx.paramIt(part.value, part.left.type)
+        ctx.append(" ${part.op} $p")
     }
 
     fun build(part: ColumnToExpExp<*>, ctx: Context) {
@@ -126,16 +126,16 @@ interface Part {
 
     fun build(part: BetweenExp<*>, ctx: Context) {
         build(part.col, ctx)
-        ctx.append(" BETWEEN ? AND ?")
-        ctx.paramIt(part.small, part.col.type)
-        ctx.paramIt(part.big, part.col.type)
+        val p1 = ctx.paramIt(part.small, part.col.type)
+        val p2 = ctx.paramIt(part.big, part.col.type)
+        ctx.append(" BETWEEN $p1 AND $p2")
     }
 
     fun build(part: MultiValueExp<*>, ctx: Context) {
         build(part.col, ctx)
         ctx.pad(part.op)
-        ctx.append(part.values.joinToString(prefix = "(", postfix = ")") { "?" })
-        part.values.forEach { ctx.paramIt(it, part.col.type) }
+        val ps = part.values.map { ctx.paramIt(it, part.col.type) }
+        ctx.append(ps.joinToString(prefix = "(", postfix = ")"))
     }
 
     fun build(part: LogicalPartial<*>, ctx: Context) {
@@ -168,9 +168,9 @@ interface Part {
         alias(named)?.let { append(" AS $it") }
     }
 
-    fun Context.paramIt(value: Any?, type: DataType<*>) {
+    fun Context.paramIt(value: Any?, type: DataType<*>): String =
         param(type.toDb(value))
-    }
+
 }
 
 open class DefaultPart: Part

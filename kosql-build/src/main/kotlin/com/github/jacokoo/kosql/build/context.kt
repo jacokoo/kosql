@@ -6,8 +6,9 @@ interface Context {
     val builder: Builder
     fun alias(target: Named<*>): String?
     fun append(str: String)
-    fun param(p: Any?)
+    fun param(p: Any?): String
     fun result(): BuildResult
+    fun placeholder(idx: Int): String
 
     fun pad(str: String) {
         append(" $str ")
@@ -35,9 +36,12 @@ open class DefaultContext(override val builder: Builder): Context {
         sql.append(str)
     }
 
-    override fun param(p: Any?) {
+    override fun param(p: Any?): String {
         params.add(p)
+        return placeholder(params.size)
     }
+
+    override fun placeholder(idx: Int): String = "?"
 
     override fun result(): BuildResult = BuildResult(sql.toString(), params)
 }

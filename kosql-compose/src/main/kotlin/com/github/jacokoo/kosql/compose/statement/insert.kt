@@ -26,7 +26,8 @@ data class InsertData<T>(
     val table: InnerTable<T, Entity<T>>,
     val columns: ColumnList,
     val values: List<ValueList> = listOf(),
-    val query: SelectStatement<*>? = null
+    val query: SelectStatement<*>? = null,
+    val batch: Boolean = false
 )
 
 interface InsertStatement<T>: Statement {
@@ -38,7 +39,7 @@ interface BatchInsertStatement<T>: InsertStatement<T>
 data class InsertEnd<T>(override val data: InsertData<T>): InsertStatement<T>
 
 data class ValuesRepeatPart<T>(override val data: InsertData<T>): InsertStatement<T> {
-    infix fun AND(v: Values): BatchValuesRepeatPart<T> = BatchValuesRepeatPart(data.copy(values = data.values + v))
+    infix fun AND(v: Values): BatchValuesRepeatPart<T> = BatchValuesRepeatPart(data.copy(values = data.values + v, batch = true))
 }
 
 data class BatchValuesRepeatPart<T>(override val data: InsertData<T>): BatchInsertStatement<T> {
@@ -50,7 +51,7 @@ interface Insert {
     object INSERT {
         infix fun <T> INTO(t: T): T = t
         operator fun <T, E: Entity<T>> invoke(vararg entities: E): BatchInsertEnd<T> {
-            assert(entities.isNotEmpty());
+            assert(entities.isNotEmpty())
             assert(entities.all { it::class == entities[0]::class })
 
             val table = entities[0].innerTable()
@@ -58,7 +59,7 @@ interface Insert {
             val id = table.primaryKey()
             if (id.autoIncrement) columns = columns.filter { it != id }
             val values = entities.map { e -> Values(columns.map { e[it.name] }) }
-            return BatchInsertEnd(InsertData(table, Columns(columns), values))
+            return BatchInsertEnd(InsertData(table, Columns(columns), values, null, true))
         }
     }
 

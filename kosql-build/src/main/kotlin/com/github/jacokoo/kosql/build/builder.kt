@@ -59,14 +59,7 @@ open class DefaultBuilder(override val part: Part = DefaultPart()): Builder {
             }
         }
 
-        if (data.rowCount != null && data.offset != null) {
-            ctx.param(data.offset)
-            ctx.param(data.rowCount)
-            ctx.append(" LIMIT ?, ?")
-        } else if (data.rowCount != null) {
-            ctx.param(data.rowCount)
-            ctx.append(" LIMIT ?")
-        }
+        appendLimit(data.rowCount, data.offset, ctx)
 
         return ctx.result()
     }
@@ -83,8 +76,7 @@ open class DefaultBuilder(override val part: Part = DefaultPart()): Builder {
                 null -> ctx.append("NULL")
                 is Column<*>, is Exp<*> -> part.build(value, ctx)
                 else -> {
-                    ctx.param(column.type.toDb(value))
-                    ctx.append("?")
+                    ctx.append(ctx.param(column.type.toDb(value)))
                 }
             }
         }
@@ -117,19 +109,33 @@ open class DefaultBuilder(override val part: Part = DefaultPart()): Builder {
         }
 
         ctx.pad("VALUES")
-        ctx.append(data.columns.columns.joinToString(prefix = "(", postfix = ")") { "?" })
-        if (data.values.size == 1) {
-            data.values.first().values.forEachIndexed { idx, it ->
-                ctx.param(data.columns.columns[idx].type.toDb(it))
+
+        if (data.batch) {
+            ctx.append(data.values[0].values.mapIndexed { idx, _ ->
+                ctx.placeholder(idx + 1)
+            }.joinToString(prefix = "(", postfix = ")"))
+            data.values.forEach {
+                ctx.param(it.values.mapIndexed { idx, i -> data.columns.columns[idx].type.toDb(i) })
             }
-            return ctx.result()
+            return ctx.result().let {
+                BatchInsertResult(it.sql, it.params)
+            }
         }
 
-        data.values.forEach {
-            ctx.param(it.values.mapIndexed { idx, i -> data.columns.columns[idx].type.toDb(i) })
-        }
-        return ctx.result().let {
-            BatchInsertResult(it.sql, it.params)
+        ctx.append(data.values.first().values.mapIndexed { idx, it ->
+            ctx.param(data.columns.columns[idx].type.toDb(it))
+        }.joinToString(prefix = "(", postfix = ")"))
+        return ctx.result()
+    }
+
+    open fun appendLimit(rowCount: Int?, offset: Int?, ctx: Context) {
+        if (rowCount != null && offset != null) {
+            val p1 = ctx.param(offset)
+            val p2 = ctx.param(rowCount)
+            ctx.append(" LIMIT $p1, $p2")
+        } else if (rowCount != null) {
+            val p = ctx.param(rowCount)
+            ctx.append(" LIMIT $p")
         }
     }
 
