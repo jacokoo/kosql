@@ -3,9 +3,8 @@ description = """
 """.trimMargin()
 
 dependencies {
-    implementation(project(":kosql-execute-sync"))
-    implementation(project(":kosql-build"))
-    implementation(project(":kosql-compose"))
+    api(project(":kosql-execute-sync"))
+    api(project(":kosql-build"))
 
     compileOnly(project(":kosql-type"))
     compileOnly("org.slf4j:slf4j-api:1.7.25")

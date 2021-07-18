@@ -15,4 +15,5 @@ target/
 
 out
 .gradle
-build
+build/
+!**/com/**/build

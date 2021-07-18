@@ -3,6 +3,6 @@ description = """
 """.trimMargin()
 
 dependencies {
-    implementation(project(":kosql-compose"))
+    api(project(":kosql-compose"))
     compileOnly(project(":kosql-type"))
 }

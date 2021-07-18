@@ -43,7 +43,7 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
                 val pkg = config.basePackage()
                 writer.write("package $pkg\n\n")
                 imports.forEach {
-                    if (it.substring(0, it.lastIndexOf(".")) != pkg) writer.write("import ${it}\n")
+                    if (!it.contains('.') || it.substring(0, it.lastIndexOf(".")) != pkg) writer.write("import ${it}\n")
                 }
 
                 config.entityWriterFactory.create(writer, config, table).doWrite()
@@ -113,11 +113,11 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
             rs.getInt("COLUMN_SIZE"),
             rs.getInt("DECIMAL_DIGITS"),
             rs.getInt("NUM_PREC_RADIX"),
-            rs.getString("IS_NULLABLE").let { it != "NO" },
+            rs.getString("IS_NULLABLE").let { it == "YES" },
             rs.getString("COLUMN_DEF"),
-            rs.getString("REMARKS"),
+            rs.getString("REMARKS") ?: "",
             rs.getInt("ORDINAL_POSITION"),
-            rs.getString("IS_AUTOINCREMENT").let { it != "NO" },
-            rs.getString("IS_GENERATEDCOLUMN").let { it != "NO" }
+            rs.getString("IS_AUTOINCREMENT").let { it == "YES" },
+            rs.getString("IS_GENERATEDCOLUMN").let { it == "YES" }
     )
 }

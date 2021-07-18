@@ -3,6 +3,7 @@ package com.github.jacokoo.kosql.execute.vertx
 import com.github.jacokoo.kosql.build.*
 import com.github.jacokoo.kosql.compose.Compose
 import com.github.jacokoo.kosql.compose.Entity
+import com.github.jacokoo.kosql.compose.InnerTable
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.result.Mapper
 import com.github.jacokoo.kosql.compose.statement.*
@@ -57,7 +58,7 @@ class InnerKoSQL internal constructor(
         val pk = insert.data.table.primaryKey()
         var key = pk.type.nullValue
         if (pk.autoIncrement) {
-            key = pk.type.fromDb(kf.getGeneratedKey(rs))
+            key = pk.type.fromDb(kf.getGeneratedKey(rs, insert.data.table))
         }
         key to rs.rowCount()
     }
@@ -137,5 +138,5 @@ abstract class KoSQL(
         }
 
     abstract fun openConnection(client: SqlClient): Future<SqlConnection>
-    abstract fun getGeneratedKey(row: RowSet<Row>): Any
+    abstract fun getGeneratedKey(row: RowSet<Row>, table: InnerTable<*, *>): Any
 }

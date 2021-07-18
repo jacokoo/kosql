@@ -14,10 +14,7 @@ interface Dao: Executor, Operator {
     suspend fun <T> Entity<T>.save(): T? {
         val table = innerTable()
         val key = table.primaryKey()
-        var columns = table.columns
-        if (key.autoIncrement && this[key.name] == key.type.nullValue) {
-            columns = columns.filter { it != key }
-        }
+        val columns = table.columns.filter { !it.autoIncrement || this[it.name] != it.type.nullValue }
 
         val values = Values(columns.map { this[it.name] })
         val (id, rows) = execute(InsertEnd(InsertData(table, Columns(columns), listOf(values))))

@@ -67,7 +67,8 @@ class Imports(private val imports: MutableSet<String> = mutableSetOf()) {
 
     private fun filter() = imports
         .filter { !it.startsWith("java.lang") }
-        .filter { it.substring(0, it.lastIndexOf(".")) != "kotlin" }.sorted()
+        .filter { it.isNotBlank() }
+        .filter { !it.contains('.') || it.substring(0, it.lastIndexOf(".")) != "kotlin" }.sorted()
 }
 
 interface TableGenerator {
