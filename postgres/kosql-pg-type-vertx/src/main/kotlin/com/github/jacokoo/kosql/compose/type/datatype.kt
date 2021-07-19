@@ -37,7 +37,13 @@ class BooleanNullType: NullableType<Boolean>(BooleanType())
 class ShortType(override val nullValue: Short = 0): DataType<Short>
 class ShortNullType: NullableType<Short>(ShortType())
 
-class IntType(override val nullValue: Int = 0): DataType<Int>
+class IntType(override val nullValue: Int = 0): DataType<Int> {
+    override fun convert(o: Any): Int = when {
+        // count() return Long, convert it to int
+        o is Long -> o.toInt()
+        else -> o as Int
+    }
+}
 class IntNullType: NullableType<Int>(IntType())
 
 class LongType(override val nullValue: Long = 0L): DataType<Long>
