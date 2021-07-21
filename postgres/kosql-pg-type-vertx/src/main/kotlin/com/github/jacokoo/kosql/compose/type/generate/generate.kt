@@ -89,6 +89,10 @@ class DateTimeLongColumnType(type: TypeClass): ColumnType(type, LocalDateTime::c
 }
 
 class UUIDColumeType(type: TypeClass): ColumnType(type, UUID::class, "ZERO_UUID") {
+    override fun doParse(it: String): String = when {
+        it.startsWith("uuid_generate") -> "UUID.randomUUID()"
+        else -> "ZERO_UUID"
+    }
     override fun extraImports(): Array<String> = arrayOf("com.github.jacokoo.kosql.compose.type.ZERO_UUID")
 }
 
