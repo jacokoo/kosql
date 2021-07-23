@@ -59,7 +59,7 @@ interface Part {
         ctx.append("(")
         ctx.builder.build(part.data, ctx)
         ctx.append(")")
-        ctx.alias(part.inner)
+        ctx.alias(part.inner)?.let { ctx.append(" AS $it") }
     }
 
     fun build(part: Column<*>, ctx: Context) {
