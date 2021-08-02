@@ -67,11 +67,16 @@ class DecimalType: DataType<BigDecimal> {
 }
 class DecimalNullType: NullableType<BigDecimal>(DecimalType())
 
+@JvmField
 val ZERO_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
 class UUIDType(override val nullValue: UUID = ZERO_UUID): DataType<UUID>
 class UUIDNullType: NullableType<UUID>(UUIDType())
 
+@JvmField
 val EPOCH_DATE = LocalDate.of(1970, 1, 1)
+
+@JvmField
 val EPOCH_TIME = LocalDateTime.of(1970, 1, 1, 0, 0, 0)
 
 class DateType(override val nullValue: LocalDate = EPOCH_DATE): DataType<LocalDate>

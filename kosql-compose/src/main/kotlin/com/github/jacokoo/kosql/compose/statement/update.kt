@@ -27,18 +27,21 @@ interface UpdateStatement<K, T: Table<K, Entity<K>>>: Statement {
 
 data class UpdateEnd<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>): UpdateStatement<K, T>
 
-class SetBlock {
-    var data: MutableMap<Column<*>, Any?> = mutableMapOf()
-    operator fun <T> set(col: Column<T>, v: T) { data[col] = v }
-    operator fun <T> set(col: Column<T>, v: Column<T>) { data[col] = v }
-    operator fun <T> set(col: Column<T>, v: ColumnToColumnExp<T>) { data[col] = v }
-    operator fun <T> set(col: Column<T>, v: ColumnToValueExp<T>) { data[col] = v }
-    operator fun <T> set(col: Column<T>, v: ComputeExp<T>) { data[col] = v }
+class UpdateCollector {
+    private val inner: MutableMap<Column<*>, Any?> = mutableMapOf()
+    fun getData(): Map<Column<*>, Any?> = inner
+
+    operator fun <T> set(col: Column<T>, v: T) { inner[col] = v }
+    operator fun <T> set(col: Column<T>, v: Column<T>) { inner[col] = v }
+    operator fun <T> set(col: Column<T>, v: ColumnToColumnExp<T>) { inner[col] = v }
+    operator fun <T> set(col: Column<T>, v: ColumnToValueExp<T>) { inner[col] = v }
+    operator fun <T> set(col: Column<T>, v: ComputeExp<T>) { inner[col] = v }
 }
 data class UpdateWhereDataContainer<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>):
     AbstractWherePartial<UpdateData<K, T>, UpdateWhereDataContainer<K, T>>(), UpdateStatement<K, T> {
     override fun refer(data: UpdateData<K, T>) = UpdateWhereDataContainer(data)
 }
+
 
 interface UpdateWhereOperate<K, T: Table<K, Entity<K>>>: WhereOperate<UpdateData<K, T>, UpdateWhereDataContainer<K, T>> {
     override fun refer(data: UpdateData<K, T>) = UpdateWhereDataContainer(data)
@@ -62,9 +65,9 @@ interface UpdateJoinOperate<K, T: Table<K, Entity<K>>>: JoinOperate<UpdateData<K
 }
 
 interface SetOperate<K, T: Table<K, Entity<K>>>: UpdateStatement<K, T> {
-    infix fun SET(block: T.(SetBlock) -> Unit) = SetBlock().also {
+    infix fun SET(block: T.(UpdateCollector) -> Unit) = UpdateCollector().also {
         data.table.block(it)
-    }.let {UpdateWherePart(data.copy(pairs = it.data))}
+    }.let {UpdateWherePart(data.copy(pairs = it.getData()))}
 }
 
 data class SetPart<K, T: Table<K, Entity<K>>>(override val data: UpdateData<K, T>): SetOperate<K, T>, UpdateJoinOperate<K, T>, UpdateStatement<K, T>

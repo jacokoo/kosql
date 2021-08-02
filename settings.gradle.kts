@@ -9,6 +9,7 @@ include(
     "kosql-execute-sync",
     "kosql-execute-async-vertx",
     "kosql-execute-sync-spring",
+    "kosql-execute-async-java",
 
     ":mysql:kosql-mysql-type",
     ":mysql:kosql-mysql-type-vertx",
@@ -19,6 +20,8 @@ include(
     ":postgres:kosql-pg-build",
     ":postgres:kosql-pg-type-vertx",
     ":postgres:kosql-pg-vertx",
+    ":postgres:kosql-pg-vertx-java",
 
     ":demo:vertx",
+    ":demo:pg-vertx-java"
 )

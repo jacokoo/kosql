@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.ir.backend.js.compile
 
 plugins {
     kotlin("jvm") version "1.5.10"
@@ -15,8 +16,12 @@ allprojects {
     }
 }
 
-subprojects {
+configure(subprojects.filter {it.name != "demo"}) {
     apply(plugin = "org.jetbrains.kotlin.jvm")
+
+    val compileKotlin: KotlinCompile by tasks
+    compileKotlin.kotlinOptions.jvmTarget = "11"
+    compileKotlin.kotlinOptions.freeCompilerArgs = listOf("-Xjvm-default=all")
 
     dependencies {
         implementation(kotlin("stdlib-jdk8"))
@@ -46,6 +51,14 @@ configure(subprojects.filter {
     publishing {
         repositories {
             mavenLocal()
+            maven {
+                url = uri("https://monacohq.jfrog.io/artifactory/dolphin-java-local")
+
+                credentials {
+                    username = System.getenv("ARTIFACTORY_USER")
+                    password = System.getenv("ARTIFACTORY_APIKEY")
+                }
+            }
         }
 
         publications {
@@ -56,7 +69,3 @@ configure(subprojects.filter {
         }
     }
 }
-
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions.jvmTarget = "11"

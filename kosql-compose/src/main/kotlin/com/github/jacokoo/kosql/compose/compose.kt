@@ -8,16 +8,8 @@ import com.github.jacokoo.kosql.compose.typesafe.Inserts
 import com.github.jacokoo.kosql.compose.typesafe.Selects
 import java.math.BigDecimal
 
-abstract class Compose: Operator, Selects, Inserts, Update, Delete {
+abstract class Compose: Operator, Selects, Inserts, Update, Delete, Functions {
     val TRUE = Exp.TRUE
     val INSERT = Insert.INSERT
     val DELETE = Delete.DELETE
-
-    fun <T: Number> sum(c: Column<T>): Column<BigDecimal> = Sum(c)
-    fun <T: Number> avg(c: Column<T>): Column<BigDecimal> = Avg(c)
-    fun <T: Number> min(c: Column<T>): Column<T> = Min(c)
-    fun <T: Number> max(c: Column<T>): Column<T> = Max(c)
-    fun <T> distinct(c: Column<T>): Column<T> = Distinct(c)
-    fun count(): Column<Int> = Count<Any>()
-    fun <T> count(column: Column<T>) = Count(column)
 }

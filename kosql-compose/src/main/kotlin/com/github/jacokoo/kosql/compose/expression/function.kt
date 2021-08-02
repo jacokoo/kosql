@@ -65,3 +65,13 @@ class Count<T> (override val alias: String = ""): Column<Int> {
 
     fun hasColumn(): Boolean = this::column.isInitialized
 }
+
+interface Functions {
+    fun <T: Number> sum(c: Column<T>): Column<BigDecimal> = Sum(c)
+    fun <T: Number> avg(c: Column<T>): Column<BigDecimal> = Avg(c)
+    fun <T: Number> min(c: Column<T>): Column<T> = Min(c)
+    fun <T: Number> max(c: Column<T>): Column<T> = Max(c)
+    fun <T> distinct(c: Column<T>): Column<T> = Distinct(c)
+    fun count(): Column<Int> = Count<Any>()
+    fun <T> count(column: Column<T>) = Count(column)
+}

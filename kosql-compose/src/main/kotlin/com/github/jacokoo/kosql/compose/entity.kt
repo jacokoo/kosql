@@ -16,7 +16,7 @@ interface Entity<T> {
      */
     operator fun get(name: String): Any?
 
-    fun innerTable(): InnerTable<T, Entity<T>>
+    fun innerTable(): InnerTable<T, @JvmWildcard Entity<T>>
     fun isEntityOf(c: KClass<*>): Boolean = c == innerTable()::class
 }
 
