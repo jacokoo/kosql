@@ -8,7 +8,7 @@ plugins {
 
 allprojects {
     group = "com.github.jacokoo.kosql"
-    version = "0.2.0"
+    version = "0.2.1"
 
     repositories {
         mavenCentral()
@@ -46,6 +46,14 @@ configure(subprojects.filter {
     publishing {
         repositories {
             mavenLocal()
+            maven {
+                url = uri(System.getenv("ARTIFACTORY_URL"))
+
+                credentials {
+                    username = System.getenv("ARTIFACTORY_USER")
+                    password = System.getenv("ARTIFACTORY_APIKEY")
+                }
+            }
         }
 
         publications {

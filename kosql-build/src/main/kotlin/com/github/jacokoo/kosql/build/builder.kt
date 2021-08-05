@@ -139,7 +139,7 @@ open class DefaultBuilder(override val part: Part = DefaultPart()): Builder {
         }
     }
 
-    private fun appendJoins(joins: List<Join>, ctx: Context) {
+    protected fun appendJoins(joins: List<Join>, ctx: Context) {
         if (joins.isEmpty()) ctx.append(" ")
         else joins.forEach {
             ctx.pad("${it.type} JOIN")
@@ -149,7 +149,7 @@ open class DefaultBuilder(override val part: Part = DefaultPart()): Builder {
         }
     }
 
-    private fun appendExpression(keyword: String, exp: Exp<*>?, ctx: Context) {
+    protected fun appendExpression(keyword: String, exp: Exp<*>?, ctx: Context) {
         if (exp == null || exp == Exp.TRUE) return
         ctx.pad(keyword)
         part.build(exp, ctx)

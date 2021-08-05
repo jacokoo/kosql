@@ -1,7 +1,12 @@
 package com.github.jacokoo.kosql.build.pg
 
 import com.github.jacokoo.kosql.build.*
+import com.github.jacokoo.kosql.compose.Column
+import com.github.jacokoo.kosql.compose.Entity
+import com.github.jacokoo.kosql.compose.Table
+import com.github.jacokoo.kosql.compose.expression.Exp
 import com.github.jacokoo.kosql.compose.statement.InsertData
+import com.github.jacokoo.kosql.compose.statement.UpdateData
 
 class PostgresPart: DefaultPart()
 
@@ -23,6 +28,25 @@ class PostgresBuilder: DefaultBuilder(part = PostgresPart()) {
         } else {
             ctx.result()
         }
+    }
+
+    override fun <K, T : Table<K, Entity<K>>> build(data: UpdateData<K, T>, ctx: Context): BuildResult {
+        assert(data.pairs.isNotEmpty())
+        ctx.append("UPDATE ")
+        part.build(data.table, ctx)
+        appendJoins(data.joins, ctx)
+        ctx.join(data.pairs.toList(), prefix = " SET ") { (column, value) ->
+            ctx.append(" ${column.name} = ")
+            when(value) {
+                null -> ctx.append("NULL")
+                is Column<*>, is Exp<*> -> part.build(value, ctx)
+                else -> {
+                    ctx.append(ctx.param(column.type.toDb(value)))
+                }
+            }
+        }
+        appendExpression("WHERE", data.expression, ctx)
+        return ctx.result()
     }
 }
 

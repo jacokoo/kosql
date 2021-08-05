@@ -5,6 +5,7 @@ import com.github.jacokoo.kosql.demo.vertx.entity.DemoType
 import com.github.jacokoo.kosql.demo.vertx.kosql.DEMO
 import com.github.jacokoo.kosql.execute.vertx.KoSQL
 import com.github.jacokoo.kosql.mysql.vertx.MySQLKoSQL
+import com.github.jacokoo.kosql.mysql.vertx.MySQLKoSQLClient
 import io.vertx.core.buffer.Buffer
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.mysqlclient.MySQLConnectOptions
@@ -26,7 +27,7 @@ class DemoVerticle: CoroutineVerticle() {
         }, PoolOptions().apply {
             maxSize = 5
         })
-        ko = MySQLKoSQL(pool)
+        ko = MySQLKoSQL(MySQLKoSQLClient(pool))
 
         demo4()
     }
