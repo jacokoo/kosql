@@ -5,6 +5,7 @@ import com.github.jacokoo.kosql.compose.Column
 import com.github.jacokoo.kosql.compose.Entity
 import com.github.jacokoo.kosql.compose.Table
 import com.github.jacokoo.kosql.compose.expression.Exp
+import com.github.jacokoo.kosql.compose.statement.DeleteData
 import com.github.jacokoo.kosql.compose.statement.InsertData
 import com.github.jacokoo.kosql.compose.statement.UpdateData
 
@@ -45,6 +46,14 @@ class PostgresBuilder: DefaultBuilder(part = PostgresPart()) {
                 }
             }
         }
+        appendExpression("WHERE", data.expression, ctx)
+        return ctx.result()
+    }
+
+    override fun build(data: DeleteData, ctx: Context): BuildResult {
+        assert(data.deletes.isNotEmpty())
+        ctx.append("DELETE FROM ")
+        ctx.join(data.deletes)
         appendExpression("WHERE", data.expression, ctx)
         return ctx.result()
     }
