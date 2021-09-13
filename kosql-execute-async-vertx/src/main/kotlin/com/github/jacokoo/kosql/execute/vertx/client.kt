@@ -13,7 +13,6 @@ import io.vertx.core.Future
 import io.vertx.kotlin.coroutines.await
 import io.vertx.sqlclient.*
 import org.slf4j.LoggerFactory
-import kotlin.coroutines.suspendCoroutine
 import com.github.jacokoo.kosql.compose.result.Row as Row2
 
 interface KoSQLClient {
@@ -69,19 +68,8 @@ abstract class AbstractKoSQLClient(
 
     override suspend fun <T, R : ColumnList> execute(conn: SqlConnection, select: SelectStatement<R>, mapper: Mapper<T>): List<T> =
         builder.build(select, contextFactory(builder)).let { result ->
-            val st = prepare(conn, result)
-            val stream = st.createStream(20, result.tuple())
-            suspendCoroutine { cont ->
-                val list = mutableListOf<T>()
-                stream.handler {
-                    list.add(mapper.map(Row2({ i -> it.getValue(i) }, select.data.columns)))
-                }.endHandler {
-                    st.close()
-                    cont.resumeWith(Result.success(list))
-                }.exceptionHandler {
-                    st.close()
-                    cont.resumeWith(Result.failure(it))
-                }
+            prepare(conn, result).query().execute(result.tuple()).await().let { rs ->
+                rs.map { mapper.map(Row2({i -> it.getValue(i) }, select.data.columns)) }
             }
         }
 
