@@ -3,18 +3,30 @@ package com.github.jacokoo.kosql.generate
 import com.github.jacokoo.kosql.compose.InnerTable
 import com.github.jacokoo.kosql.compose.type.generate.ColumnDefinition
 import com.github.jacokoo.kosql.generate.writer.EnumWriter
-import org.springframework.jdbc.core.JdbcTemplate
 import java.io.File
-import java.sql.*
+import java.io.OutputStreamWriter
+import java.sql.DatabaseMetaData
+import java.sql.DriverManager
+import java.sql.ResultSet
 
-open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: KoSQLGeneratorConfig) {
+private fun log(msg: String) {
+    println(msg)
+}
+
+open class KoSQLGenerator(private val config: KoSQLGeneratorConfig) {
 
     open fun doGenerate() {
-        jdbc.execute { conn: Connection ->
+        log("generate started")
+        Class.forName(config.driverClass)
+        val conn = DriverManager.getConnection(config.connectionUri)
+
+        conn.use {
             val meta = conn.metaData
             val tables = tableNames(conn.catalog, meta).associateWith { primaryKey(conn.catalog, it, meta) }.map { (k, v) ->
                 if (v == null) throw RuntimeException("table $k have no primary key")
-                TableDefinition(k, v, columns(conn.catalog, k, meta))
+                TableDefinition(k, v, columns(conn.catalog, k, meta)).also {
+                    log("found table :$it")
+                }
             }.map { config.tableGenerator.generate(it, config) }
 
             config.baseDir().apply {
@@ -29,11 +41,13 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
             writeEnums()
             writeFiles(tables)
         }
+
+        log("generate finished")
     }
 
     fun writeFiles(ts: List<TableInfo>) {
         ts.forEach { table ->
-            File(config.baseDir(), "${config.namingStrategy.tableClassName(table.def.name)}.kt").also {
+            File(config.baseDir(), "${config.namingStrategy.tableFileName(table.def.name)}.kt").also {
                 if (it.exists()) it.delete()
                 it.createNewFile()
             }.writer().use { writer ->
@@ -41,6 +55,7 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
                 imports.add(InnerTable::class)
 
                 val pkg = config.basePackage()
+                writeCaution(writer)
                 writer.write("package $pkg\n\n")
                 imports.forEach {
                     if (!it.contains('.') || it.substring(0, it.lastIndexOf(".")) != pkg) writer.write("import ${it}\n")
@@ -56,7 +71,10 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
     }
 
     fun writeEntitySub(table: TableInfo) {
-        File(config.entityDir(), "${config.namingStrategy.entitySubClassName(table.def.name)}.kt").also {
+        File(config.entityDir(), "${config.namingStrategy.entityFileName(table.def.name)}.kt").also {
+            if (it.exists() && it.absolutePath != it.canonicalPath) {
+                it.delete()
+            }
             if (!it.exists()) {
                 it.createNewFile()
                 it.writer().use { writer ->
@@ -67,7 +85,8 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
     }
 
     fun writeEnums() {
-        File(config.baseDir(), "enum.kt").apply { createNewFile() }.writer().use {
+        File(config.baseDir(), "${config.namingStrategy.enumFileName()}.kt").apply { createNewFile() }.writer().use {
+            writeCaution(it)
             it.write("""
                 |package ${config.basePackage()}
                 |
@@ -120,4 +139,13 @@ open class KoSQLGenerator(private val jdbc: JdbcTemplate, private val config: Ko
             rs.getString("IS_AUTOINCREMENT").let { it == "YES" },
             rs.getString("IS_GENERATEDCOLUMN").let { it == "YES" }
     )
+
+    private fun writeCaution(writer: OutputStreamWriter) {
+        writer.write("""
+            |/******************************************************************/
+            |/* Caution: DO NOT MODIFY THIS FILE, ALL CHANGES WILL BE DROPPED! */
+            |/******************************************************************/
+            |
+        """.trimMargin())
+    }
 }

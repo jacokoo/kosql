@@ -12,8 +12,8 @@ import com.github.jacokoo.kosql.compose.typesafe.*
 interface Executor {
     suspend fun <K, T: Table<K, Entity<K>>>execute(update: UpdateStatement<K, T>): Int
     suspend fun execute(delete: DeleteStatement): Int
-    suspend fun <T> execute(insert: InsertStatement<T>): Pair<T, Int>
-    suspend fun <T> execute(insert: BatchInsertStatement<T>): Int
+    suspend fun <T> execute(insert: InsertStatement<T>): T
+    suspend fun <T> execute(insert: BatchInsertStatement<T>): List<T>
     suspend fun <T, R: ColumnList> execute(select: SelectStatement<R>, mapper: Mapper<T>): List<T>
 
     suspend fun <T: Any, R: ColumnList> execute(select: SelectStatement<R>, mapper: (Row) -> T): List<T> = execute(select, object: Mapper<T> {

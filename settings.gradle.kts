@@ -9,6 +9,7 @@ include(
     "kosql-execute-sync",
     "kosql-execute-async-vertx",
     "kosql-execute-sync-spring",
+    "kosql-gradle",
 
     ":mysql:kosql-mysql-type",
     ":mysql:kosql-mysql-type-vertx",

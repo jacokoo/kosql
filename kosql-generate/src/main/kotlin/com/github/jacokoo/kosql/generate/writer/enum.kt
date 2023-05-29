@@ -6,13 +6,7 @@ import java.io.Writer
 
 open class EnumWriter {
     open fun write(writer: Writer, config: KoSQLGeneratorConfig) {
-        config.useEnums.forEach { name, use ->
-            use.value.forEach {
-                writer.write("\nimport ${it.enum.java.name}")
-            }
-        }
         writer.write("""
-            |
             |
             |abstract class IntEnumType<T: Enum<*>>: DataType<T> {
             |    abstract val clazz: Class<T>
@@ -31,17 +25,21 @@ open class EnumWriter {
             |}
             |
         """.trimMargin())
-        config.useEnums.forEach { name, use ->
-            use.value.forEach {
+
+        writer.write("\n")
+        config.enums.values.forEach { e ->
+            writer.write("enum class ${e.name} { ${e.values.joinToString()} }\n")
+        }
+
+        config.useEnums.values.forEach { e ->
                 writer.write("""
                     |
-                    |class ${config.typeName(it, name)}: ${if (it.type == EnumType.INT) "IntEnumType" else "StringEnumType"}<${it.enum.simpleName}>() {
-                    |    override val clazz: Class<${it.enum.simpleName}> = ${it.enum.simpleName}::class.java
-                    |    override val nullValue: ${it.enum.simpleName} = ${config.defaultValueString(it)}
+                    |class ${config.typeName(e, config.namingStrategy.entitySubClassName(e.tableName))}: ${if (e.type == EnumType.INT) "IntEnumType" else "StringEnumType"}<${e.ref}>() {
+                    |    override val clazz: Class<${e.ref}> = ${e.ref}::class.java
+                    |    override val nullValue: ${e.ref} = ${e.ref}.${e.default}
                     |}
                     |
                 """.trimMargin())
-            }
         }
     }
 }

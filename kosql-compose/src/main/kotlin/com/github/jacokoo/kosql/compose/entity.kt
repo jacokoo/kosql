@@ -21,7 +21,3 @@ interface Entity<T> {
 }
 
 enum class EnumType { INT, STRING }
-
-annotation class Item<T: Enum<T>>(val column: String, val enum: KClass<T>, val defaultIndex: Int = 0, val type: EnumType = EnumType.INT)
-
-annotation class UseEnum(val value: Array<Item<*>>)

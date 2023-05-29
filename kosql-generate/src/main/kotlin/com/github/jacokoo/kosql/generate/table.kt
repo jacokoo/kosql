@@ -36,7 +36,8 @@ data class TableInfo(
 
 data class ColumnInfo(
     val typeClass: KClass<*>,  // IntType
-    val dataClass: KClass<*>,  // Int
+    val typeSimpleName: String, // Int
+    val importClass: KClass<*>?, // kotlin.Int
     val defaultValue: String,
     val define: String,
     val def: ColumnDefinition
@@ -92,8 +93,8 @@ class DefaultTableGenerator: TableGenerator {
         val pk = table.columns.indexOf(table.columns.find { it.name == table.primaryKey }!!)
         val fields = columns.map {
             imports.add(it.typeClass)
-            imports.add(it.dataClass)
-            val type = it.dataClass.simpleName
+            if (it.importClass != null) imports.add(it.importClass)
+            val type = it.typeSimpleName
             FieldInfo(it.def.name, type!!, it.defaultValue)
         }
 
@@ -103,17 +104,18 @@ class DefaultTableGenerator: TableGenerator {
     }
 
     fun generateColumn(name: String, pk: String, entityName: String, col: ColumnDefinition, config: KoSQLGeneratorConfig, imports: Imports): ColumnInfo =
-        config.useEnums[entityName]?.value?.find { it.column == col.name }?.let {
+        config.useEnum(name, col.name)?.let {
             val type = config.typeName(it, config.namingStrategy.entitySubClassName(name))
-            val defaultValue = config.defaultValueString(it)
+            val defaultValue = "${it.ref}.${it.default}"
             val t = KClassWrap("${config.basePackage()}.$type", type, Any::class)
             ColumnInfo(
-                t, it.enum, defaultValue,
+                t, it.ref, null, defaultValue,
                 "createColumn(\"${col.name}\", $type(), false, $defaultValue)", col
             )
         } ?: getColumnInfo(ColumnFactory().generate(name, col).also {
             imports.add(*it.extraImports())
         }, col, pk == col.name, config)
+
 
     private fun getColumnInfo(type: ColumnType, col: ColumnDefinition, isPrimaryKey: Boolean, config: KoSQLGeneratorConfig): ColumnInfo {
         val dv = type.parseDefaultValue(col.defaultValue)
@@ -121,6 +123,6 @@ class DefaultTableGenerator: TableGenerator {
             true -> """createPrimaryKey("${col.name}", ${type.type.simpleName}(), ${col.isAutoIncrement})"""
             false -> """createColumn("${col.name}", ${type.type.simpleName}(), ${col.nullable}, $dv, ${col.isAutoIncrement})"""
         }
-        return ColumnInfo(type.type, type.dataType, dv, def, col)
+        return ColumnInfo(type.type, type.dataType.simpleName!!, type.dataType, dv, def, col)
     }
 }

@@ -22,10 +22,10 @@ interface KoSQLClient {
     fun openConnection(): Future<SqlConnection>
     fun getGeneratedKey(row: RowSet<Row>, table: InnerTable<*, *>): Any
 
-    suspend fun <K, T: Table<K, Entity<K>>>execute(conn: SqlConnection, update: UpdateStatement<K, T>): Int
+    suspend fun <K, T: Table<K, Entity<K>>> execute(conn: SqlConnection, update: UpdateStatement<K, T>): Int
     suspend fun execute(conn: SqlConnection, delete: DeleteStatement): Int
-    suspend fun <T> execute(conn: SqlConnection, insert: InsertStatement<T>): Pair<T, Int>
-    suspend fun <T> execute(conn: SqlConnection, insert: BatchInsertStatement<T>): Int
+    suspend fun <T> execute(conn: SqlConnection, insert: InsertStatement<T>): T
+    suspend fun <T> execute(conn: SqlConnection, insert: BatchInsertStatement<T>): List<T>
     suspend fun <T, R: ColumnList> execute(conn: SqlConnection, select: SelectStatement<R>, mapper: Mapper<T>): List<T>
 }
 
@@ -41,26 +41,38 @@ abstract class AbstractKoSQLClient(
     override suspend fun execute(conn: SqlConnection, delete: DeleteStatement): Int
         = builder.build(delete, contextFactory(builder)).let { execute(conn, it).rowCount() }
 
-    override suspend fun <T> execute(conn: SqlConnection, insert: InsertStatement<T>): Pair<T, Int>
+    override suspend fun <T> execute(conn: SqlConnection, insert: InsertStatement<T>): T
         = builder.build(insert, contextFactory(builder)).let { result ->
         val rs = execute(conn, result)
 
         val pk = insert.data.table.primaryKey()
-        var key = pk.type.nullValue
         if (pk.autoIncrement) {
-            key = pk.type.fromDb(getGeneratedKey(rs, insert.data.table))
+            pk.type.fromDb(getGeneratedKey(rs, insert.data.table))
+        } else {
+            pk.type.nullValue
         }
-        key to rs.rowCount()
     }
 
-    override suspend fun <T> execute(conn: SqlConnection, insert: BatchInsertStatement<T>): Int
+    override suspend fun <T> execute(conn: SqlConnection, insert: BatchInsertStatement<T>): List<T>
         = builder.build(insert, contextFactory(builder)).let { result ->
         val st = prepare(conn, result)
         try {
             val rs = st.query().executeBatch(result.params.map { p ->
                 Tuple.tuple(p as List<*>)
             }).await()
-            rs.rowCount()
+
+            val pk = insert.data.table.primaryKey()
+            if (!pk.autoIncrement) {
+                List(result.params.size) { pk.type.nullValue }
+            } else {
+                val re = mutableListOf<T>()
+                var trs = rs
+                while (trs != null) {
+                    re.add(pk.type.fromDb(getGeneratedKey(trs, insert.data.table)))
+                    trs = trs.next()
+                }
+                re
+            }
         } finally {
             st.close()
         }

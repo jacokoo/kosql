@@ -16,7 +16,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
     private val tableName = config.namingStrategy.tableClassName(table.def.name)
     private val objectName = config.namingStrategy.tableObjectName(table.def.name)
     private val entityName = config.namingStrategy.entityClassName(table.def.name)
-    private val pkType = table.primaryKey.dataClass.simpleName!!
+    private val pkType = table.primaryKey.typeSimpleName
 
     private fun ename(name: String) = config.namingStrategy.entityFieldName(name)
     private fun tname(name: String) = config.namingStrategy.tableFieldName(name)
@@ -36,7 +36,7 @@ open class EntityWriter(writer: Writer, val config: KoSQLGeneratorConfig, val ta
             "        $objectName.${tname(it.def.name)}.name -> this.${ename(table.entity.fields[idx].columnName)}"
         }
         val setter: (Int, ColumnInfo) -> String = {idx, it ->
-            "            $objectName.${tname(it.def.name)}.name -> this.${ename(table.entity.fields[idx].columnName)} = value as ${it.dataClass.simpleName}"
+            "            $objectName.${tname(it.def.name)}.name -> this.${ename(table.entity.fields[idx].columnName)} = value as ${it.typeSimpleName}"
         }
         writer.write("""
             |    constructor(other: $entityName): this() {

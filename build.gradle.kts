@@ -1,14 +1,14 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.5.10"
+    kotlin("jvm") version "1.6.21"
     `maven-publish`
     java
 }
 
 allprojects {
     group = "com.github.jacokoo.kosql"
-    version = "0.2.3"
+    version = "0.3.6"
 
     repositories {
         mavenCentral()
@@ -25,7 +25,7 @@ subprojects {
 
 configure(subprojects.filter { it.name.contains("vertx") }) {
     dependencies {
-        implementation(platform("io.vertx:vertx-stack-depchain:4.1.1"))
+        implementation(platform("io.vertx:vertx-stack-depchain:4.3.1"))
         implementation("io.vertx:vertx-lang-kotlin")
         implementation("io.vertx:vertx-lang-kotlin-coroutines")
     }

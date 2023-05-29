@@ -19,9 +19,6 @@ interface Part {
     fun build(part: Named<*>, ctx: Context) {
         when(part) {
             is InnerTable<*, *> -> build(part, ctx)
-            is Count<*> -> build(part, ctx)
-            is Function<*> -> build(part, ctx)
-            is DecimalFunction<*> -> build(part, ctx)
             is Column<*> -> build(part, ctx)
             else -> unhandled(part, ctx)
         }
@@ -63,8 +60,15 @@ interface Part {
     }
 
     fun build(part: Column<*>, ctx: Context) {
-        ctx.append("${ctx.alias(part.table)}.${part.name}")
-        ctx.aliasIt(part)
+        when (part) {
+            is Count<*> -> build(part, ctx)
+            is Function<*> -> build(part, ctx)
+            is DecimalFunction<*> -> build(part, ctx)
+            else -> {
+                ctx.append("${ctx.alias(part.table)}.${part.name}")
+                ctx.aliasIt(part)
+            }
+        }
     }
 
     fun build(part: Function<*>, ctx: Context) {
@@ -84,7 +88,7 @@ interface Part {
 
     fun build(part: Count<*>, ctx: Context) {
         if (part.hasColumn()) {
-            ctx.quote("COUNT(") { build(part.column, ctx)}
+            ctx.quote("COUNT(") { build(part.column, ctx) }
         } else {
             ctx.append("COUNT(*)")
         }

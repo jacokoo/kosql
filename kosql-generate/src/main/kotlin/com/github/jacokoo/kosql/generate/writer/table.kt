@@ -20,7 +20,7 @@ open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val tab
     private val tableName = config.namingStrategy.tableClassName(table.def.name)
     private val objectName = config.namingStrategy.tableObjectName(table.def.name)
     private val entityName = config.namingStrategy.entitySubClassName(table.def.name)
-    private val pkType = table.primaryKey.dataClass.simpleName!!
+    private val pkType = table.primaryKey.typeSimpleName
 
     override fun writeSignature() {
         writer.write("open class $tableName protected constructor(override val inner: ${config.namingStrategy.innerTableClassName(table.def.name)}): Table<$pkType, $entityName>")
@@ -39,7 +39,7 @@ open class TableWriter(writer: Writer, val config: KoSQLGeneratorConfig, val tab
         writer.write(")\n\n")
         writer.write("    override fun AS(alias: String) = $tableName(inner.AS(alias))\n")
         writer.write("    override fun primaryKey() = ${config.namingStrategy.tableFieldName(table.primaryKey.def.name)}\n")
-        writer.write("    override fun createEntity(): $entityName = $entityName()")
+        writer.write("    override fun createEntity(): $entityName = $entityName()\n")
     }
 
     override fun writeTail() {
@@ -53,7 +53,7 @@ open class InnerTableWriter(writer: Writer, val config: KoSQLGeneratorConfig, va
 
     override fun writeSignature() {
         writer.write("open class $name(alias: String = \"\"): " +
-                "InnerTable<${table.primaryKey.dataClass.simpleName}, $entity>(\"${table.def.name}\", alias)")
+                "InnerTable<${table.primaryKey.typeSimpleName}, $entity>(\"${table.def.name}\", alias)")
     }
 
     override fun writeFields() {
