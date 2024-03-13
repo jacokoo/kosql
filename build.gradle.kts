@@ -46,14 +46,6 @@ configure(subprojects.filter {
     publishing {
         repositories {
             mavenLocal()
-            maven {
-                url = uri(System.getenv("ARTIFACTORY_URL"))
-
-                credentials {
-                    username = System.getenv("ARTIFACTORY_USER")
-                    password = System.getenv("ARTIFACTORY_APIKEY")
-                }
-            }
         }
 
         publications {

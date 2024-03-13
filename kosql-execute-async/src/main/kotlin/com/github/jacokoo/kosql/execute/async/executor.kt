@@ -49,8 +49,11 @@ interface Executor {
         return map.values.toList()
     }
 
+    suspend fun <T1> SelectStatement<Column1<T1>>.fetchValueOrNull(): T1?
+            = fetch1().firstOrNull()?.v1
+
     suspend fun <T1> SelectStatement<Column1<T1>>.fetchValue(): T1
-            = fetch1().firstOrNull()?.v1 ?: throw RuntimeException("Can not call fetchValue on a null value")
+            = fetchValueOrNull() ?: throw RuntimeException("Can not call fetchValue on a null value")
 
     // can not overload fetch cause jvm signature
     suspend fun <T1> SelectStatement<Column1<T1>>.fetch1()
